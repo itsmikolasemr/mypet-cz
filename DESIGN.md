@@ -5,6 +5,9 @@
 1. **Mazlík** — krátký, český, přátelský
 2. **PetProfil** — jasně říká co to je
 3. **Hlídka** — odkaz na péči a připomínky
+4. **Mazel** — moderní, krátký
+5. **Péče** — přímý odkaz na zdravotní záznamy
+6. **VetPas** — spojení s pasem a veterinou
 
 ## Styl
 Čistý, přátelský, profesionální. Žádný cartoon, neon, fialová.
