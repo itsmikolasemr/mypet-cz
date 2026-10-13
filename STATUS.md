@@ -1,6 +1,6 @@
 # MyPet CZ — Status
 
-Poslední aktualizace: 2026-10-13 23:15
+Poslední aktualizace: 2026-10-14 00:15
 
 ## Hotovo
 - Repo vytvořeno (itsmikolasemr/mypet-cz)
@@ -11,17 +11,22 @@ Poslední aktualizace: 2026-10-13 23:15
 - Šablona affiliate e-mailu (templates/email-affiliate.md)
 - Sociální obsah (templates/social-content.md)
 - UI komponenty: PetCard, ReminderCard, DocumentCard, HealthTimeline, PetForm, ReminderForm, HealthForm, DocumentForm
+- **EmergencyVets** (filtr podle města, call tlačítka)
+- **EmergencyCard** (pohotovostní karta mazlíčka — QR placeholder)
 - SEO.md, QA.md
 - Next.js scaffold + plný CRUD profily mazlíčků s localStorage
 - CRUD zdravotních záznamů (návštěvy, odčervení, očkování) + timeline
 - Plné UI připomínek (přidávání, označení hotovo)
 - **Základní nahrávání dokumentů (metadata: typ, název, poznámky) — bez reálného souboru a OCR**
+- UI mapa non-stop veterin (seznam s filtrem)
+- UI emergency karta (klik na mazlíčka)
 
 ## Běží
-- Mapa non-stop veterin (data hotová, UI chybí)
 - SEO obsahové stránky
-- QR emergency karta
+- Reálná mapa (Leaflet/Mapbox) + aktuální data klinik
+- Skutečný QR generátor
 - Export PDF profilu
+- OCR dokumentů
 
 ## Otevřené otázky
 - Finální název a doména (kandidáti v DESIGN.md — doporučení Mazlík / Mazel)
@@ -30,9 +35,9 @@ Poslední aktualizace: 2026-10-13 23:15
 - Tech stack potvrzení (Next.js + Netlify doporučeno)
 
 ## HOTOVO K TESTOVÁNÍ
-MVP (profily, zdravotní záznamy, připomínky, základní dokumenty) je vizuálně a funkčně připravené k lokálnímu testování. 
+MVP (profily, zdravotní záznamy, připomínky, základní dokumenty) + nově seznam non-stop veterin a emergency karta je vizuálně a funkčně připravené k lokálnímu testování. 
 
-**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm run dev`). Nic není nasazeno veřejně. Po schválení pokračujeme mapou a QR.
+**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm run dev`). Nic není nasazeno veřejně. Klikni na mazlíčka pro emergency kartu, dole je seznam pohotovostních klinik.
 
 ## Další krok
-UI pro mapu non-stop veterin a QR emergency kartu. Issues vytvořeny.
+Reálná interaktivní mapa, generování QR kódu, PDF export. Issues vytvořeny.

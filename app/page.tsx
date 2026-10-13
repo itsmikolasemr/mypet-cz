@@ -9,6 +9,8 @@ import { HealthForm } from '@/ui/HealthForm';
 import { HealthTimeline } from '@/ui/HealthTimeline';
 import { DocumentCard } from '@/ui/DocumentCard';
 import { DocumentForm } from '@/ui/DocumentForm';
+import { EmergencyVets } from '@/ui/EmergencyVets';
+import { EmergencyCard } from '@/ui/EmergencyCard';
 import {
   getPets, addPet, deletePet,
   getReminders, addReminder, toggleReminderDone,
@@ -28,6 +30,7 @@ export default function Home() {
   const [showReminderForm, setShowReminderForm] = useState(false);
   const [showHealthForm, setShowHealthForm] = useState(false);
   const [showDocumentForm, setShowDocumentForm] = useState(false);
+  const [selectedPetForCard, setSelectedPetForCard] = useState<Pet | null>(null);
 
   const refresh = () => {
     setPets(getPets());
@@ -117,9 +120,21 @@ export default function Home() {
 
       <div className="space-y-3">
         {pets.map((pet) => (
-          <PetCard key={pet.id} pet={pet} onDelete={handleDeletePet} />
+          <div key={pet.id} onClick={() => setSelectedPetForCard(pet)} className="cursor-pointer">
+            <PetCard pet={pet} onDelete={handleDeletePet} />
+          </div>
         ))}
       </div>
+
+      {selectedPetForCard && (
+        <div className="pt-2">
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-lg font-semibold">Emergency karta</h2>
+            <button onClick={() => setSelectedPetForCard(null)} className="text-sm text-gray-500">Zavřít</button>
+          </div>
+          <EmergencyCard pet={selectedPetForCard} />
+        </div>
+      )}
 
       {/* Připomínky */}
       <div className="pt-4">
@@ -203,6 +218,11 @@ export default function Home() {
           })}
           {documents.length === 0 && <p className="text-sm text-gray-400">Žádné dokumenty</p>}
         </div>
+      </div>
+
+      {/* Non-stop veterináři */}
+      <div className="pt-6 border-t border-gray-100">
+        <EmergencyVets />
       </div>
     </div>
   );
