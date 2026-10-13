@@ -9,7 +9,7 @@
 - [ ] Profil mazlíčka: jméno, druh, plemeno, datum narození, pohlaví, výška, váha, barva, mikročip, poznámky
 - [ ] Nahrávání dokumentů: faktury, doklady, zvířecí pas, výsledky vyšetření (OCR)
 - [ ] Připomínky: odčervení, očkování, kontroly
-- [ ] Základní webová appka (mobil-first)
+- [x] Základní webová appka (mobil-first) — Next.js scaffold hotov
 
 ## Fáze 1 — MVP
 - [ ] Kompletní CRUD pro mazlíčky a záznamy

@@ -3,22 +3,22 @@
     {
       "id": "pes",
       "name": "Pes",
-      "breeds": ["Německý ovčák", "Labrador retriever", "Zlatý retriever", "Jezevčík", "Border collie", "Čivava", "Jack Russell teriér", "Kříženec", "Jiné"]
+      "breeds": ["Německý ovčák", "Labrador retriever", "Zlatý retriever", "Jezevčík", "Border collie", "Čivava", "Jack Russell teriér", "Bulldog", "Pudl", "Kříženec", "Jiné"]
     },
     {
       "id": "kocka",
       "name": "Kočka",
-      "breeds": ["Britská krátkosrstá", "Maine Coon", "Perská", "Siamská", "Ragdoll", "Sphynx", "Kříženec", "Jiné"]
+      "breeds": ["Britská krátkosrstá", "Maine Coon", "Perská", "Siamská", "Ragdoll", "Sphynx", "Bengálská", "Kříženec", "Jiné"]
     },
     {
       "id": "kralik",
       "name": "Králík",
-      "breeds": ["Zakrslý", "Belgický obr", "Holandský", "Kříženec", "Jiné"]
+      "breeds": ["Zakrslý", "Belgický obr", "Holandský", "Angorský", "Kříženec", "Jiné"]
     },
     {
       "id": "morce",
       "name": "Morče",
-      "breeds": ["Standardní", "Peruánské", "Abyssinian", "Jiné"]
+      "breeds": ["Standardní", "Peruánské", "Abyssinian", "Skinny", "Jiné"]
     },
     {
       "id": "fretka",
@@ -28,22 +28,22 @@
     {
       "id": "ptak",
       "name": "Pták",
-      "breeds": ["Papoušek", "Kanár", "Andulka", "Agapornis", "Jiné"]
+      "breeds": ["Papoušek", "Kanár", "Andulka", "Agapornis", "Korela", "Jiné"]
     },
     {
       "id": "plaz",
       "name": "Plaz",
-      "breeds": ["Ještěrka", "Had", "Želva", "Chameleon", "Jiné"]
+      "breeds": ["Ještěrka", "Had", "Želva", "Chameleon", "Gekon", "Jiné"]
     },
     {
       "id": "ryba",
       "name": "Ryba",
-      "breeds": ["Akvárijní", "Koi", "Jiné"]
+      "breeds": ["Akvárijní", "Koi", "Zlatá rybička", "Jiné"]
     },
     {
       "id": "kun",
       "name": "Kůň",
-      "breeds": ["Český teplokrevník", "Arabský", "Jiné"]
+      "breeds": ["Český teplokrevník", "Arabský", "Hafling", "Jiné"]
     }
   ]
 }
