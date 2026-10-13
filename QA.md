@@ -1,7 +1,7 @@
 # QA / Test plán — MyPet CZ MVP
 
 ## Cíl
-Otestovat profily mazlíčků, zdravotní záznamy a připomínky před předáním majiteli.
+Otestovat profily mazlíčků, zdravotní záznamy, připomínky, dokumenty a emergency kartu před předáním majiteli.
 
 ## Checklist
 - [x] Lze vytvořit profil mazlíčka (pes, kočka, další druhy)
@@ -12,11 +12,15 @@ Otestovat profily mazlíčků, zdravotní záznamy a připomínky před předán
 - [x] UI je čitelné na mobilu (320px+)
 - [x] Barvy odpovídají paletě, žádná fialová
 - [x] Všechny texty jsou v češtině
-- [ ] Nahrávání dokumentů (zatím chybí)
+- [x] Základní metadata dokumentů lze přidat
+- [x] Emergency karta se zobrazí po kliknutí na mazlíčka
+- [x] Seznam non-stop veterin s filtrem funguje
+- [ ] Nahrávání reálných souborů a OCR (zatím chybí)
+- [ ] Generování QR kódu
 - [ ] Žádné veřejné spuštění bez schválení
 
 ## Role
-QA/tester provede po dokončení dokumentů. Výsledek zapíše do STATUS.md.
+QA/tester provede po dokončení dalších funkcí. Výsledek zapíše do STATUS.md.
 
-## Poznámka (2026-10-13)
-Základní CRUD profily + záznamy + připomínky jsou funkční v localStorage. Timeline zobrazuje historii. Připraveno k dalšímu rozšíření.
+## Poznámka (2026-10-14)
+MVP je připravené k lokálnímu testování. Katalog plemen rozšířen, sample SEO obsah přidán. Pokračovat na QR, mapu a PDF.
