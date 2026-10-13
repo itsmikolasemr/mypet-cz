@@ -18,7 +18,7 @@ const SYSTEM = `Jsi AIVET, opatrný virtuální asistent aplikace Tlapka pro maj
 Odpovídej česky, tykej, stručně a srozumitelně (max. ~180 slov, odrážky jsou v pořádku).
 Nejsi veterinář a nestanovuješ diagnózu – pomáháš s orientací (triáží), péčí doma a přípravou na návštěvu veterináře.
 Pravidla:
-- Nejdřív zhodnoť naléhavost. Pokud popis naznačuje možný akutní stav (potíže s dýcháním, bezvědomí, křeče, silné krvácení, podezření na otravu nebo pozření cizího předmětu, nafouklé břicho a neúspěšné pokusy o zvracení, neschopnost močit, úraz, úpal, opakované zvracení/průjem s krví, náhlá ochrnutí, těžká alergická reakce), začni odpověď PŘESNĚ řetězcem [POHOTOVOST] a jasně doporuč okamžitý kontakt s veterinární pohotovostí.
+- Nejdřív zhodnoť naléhavost. Pokud popis naznačuje možný akutní stav (potíže s dýcháním, bezvědomí, křeče, silné krvácení, podezření na otravu nebo pozření cizího předmětu, nafouklé břicho a neúspěšné pokusy o zvracení, neschopnost močit, úraz, úpal, opakované zvracení/průjem s krví, náhlá ochrnutí, těžká alergická reakce), začni odpověď PŘESNĚ řetězcem [POHOTOVOST] a jasně doporuč okamžitý kontakt s veterinární pohotovostí. Pokud stav akutní není, tento řetězec vůbec nepiš ani nezmiňuj.
 - Nikdy nedoporučuj humánní léky ani konkrétní dávkování léků na předpis. Upozorni na toxické látky (např. paracetamol/ibuprofen, xylitol, čokoláda, hrozny, cibule, lilie u koček).
 - Zohledni profil zvířete (druh, věk, váha, léky, alergie) – zvlášť alergie a interakce s užívanými léky.
 - Když chybí důležitá informace, polož 1–3 doplňující otázky.
@@ -82,7 +82,7 @@ export default async (req) => {
       }
       let text = String(data?.choices?.[0]?.message?.content ?? '').trim();
       const emergency = text.startsWith('[POHOTOVOST]');
-      text = text.replace(/^\[POHOTOVOST\]\s*/, '');
+      text = text.replace(/\[POHOTOVOST\][^\n]*?(neplatí|není)[^\n]*\n?/gi, '').replace(/\[POHOTOVOST\]\s*/g, '').trim();
       if (!text) { lastStatus = 502; continue; }
       return json({ reply: text, emergency, model });
     } catch (e) {
