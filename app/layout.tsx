@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#FFF8F0' };
 
-const noFlash = `try{var d=JSON.parse(localStorage.getItem('tlapka:data:v1')||'{}');var t=(d.settings&&d.settings.theme)||'system';if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
+const noFlash = `try{var h=document.head;for(var i=h.childNodes.length-1;i>=0;i--){var x=h.childNodes[i];if((x.nodeType===3&&!x.textContent.trim())||(x.nodeType===8&&/netlify/i.test(x.textContent)))h.removeChild(x)}}catch(e){}try{var d=JSON.parse(localStorage.getItem('tlapka:data:v1')||'{}');var t=(d.settings&&d.settings.theme)||'system';if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
