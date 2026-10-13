@@ -5,6 +5,7 @@
 - [ ] Pojmenování — 10+ kandidátů, výběr top 3 s odůvodněním
 - [x] Datový model: Pet, VetVisit, Deworming, Vaccination, Document, Reminder
 - [x] Katalog zvířat: druhy, plemena, rasy
+- [x] SEO základy (SEO.md)
 - [ ] Profil mazlíčka: jméno, druh, plemeno, datum narození, pohlaví, výška, váha, barva, mikročip, poznámky
 - [ ] Nahrávání dokumentů: faktury, doklady, zvířecí pas, výsledky vyšetření (OCR)
 - [ ] Připomínky: odčervení, očkování, kontroly

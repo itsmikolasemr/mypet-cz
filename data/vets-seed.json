@@ -1,0 +1,19 @@
+{
+  "emergencyVets": [
+    {
+      "city": "Praha",
+      "name": "Non-stop veterinární klinika Praha",
+      "phone": "+420 123 456 789",
+      "address": "Praha",
+      "note": "Příklad — aktualizovat z reálných zdrojů"
+    },
+    {
+      "city": "Brno",
+      "name": "Pohotovost Brno",
+      "phone": "+420 987 654 321",
+      "address": "Brno",
+      "note": "Příklad"
+    }
+  ],
+  "note": "Seed data pro mapu. Nahradit reálnými daty z klinik a firem.cz."
+}
