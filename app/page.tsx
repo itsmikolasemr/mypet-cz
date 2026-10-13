@@ -7,12 +7,15 @@ import { ReminderCard } from '@/ui/ReminderCard';
 import { ReminderForm } from '@/ui/ReminderForm';
 import { HealthForm } from '@/ui/HealthForm';
 import { HealthTimeline } from '@/ui/HealthTimeline';
+import { DocumentCard } from '@/ui/DocumentCard';
+import { DocumentForm } from '@/ui/DocumentForm';
 import {
   getPets, addPet, deletePet,
   getReminders, addReminder, toggleReminderDone,
-  getVisits, addVisit, getDewormings, addDeworming, getVaccinations, addVaccination
+  getVisits, addVisit, getDewormings, addDeworming, getVaccinations, addVaccination,
+  getDocuments, addDocument
 } from '@/lib/storage';
-import { Pet, Reminder, VetVisit, Deworming, Vaccination } from '@/lib/types';
+import { Pet, Reminder, VetVisit, Deworming, Vaccination, Document } from '@/lib/types';
 
 export default function Home() {
   const [pets, setPets] = useState<Pet[]>([]);
@@ -20,9 +23,11 @@ export default function Home() {
   const [visits, setVisits] = useState<VetVisit[]>([]);
   const [dewormings, setDewormings] = useState<Deworming[]>([]);
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [showPetForm, setShowPetForm] = useState(false);
   const [showReminderForm, setShowReminderForm] = useState(false);
   const [showHealthForm, setShowHealthForm] = useState(false);
+  const [showDocumentForm, setShowDocumentForm] = useState(false);
 
   const refresh = () => {
     setPets(getPets());
@@ -30,6 +35,7 @@ export default function Home() {
     setVisits(getVisits());
     setDewormings(getDewormings());
     setVaccinations(getVaccinations());
+    setDocuments(getDocuments());
   };
 
   useEffect(() => {
@@ -74,6 +80,12 @@ export default function Home() {
     addVaccination(data);
     refresh();
     setShowHealthForm(false);
+  };
+
+  const handleAddDocument = (data: Omit<Document, 'id' | 'uploadedAt'>) => {
+    addDocument(data);
+    refresh();
+    setShowDocumentForm(false);
   };
 
   // Prepare timeline events
@@ -163,6 +175,33 @@ export default function Home() {
           ) : (
             <p className="text-sm text-gray-400">Zatím žádné záznamy</p>
           )}
+        </div>
+      </div>
+
+      {/* Dokumenty */}
+      <div className="pt-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Dokumenty</h2>
+          {pets.length > 0 && (
+            <button onClick={() => setShowDocumentForm(!showDocumentForm)} className="text-sm text-[#2E7D6F] font-medium">
+              {showDocumentForm ? 'Skrýt' : '+ Nahrát'}
+            </button>
+          )}
+        </div>
+        {showDocumentForm && <DocumentForm pets={pets} onSubmit={handleAddDocument} onCancel={() => setShowDocumentForm(false)} />}
+        <div className="space-y-2 mt-3">
+          {documents.map((d) => {
+            const pet = pets.find((p) => p.id === d.petId);
+            return (
+              <DocumentCard
+                key={d.id}
+                type={d.type}
+                uploadedAt={d.uploadedAt}
+                fileName={`${d.fileName} (${pet?.name || '?'})`}
+              />
+            );
+          })}
+          {documents.length === 0 && <p className="text-sm text-gray-400">Žádné dokumenty</p>}
         </div>
       </div>
     </div>

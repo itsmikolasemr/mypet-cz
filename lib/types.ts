@@ -57,3 +57,12 @@ export interface Vaccination {
   type: string;
   nextDue?: string;
 }
+
+export interface Document {
+  id: string;
+  petId: string;
+  type: 'faktura' | 'pas' | 'vyšetření' | 'jiné';
+  fileName: string;
+  notes?: string;
+  uploadedAt: string;
+}

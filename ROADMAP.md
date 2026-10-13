@@ -7,7 +7,7 @@
 - [x] Katalog zvířat: druhy, plemena, rasy
 - [x] SEO základy (SEO.md)
 - [x] Profil mazlíčka: jméno, druh, plemeno, datum narození, pohlaví (localStorage CRUD hotovo)
-- [ ] Nahrávání dokumentů: faktury, doklady, zvířecí pas, výsledky vyšetření (OCR)
+- [x] Nahrávání dokumentů: základní metadata (faktury, doklady, pas, vyšetření) — bez OCR
 - [x] Připomínky: odčervení, očkování, kontroly (storage + UI hotové)
 - [x] Základní webová appka (mobil-first) — Next.js + interaktivní CRUD
 
@@ -15,6 +15,7 @@
 - [x] Kompletní CRUD pro mazlíčky (localStorage)
 - [x] CRUD zdravotních záznamů (návštěvy, očkování, odčervení)
 - [x] Timeline zdravotní historie
+- [x] Základní dokumenty (metadata)
 - [ ] Export/sdílení profilu (PDF)
 - [ ] QR emergency karta pro mazlíčka
 

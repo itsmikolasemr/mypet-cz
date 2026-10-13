@@ -1,6 +1,6 @@
 # MyPet CZ — Status
 
-Poslední aktualizace: 2026-10-13 22:15
+Poslední aktualizace: 2026-10-13 23:15
 
 ## Hotovo
 - Repo vytvořeno (itsmikolasemr/mypet-cz)
@@ -10,17 +10,18 @@ Poslední aktualizace: 2026-10-13 22:15
 - Seed non-stop veterin (data/vets-seed.json)
 - Šablona affiliate e-mailu (templates/email-affiliate.md)
 - Sociální obsah (templates/social-content.md)
-- UI komponenty: PetCard, ReminderCard, DocumentCard, HealthTimeline, PetForm, ReminderForm, HealthForm
+- UI komponenty: PetCard, ReminderCard, DocumentCard, HealthTimeline, PetForm, ReminderForm, HealthForm, DocumentForm
 - SEO.md, QA.md
 - Next.js scaffold + plný CRUD profily mazlíčků s localStorage
-- **CRUD zdravotních záznamů (návštěvy, odčervení, očkování) + timeline**
-- **Plné UI připomínek (přidávání, označení hotovo)**
+- CRUD zdravotních záznamů (návštěvy, odčervení, očkování) + timeline
+- Plné UI připomínek (přidávání, označení hotovo)
+- **Základní nahrávání dokumentů (metadata: typ, název, poznámky) — bez reálného souboru a OCR**
 
 ## Běží
-- Dokumenty + nahrávání + OCR (plánováno)
 - Mapa non-stop veterin (data hotová, UI chybí)
 - SEO obsahové stránky
 - QR emergency karta
+- Export PDF profilu
 
 ## Otevřené otázky
 - Finální název a doména (kandidáti v DESIGN.md — doporučení Mazlík / Mazel)
@@ -28,5 +29,10 @@ Poslední aktualizace: 2026-10-13 22:15
 - Affiliate smlouvy (ověřit aktuální %)
 - Tech stack potvrzení (Next.js + Netlify doporučeno)
 
+## HOTOVO K TESTOVÁNÍ
+MVP (profily, zdravotní záznamy, připomínky, základní dokumenty) je vizuálně a funkčně připravené k lokálnímu testování. 
+
+**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm run dev`). Nic není nasazeno veřejně. Po schválení pokračujeme mapou a QR.
+
 ## Další krok
-Dokončit nahrávání dokumentů (základní bez OCR) a připravit MVP k vizuálnímu a funkčnímu testování. Issues vytvořeny pro zbývající body.
+UI pro mapu non-stop veterin a QR emergency kartu. Issues vytvořeny.

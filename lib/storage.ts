@@ -1,10 +1,11 @@
-import { Pet, Reminder, VetVisit, Deworming, Vaccination } from './types';
+import { Pet, Reminder, VetVisit, Deworming, Vaccination, Document } from './types';
 
 const PETS_KEY = 'mypet_cz_pets';
 const REMINDERS_KEY = 'mypet_cz_reminders';
 const VISITS_KEY = 'mypet_cz_visits';
 const DEWORMINGS_KEY = 'mypet_cz_dewormings';
 const VACCINATIONS_KEY = 'mypet_cz_vaccinations';
+const DOCUMENTS_KEY = 'mypet_cz_documents';
 
 function safeGet<T>(key: string): T[] {
   if (typeof window === 'undefined') return [];
@@ -99,4 +100,20 @@ export function addVaccination(v: Omit<Vaccination, 'id'>): Vaccination {
   list.push(newV);
   safeSet(VACCINATIONS_KEY, list);
   return newV;
+}
+
+export function getDocuments(): Document[] {
+  return safeGet<Document>(DOCUMENTS_KEY);
+}
+
+export function addDocument(doc: Omit<Document, 'id' | 'uploadedAt'>): Document {
+  const docs = getDocuments();
+  const newDoc: Document = { 
+    ...doc, 
+    id: crypto.randomUUID(), 
+    uploadedAt: new Date().toISOString().split('T')[0] 
+  };
+  docs.push(newDoc);
+  safeSet(DOCUMENTS_KEY, docs);
+  return newDoc;
 }
