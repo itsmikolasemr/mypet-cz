@@ -1,10 +1,10 @@
 # Roadmap MyPet CZ
 
 ## Fáze 0 — Okamžitě (tým pracuje)
-- [ ] Návrh vizuální identity (paleta, typografie, logo, ikony zvířat)
+- [x] Návrh vizuální identity (paleta, typografie, logo, ikony zvířat) — DESIGN.md
 - [ ] Pojmenování — 10+ kandidátů, výběr top 3 s odůvodněním
-- [ ] Datový model: Pet, VetVisit, Deworming, Vaccination, Document, Reminder
-- [ ] Katalog zvířat: druhy, plemena, rasy (psi, kočky, plazi, ptáci, hlodavci, ryby, koně...)
+- [x] Datový model: Pet, VetVisit, Deworming, Vaccination, Document, Reminder
+- [x] Katalog zvířat: druhy, plemena, rasy
 - [ ] Profil mazlíčka: jméno, druh, plemeno, datum narození, pohlaví, výška, váha, barva, mikročip, poznámky
 - [ ] Nahrávání dokumentů: faktury, doklady, zvířecí pas, výsledky vyšetření (OCR)
 - [ ] Připomínky: odčervení, očkování, kontroly

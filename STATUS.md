@@ -1,20 +1,26 @@
 # MyPet CZ — Status
 
-Poslední aktualizace: 2026-10-13
+Poslední aktualizace: 2026-10-13 18:45
 
 ## Hotovo
 - Repo vytvořeno (itsmikolasemr/mypet-cz)
-- BRIEF.md s vizí, týmem, rozsahem a fázemi
-- Denní automatizace nastavena (devět ráno, Evropa/Praha)
+- BRIEF.md, ROADMAP.md, BRAND.md, TEAM.md, NOTES.md
+- DESIGN.md — paleta, typografie, tón, kandidáti názvu
+- Datové schéma (data/schema.json): Pet, VetVisit, Deworming, Vaccination, Document, Reminder
+- Seed katalog zvířat (data/animals-seed.json)
+- Šablona affiliate e-mailu (templates/email-affiliate.md)
+- Základní UI komponenta PetCard (ui/PetCard.tsx)
 
 ## Běží
-- Tým pracuje na vizuální identitě a datovém modelu
+- SEO obsah a meta tagy
+- MVP webová appka (Next.js mobil-first)
+- Mapa non-stop veterin (data)
 
 ## Otevřené otázky
-- Jaká je přesná struktura CEP API (pokud existuje veřejné)?
-- Jaké jsou aktuální non-stop veterinární kliniky a jejich čísla?
-- Affiliate podmínky Granulebardog.cz a SuperKotlik.cz — ověřit
-- Konkurence: Vetstor (CZ, vydáno 2026-10-12) — prověřit funkce
+- Finální název a doména
+- Přesná struktura CEP API
+- Affiliate smlouvy (ověřit aktuální %)
+- Tech stack potvrzení (Next.js + Netlify?)
 
 ## Další krok
-Vizuální identita + datový model entit (Pet, VetVisit, Deworming, Vaccination, Document, Reminder) + issue pro MVP
+Základní Next.js appka s CRUD profilů + issue pro QA a SEO

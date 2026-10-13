@@ -1,0 +1,54 @@
+{
+  "Pet": {
+    "id": "uuid",
+    "name": "string",
+    "species": "enum: pes|kočka|králík|morče|fretka|pták|plaz|ryba|kůň|jiné",
+    "breed": "string",
+    "sex": "enum: samec|samice|neznámé",
+    "birthDate": "date",
+    "heightCm": "number",
+    "weightKg": "number",
+    "color": "string",
+    "microchip": "string",
+    "notes": "string",
+    "ownerId": "uuid"
+  },
+  "VetVisit": {
+    "id": "uuid",
+    "petId": "uuid",
+    "date": "date",
+    "clinic": "string",
+    "reason": "string",
+    "notes": "string",
+    "cost": "number"
+  },
+  "Deworming": {
+    "id": "uuid",
+    "petId": "uuid",
+    "date": "date",
+    "product": "string",
+    "nextDue": "date"
+  },
+  "Vaccination": {
+    "id": "uuid",
+    "petId": "uuid",
+    "date": "date",
+    "type": "string",
+    "nextDue": "date"
+  },
+  "Document": {
+    "id": "uuid",
+    "petId": "uuid",
+    "type": "enum: faktura|pas|vyšetření|jiné",
+    "fileUrl": "string",
+    "ocrData": "json",
+    "uploadedAt": "datetime"
+  },
+  "Reminder": {
+    "id": "uuid",
+    "petId": "uuid",
+    "type": "enum: odčervení|očkování|kontrola",
+    "dueDate": "date",
+    "done": "boolean"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "species": [
+    {
+      "id": "pes",
+      "name": "Pes",
+      "breeds": ["Německý ovčák", "Labrador", "Jezevčík", "Border collie", "Kříženec", "Jiné"]
+    },
+    {
+      "id": "kocka",
+      "name": "Kočka",
+      "breeds": ["Britská krátkosrstá", "Maine Coon", "Perská", "Siamská", "Kříženec", "Jiné"]
+    },
+    {
+      "id": "kralik",
+      "name": "Králík",
+      "breeds": ["Zakrslý", "Belgický obr", "Kříženec", "Jiné"]
+    },
+    {
+      "id": "morce",
+      "name": "Morče",
+      "breeds": ["Standardní", "Peruánské", "Jiné"]
+    },
+    {
+      "id": "fretka",
+      "name": "Fretka",
+      "breeds": ["Standardní", "Jiné"]
+    },
+    {
+      "id": "ptak",
+      "name": "Pták",
+      "breeds": ["Papoušek", "Kanár", "Andulka", "Jiné"]
+    },
+    {
+      "id": "plaz",
+      "name": "Plaz",
+      "breeds": ["Ještěrka", "Had", "Želva", "Jiné"]
+    },
+    {
+      "id": "ryba",
+      "name": "Ryba",
+      "breeds": ["Akvárijní", "Jiné"]
+    }
+  ]
+}
