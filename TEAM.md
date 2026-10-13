@@ -1,11 +1,18 @@
-# MyPet CZ — Tým
+# Tým MyPet CZ
 
-| Role | Odpovědnost | Výstup |
-| --- | --- | --- |
-| Brand manager | Vizuální identita, tón, assety | Paleta, logo, OG karty, favicony, UI kit |
-| SEO specialista | Klíčová slova, obsah, meta | SEO plán, struktura stránek |
-| Vedoucí vývoje | Architektura, kód, review | Datový model, appka, issue |
-| Marketing | E-shopy, sítě, e-maily | Oslovné šablony, kampaně |
-| QA / tester | Testování fází | Test reporty |
+## Role
 
-Každá role pracuje v češtině a zapisuje do STATUS.md.
+- **Brand Manager** — vizuální identita, tón komunikace, pojmenování, brand guidelines
+- **SEO Specialista** — klíčová slova, on-page SEO, obsahová strategie pro český trh
+- **Vedoucí vývoje** — architektura, datový model, roadmapa, code review
+- **Marketing** — strategie růstu, kanály, obsah
+- **Outbound / Sales** — oslovování e-shopů s granulemi, affiliate nabídky, kontaktování veterin (Granulebardog.cz 7%, SuperKotlik.cz 11%, Happypet.cz remarketing)
+- **QA Tester** — testování funkčnosti, UX, bugy, předání majiteli
+
+## Pravidla
+
+- Každý běh = jeden commit s jasným popisem, kdo co udělal
+- Otevřené otázky zapisovat do NOTES.md
+- Na konci každého běhu stručný souhrn do ISSUE nebo komentáře
+- Pracovat v češtině
+- Nic nespouštět do produkce bez schválení majitelem

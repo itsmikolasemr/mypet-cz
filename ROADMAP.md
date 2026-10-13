@@ -1,29 +1,28 @@
-# MyPet CZ — Roadmapa
+# Roadmap MyPet CZ
+
+## Fáze 0 — Okamžitě (tým pracuje)
+- [ ] Návrh vizuální identity (paleta, typografie, logo, ikony zvířat)
+- [ ] Pojmenování — 10+ kandidátů, výběr top 3 s odůvodněním
+- [ ] Datový model: Pet, VetVisit, Deworming, Vaccination, Document, Reminder
+- [ ] Katalog zvířat: druhy, plemena, rasy (psi, kočky, plazi, ptáci, hlodavci, ryby, koně...)
+- [ ] Profil mazlíčka: jméno, druh, plemeno, datum narození, pohlaví, výška, váha, barva, mikročip, poznámky
+- [ ] Nahrávání dokumentů: faktury, doklady, zvířecí pas, výsledky vyšetření (OCR)
+- [ ] Připomínky: odčervení, očkování, kontroly
+- [ ] Základní webová appka (mobil-first)
 
 ## Fáze 1 — MVP
-- [ ] Datový model: Pet, VetVisit, Deworming, Vaccination, Document, Reminder
-- [ ] UI: výběr typu zvířete a plemene/rasy (kompletní katalog)
-- [ ] UI: profil mazlíčka (výška, váha, barva, pohlaví, datum narození, poznámky)
-- [ ] Zdravotní záznamy s historií
-- [ ] Nahrávání dokumentů (foto/PDF) + OCR
-- [ ] Připomínky (push/e-mail)
-- [ ] Vizuální identita: logo, paleta, typografie, OG karty, favicony
-- [ ] Základní webová appka (responzivní, mobilní first)
+- [ ] Kompletní CRUD pro mazlíčky a záznamy
+- [ ] Timeline zdravotní historie
+- [ ] Export/sdílení profilu (PDF)
+- [ ] QR emergency karta pro mazlíčka
 
-## Fáze 2
-- [ ] Mapa non-stop veterin v ČR (data z firem.cz + kliniky ručně)
-- [ ] Aktuální pohotovostní telefonní čísla
-- [ ] QR emergency karta pro pečovatele
+## Fáze 2 — Mapa a komunita
+- [ ] Mapa non-stop veterin v ČR (data z firem.cz, klinik)
+- [ ] Aktuální pohotovostní čísla
+- [ ] Affiliate: Granulebardog, SuperKotlik, Happypet
+- [ ] SEO obsah: průvodci, články
 
-## Fáze 3
-- [ ] Integrace CEP (Centrální evidence psů)
-- [ ] Zvířecí pas EU — pravidla a šablony
-- [ ] Affiliate program: Granulebardog.cz (7 %), SuperKotlik.cz (11 %), Happypet.cz
-- [ ] SEO optimalizace
-- [ ] App store nasazení (iOS/Android)
-
-## Milníky
-- M1: Datový model + vizuální identita hotové
-- M2: MVP funkční interně
-- M3: QA test + majitel testuje
-- M4: Beta spuštění
+## Fáze 3 — Integrace
+- [ ] CEP (Centrální evidence psů) integrace
+- [ ] EU zvířecí pas pravidla
+- [ ] Notifikace (e-mail, push)
