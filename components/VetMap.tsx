@@ -58,6 +58,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   const [state, setState] = useState<'loading' | 'ok' | 'error'>('loading');
   const [nonstop, setNonstop] = useState(initialNonstop);
   const [sel, setSel] = useState<Vet | null>(null);
+  const [stale, setStale] = useState(false);
   const shown = useMemo(() => (nonstop ? vets.filter((v) => v.nonstop) : vets), [vets, nonstop]);
 
   useEffect(() => {
@@ -71,11 +72,19 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
 
   const load = useCallback(async (c: { lat: number; lon: number }) => {
     setState('loading');
+    const key = `tlapka:vets:${c.lat.toFixed(1)},${c.lon.toFixed(1)}`;
     try {
       let v = await fetchVets(c, 12000);
       if (v.length < 5) v = await fetchVets(c, 35000);
-      setVets(v); setState('ok');
-    } catch { setState('error'); }
+      setVets(v); setState('ok'); setStale(false);
+      try { localStorage.setItem(key, JSON.stringify(v)); } catch {}
+    } catch {
+      try {
+        const cached = JSON.parse(localStorage.getItem(key) || 'null') as Vet[] | null;
+        if (cached?.length) { setVets(cached); setState('ok'); setStale(true); return; }
+      } catch {}
+      setState('error');
+    }
   }, []);
 
   useEffect(() => {
@@ -130,8 +139,9 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
       </p>
       <div className="mt-4 space-y-3 stagger">
         {state === 'error' && (
-          <Card className="p-4 text-center"><p className="font-semibold">Nepodařilo se načíst data</p><p className="text-sm text-muted mt-1">Služba Overpass může být přetížená.</p><Button variant="soft" className="mt-3" onClick={() => center && load(center)}>Zkusit znovu</Button></Card>
+          <Card className="p-4 text-center"><p className="font-semibold">Nepodařilo se načíst data</p><p className="text-sm text-muted mt-1">Mapová služba OpenStreetMap (Overpass) je teď přetížená. Zkus to za pár minut.</p><Button variant="soft" className="mt-3" onClick={() => center && load(center)}>Zkusit znovu</Button></Card>
         )}
+        {stale && <p className="text-[12px] text-amber-700 dark:text-amber-300 px-1">Zobrazuji naposledy uložená data – služba OSM teď neodpovídá.</p>}
         {state === 'ok' && !shown.length && (
           <Card className="p-4 text-center text-sm text-muted">{nonstop ? 'V okolí není v OSM žádná ordinace označená jako nonstop (24/7). Zkus vypnout filtr a obvolat nejbližší kliniky.' : 'V okolí jsme nic nenašli.'}</Card>
         )}
