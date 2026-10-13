@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Map as LMap, LayerGroup } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button, Card, Icon, PageHeader, Sheet } from './ui';
+import { API_BASE } from '@/lib/api';
 
 type Vet = { id: string; lat: number; lon: number; name: string; tags: Record<string, string>; dist: number; nonstop: boolean };
 const BRNO = { lat: 49.1951, lon: 16.6068 };
@@ -23,11 +24,17 @@ const address = (t: Record<string, string>) =>
 async function fetchVets(c: { lat: number; lon: number }, radius: number): Promise<Vet[]> {
   const q = `[out:json][timeout:25];nwr["amenity"="veterinary"](around:${radius},${c.lat},${c.lon});out center tags;`;
   let lastErr: unknown;
-  for (const ep of ENDPOINTS) {
+  type Raw = { elements: { id: number; type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[] };
+  const sources: (() => Promise<Response>)[] = [
+    () => fetch(`${API_BASE}/api/vets?lat=${c.lat.toFixed(2)}&lon=${c.lon.toFixed(2)}&r=${radius}`, { signal: AbortSignal.timeout(20000) }),
+    ...ENDPOINTS.map((ep) => () => fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: AbortSignal.timeout(15000) })),
+  ];
+  for (const src of sources) {
     try {
-      const r = await fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: AbortSignal.timeout(15000) });
+      const r = await src();
       if (!r.ok) throw new Error('HTTP ' + r.status);
-      const j = (await r.json()) as { elements: { id: number; type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[] };
+      const j = (await r.json()) as Raw;
+      if (!Array.isArray(j.elements)) throw new Error('bad');
       return j.elements
         .map((e) => {
           const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon, tags = e.tags ?? {};
