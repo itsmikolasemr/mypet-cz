@@ -3,7 +3,7 @@
 const DEFAULT_BASE = 'https://generativelanguage.googleapis.com/v1beta/openai/';
 const DEFAULT_MODEL = 'gemini-flash-latest';
 // Tried in order when the primary model is overloaded (503/429/404). Override with AIVET_FALLBACK_MODELS (comma-separated).
-const DEFAULT_FALLBACKS = 'gemini-3.6-flash,gemini-flash-lite-latest';
+const DEFAULT_FALLBACKS = 'gemini-flash-lite-latest,gemini-3.6-flash';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -69,8 +69,9 @@ export default async (req) => {
       const r = await fetch(base + 'chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-        body: JSON.stringify({ model, messages: chat, max_tokens: 900 }),
-        signal: AbortSignal.timeout(Math.max(3000, 24000 - (Date.now() - started))),
+        body: JSON.stringify({ model, messages: chat, max_tokens: 1500, ...(base.includes('generativelanguage') ? { reasoning_effort: 'low' } : {}) }),
+        // primary gets a short slot so an overloaded model doesn't eat the whole budget
+        signal: AbortSignal.timeout(Math.max(3000, Math.min(model === models[0] && models.length > 1 ? 8000 : 22000, 24000 - (Date.now() - started)))),
       });
       const data = await r.json().catch(() => ({}));
       if (!r.ok) {
