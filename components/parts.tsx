@@ -59,9 +59,10 @@ export function WeightChart({ pet }: { pet: Pet }) {
   const ks = w.map((x) => x.kg);
   let lo = Math.min(...ks), hi = Math.max(...ks);
   const pad = Math.max((hi - lo) * 0.2, 0.5); lo -= pad; hi += pad;
-  const X = (d: string) => px + ((new Date(d).getTime() - t0) / (t1 - t0 || 1)) * (W - px * 2);
+  const same = t1 === t0;
+  const X = (d: string, i = 0) => px + (same ? i / (w.length - 1) : (new Date(d).getTime() - t0) / (t1 - t0)) * (W - px * 2);
   const Y = (k: number) => py + (1 - (k - lo) / (hi - lo)) * (H - py * 2);
-  const pts = w.map((x) => `${X(x.date)},${Y(x.kg)}`).join(' ');
+  const pts = w.map((x, i) => `${X(x.date, i)},${Y(x.kg)}`).join(' ');
   const last = w[w.length - 1], prev = w[w.length - 2];
   const delta = +(last.kg - prev.kg).toFixed(2);
   return (
@@ -71,11 +72,11 @@ export function WeightChart({ pet }: { pet: Pet }) {
         <span className={`text-sm font-semibold ml-auto ${delta > 0 ? 'text-warning' : delta < 0 ? 'text-primary' : 'text-muted'}`}>{delta > 0 ? '+' : ''}{delta.toLocaleString('cs-CZ')} kg</span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Graf váhy">
-        <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#2E7D6F" stopOpacity=".28" /><stop offset="1" stopColor="#2E7D6F" stopOpacity="0" /></linearGradient></defs>
+        <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#E8553A" stopOpacity=".28" /><stop offset="1" stopColor="#E8553A" stopOpacity="0" /></linearGradient></defs>
         {[0, 0.5, 1].map((f) => { const k = lo + (hi - lo) * f; return <g key={f}><line x1={px} x2={W - px} y1={Y(k)} y2={Y(k)} className="stroke-ink/10 dark:stroke-white/10" strokeDasharray="3 4" /><text x={2} y={Y(k) + 3} className="fill-muted" fontSize="9">{k.toFixed(1)}</text></g>; })}
-        <polygon points={`${X(w[0].date)},${H - py} ${pts} ${X(last.date)},${H - py}`} fill="url(#g)" />
-        <polyline points={pts} fill="none" stroke="#2E7D6F" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="draw" />
-        {w.map((x) => <circle key={x.id} cx={X(x.date)} cy={Y(x.kg)} r="3.5" fill="#2E7D6F" className="stroke-surface dark:stroke-surface-d" strokeWidth="2" />)}
+        <polygon points={`${X(w[0].date)},${H - py} ${pts} ${X(last.date, w.length - 1)},${H - py}`} fill="url(#g)" />
+        <polyline points={pts} fill="none" stroke="#E8553A" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="draw" />
+        {w.map((x, i) => <circle key={x.id} cx={X(x.date, i)} cy={Y(x.kg)} r="3.5" fill="#E8553A" className="stroke-surface dark:stroke-surface-d" strokeWidth="2" />)}
         <text x={px} y={H - 2} fontSize="9" className="fill-muted">{fmtShort(w[0].date)}</text>
         <text x={W - px} y={H - 2} fontSize="9" textAnchor="end" className="fill-muted">{fmtShort(last.date)}</text>
       </svg>
