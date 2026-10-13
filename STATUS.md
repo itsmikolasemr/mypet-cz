@@ -1,6 +1,6 @@
 # MyPet CZ — Status
 
-Poslední aktualizace: 2026-10-13 20:15
+Poslední aktualizace: 2026-10-13 21:10
 
 ## Hotovo
 - Repo vytvořeno (itsmikolasemr/mypet-cz)
@@ -10,21 +10,22 @@ Poslední aktualizace: 2026-10-13 20:15
 - Seed non-stop veterin (data/vets-seed.json) — více měst
 - Šablona affiliate e-mailu (templates/email-affiliate.md)
 - Sociální obsah (templates/social-content.md)
-- UI komponenty: PetCard, ReminderCard, DocumentCard, HealthTimeline, PetForm
+- UI komponenty: PetCard, ReminderCard, DocumentCard, HealthTimeline, PetForm (funkční)
 - SEO.md — rozšířeno
 - QA.md — test plán
-- Next.js scaffold (package.json, app/layout.tsx, app/page.tsx, Tailwind)
+- Next.js scaffold + **plný CRUD profily mazlíčků s localStorage** (lib/storage.ts, typy, page.tsx interaktivní)
 
 ## Běží
-- Základní Next.js appka (CRUD profily) — scaffold hotov, implementace běží
+- Připomínky CRUD (základní storage hotové, UI doplnit)
 - Mapa non-stop veterin (data)
 - SEO obsahové stránky
+- Dokumenty + OCR (plánováno)
 
 ## Otevřené otázky
-- Finální název a doména (kandidáti v DESIGN.md)
+- Finální název a doména (kandidáti v DESIGN.md — doporučení Mazlík / Mazel)
 - Přesná struktura CEP API
 - Affiliate smlouvy (ověřit aktuální %)
-- Tech stack potvrzení (Next.js + Netlify?)
+- Tech stack potvrzení (Next.js + Netlify doporučeno)
 
 ## Další krok
-Implementovat plný CRUD pro mazlíčky (localStorage pro MVP), poté QA test plán. Issues vytvořeny.
+Doplnit UI pro připomínky a základní zdravotní záznamy. Poté QA cyklus na MVP profilů. Issues vytvořeny.
