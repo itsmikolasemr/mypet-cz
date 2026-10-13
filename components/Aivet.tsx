@@ -110,7 +110,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
             ))}
             {busy && <div className="flex"><div className="rounded-[22px] rounded-bl-md bg-surface dark:bg-surface-d shadow-card px-4 py-3.5 flex gap-1.5">{[0, 1, 2].map((i) => <span key={i} className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />)}</div></div>}
             {err && <p className="text-center text-sm text-red-600 dark:text-red-400">{err}</p>}
-            <div ref={end} />
+            <div ref={end} className="scroll-mb-48" />
           </div>
           <p className="text-[11px] text-muted text-center mt-4">AIVET je AI a může se mýlit. Nenahrazuje vyšetření veterinářem.</p>
           <form onSubmit={(e) => { e.preventDefault(); send(input); }}
@@ -121,7 +121,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
               className="flex-1 resize-none bg-transparent px-3 py-2.5 outline-none max-h-32 text-base" />
             <button type="submit" aria-label="Odeslat" disabled={!input.trim() || busy || status !== 'ready'} className="press w-11 h-11 shrink-0 rounded-full text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] disabled:opacity-40 flex items-center justify-center"><Icon name="upload" className="w-5 h-5" /></button>
           </form>
-          <div className="h-20" />
+          <div className="h-28" />
         </>
       )}
     </div>
