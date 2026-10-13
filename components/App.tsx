@@ -5,10 +5,12 @@ import { status } from '@/lib/utils';
 import { Icon } from './ui';
 import dynamic from 'next/dynamic';
 import Aivet from './Aivet';
+import { PremiumProvider } from '@/lib/premium';
+import { Expenses, Paywall } from './Premium';
 import { CalendarScreen, Dashboard, Onboarding, PetDetail, PetsList, Reminders, Settings, type Tab } from './screens';
 
 const VetMap = dynamic(() => import('./VetMap'), { ssr: false, loading: () => <div className="h-[46dvh] rounded-[26px] bg-ink/5 animate-pulse mt-20" /> });
-const EXTRA: Tab[] = ['map', 'ai'];
+const EXTRA: Tab[] = ['map', 'ai', 'expenses'];
 
 const TABS: { id: Tab; l: string; i: 'home' | 'paw' | 'bell' | 'heart' | 'cog' }[] = [
   { id: 'home', l: 'Přehled', i: 'home' }, { id: 'pets', l: 'Mazlíčci', i: 'paw' }, { id: 'reminders', l: 'Připomínky', i: 'bell' }, { id: 'calendar', l: 'Kalendář', i: 'heart' }, { id: 'settings', l: 'Nastavení', i: 'cog' },
@@ -41,6 +43,7 @@ function Shell() {
           {tab === 'reminders' && <Reminders />}
           {tab === 'calendar' && <CalendarScreen />}
           {tab === 'settings' && <Settings />}
+          {tab === 'expenses' && <Expenses />}
         </div>
       </main>
       <nav aria-label="Hlavní navigace" className="fixed inset-x-0 z-40 flex justify-center px-5 pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
@@ -65,5 +68,5 @@ function Shell() {
 const CalIcon = () => (<svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /><circle cx="12" cy="15" r="1.4" fill="currentColor" /></svg>);
 
 export default function App() {
-  return <StoreProvider><Shell /></StoreProvider>;
+  return <StoreProvider><PremiumProvider><Shell /><Paywall /></PremiumProvider></StoreProvider>;
 }

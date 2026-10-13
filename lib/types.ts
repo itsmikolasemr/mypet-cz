@@ -43,7 +43,7 @@ export interface Visit {
   cost?: number;
 }
 
-export type Theme = 'system' | 'light' | 'dark';
+export type Theme = 'system' | 'light' | 'dark' | 'glass';
 
 export interface AppData {
   version: 1;

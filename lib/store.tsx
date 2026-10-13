@@ -54,14 +54,19 @@ function useStoreImpl() {
   useEffect(() => {
     const apply = () => {
       const dark = data.settings.theme === 'dark' || (data.settings.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.classList.toggle('dark', dark);
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#141917' : '#F7F5F2');
+      const glass = data.settings.theme === 'glass';
+      const root = document.documentElement;
+      root.classList.toggle('dark', dark);
+      root.classList.toggle('glass', glass);
+      const photo = data.pets.find((p) => p.photo)?.photo;
+      if (glass && photo) root.style.setProperty('--glass-photo', `url("${photo}")`); else root.style.removeProperty('--glass-photo');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#141917' : glass ? '#F3D3C2' : '#F7F5F2');
     };
     apply();
     const m = matchMedia('(prefers-color-scheme: dark)');
     m.addEventListener('change', apply);
     return () => m.removeEventListener('change', apply);
-  }, [data.settings.theme]);
+  }, [data.settings.theme, data.pets]);
 
   const upd = useCallback((f: (d: AppData) => AppData) => setData((d) => f(d)), []);
 

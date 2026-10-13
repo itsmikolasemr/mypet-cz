@@ -10,6 +10,8 @@ import type { Allergy, Medication } from '@/lib/types';
 import { Documents, PetChip, ReminderRow, VisitRow, WeightChart } from './parts';
 import { Companion } from './Companion';
 import { useAmbient } from './ambient';
+import { usePremium } from '@/lib/premium';
+import { AdSlot, PremiumBadge } from './Premium';
 
 const sortRem = (a: Reminder, b: Reminder) => a.dueDate.localeCompare(b.dueDate);
 const greeting = () => { const h = new Date().getHours(); return h < 10 ? 'Dobré ráno' : h < 18 ? 'Dobrý den' : 'Dobrý večer'; };
@@ -20,6 +22,8 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
   const [edit, setEdit] = useState<Reminder | null>(null);
   const [newRem, setNewRem] = useState(false);
   const [newPet, setNewPet] = useState(false);
+  const prem = usePremium();
+  const addPet = () => (prem.canAddPet(data.pets.length) ? setNewPet(true) : prem.openPaywall('pets'));
   const active = data.reminders.filter((r) => !r.completedAt).sort(sortRem);
   const overdue = active.filter((r) => status(r) === 'overdue');
   const upcoming = active.filter((r) => diffDays(r.dueDate, today()) >= 0 && diffDays(r.dueDate, today()) <= 30);
@@ -47,6 +51,11 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
               <div className="w-11 h-11 rounded-2xl bg-primary/10 text-xl flex items-center justify-center mb-3">🗺️</div>
               <p className="font-semibold">Veteriny</p><p className="text-[13px] text-muted">V okolí i nonstop</p>
             </Card>
+            <Card onClick={() => go('expenses')} className="p-4 col-span-2 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">💰</div>
+              <span className="flex-1"><span className="font-semibold flex items-center gap-2">Výdaje {!prem.isPremium && <PremiumBadge small />}</span><span className="block text-[13px] text-muted">Kolik stojí péče po měsících</span></span>
+              <Icon name="chev" className="w-4 h-4 text-muted" />
+            </Card>
           </div>
           <section>
             <div className="flex items-center justify-between mb-2"><h2 className="font-semibold text-lg">Mazlíčci</h2><button className="text-sm font-semibold text-primary" onClick={() => go('pets')}>Vše</button></div>
@@ -58,7 +67,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
                   <p className="text-xs text-muted truncate">{age(p.birthDate) || speciesOf(p.species).name}</p>
                 </button>
               ))}
-              <button onClick={() => setNewPet(true)} className="press shrink-0 w-24 text-center">
+              <button onClick={addPet} className="press shrink-0 w-24 text-center">
                 <div className="w-20 h-20 mx-auto rounded-2xl border-2 border-dashed border-ink/15 dark:border-white/15 flex items-center justify-center text-muted"><Icon name="plus" className="w-6 h-6" /></div>
                 <p className="text-sm text-muted mt-1.5">Přidat</p>
               </button>
@@ -71,6 +80,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             <div className="flex items-center justify-between"><h2 className="font-semibold text-lg">Nadcházející</h2><button className="text-sm font-semibold text-primary" onClick={() => setNewRem(true)}>+ Přidat</button></div>
             {upcoming.length ? upcoming.slice(0, 5).map((r) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} onEdit={() => setEdit(r)} />) : <Card className="p-4 text-sm text-muted text-center">Příštích 30 dní nic. 🎉</Card>}
           </section>
+          <AdSlot id="home" />
           {nextVisit && (
             <section className="space-y-2.5"><h2 className="font-semibold text-lg">Příští návštěva</h2><VisitRow v={nextVisit} pet={pet(nextVisit.petId)} onClick={() => go('calendar')} /></section>
           )}
@@ -85,7 +95,9 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
 /* ---------------- Pets ---------------- */
 export function PetsList({ openPet }: { openPet: (id: string) => void }) {
   const { data } = useStore();
-  const [add, setAdd] = useState(false);
+  const prem = usePremium();
+  const [add, setAddS] = useState(false);
+  const setAdd = (v: boolean) => (!v || prem.canAddPet(data.pets.length) ? setAddS(v) : prem.openPaywall('pets'));
   return (
     <div>
       <PageHeader title="Mazlíčci" fab={<Fab label="Přidat mazlíčka" onClick={() => setAdd(true)} />} />
@@ -107,6 +119,8 @@ export function PetsList({ openPet }: { openPet: (id: string) => void }) {
           );
         })}
       </div>
+      {data.pets.length > 0 && <div className="mt-5"><AdSlot id="pets" /></div>}
+      {!prem.isPremium && data.pets.length >= 3 && <p className="text-center text-[13px] text-muted mt-3">Zdarma až 3 mazlíčci · <button className="font-semibold text-primary" onClick={() => prem.openPaywall('pets')}>neomezeně s Premium</button></p>}
       <PetForm open={add} onClose={() => setAdd(false)} />
     </div>
   );
@@ -150,6 +164,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
           {pet.notes && <div className="col-span-2"><p className="text-muted text-xs">Poznámky</p><p>{pet.notes}</p></div>}
         </Card>
       )}
+      <PassButton pet={pet} />
       {ask && <button onClick={ask} className="press w-full mb-4 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_14px_30px_-14px_rgba(232,85,58,.7)]">
         <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">🩺</span>
         <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-white/85">Poradce zná profil {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
@@ -342,6 +357,7 @@ export function CalendarScreen() {
 /* ---------------- Settings ---------------- */
 export function Settings() {
   const { data, setTheme, setNotify, importData, reset, finishOnboarding } = useStore();
+  const prem = usePremium();
   const ref = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState('');
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 2500); };
@@ -365,8 +381,18 @@ export function Settings() {
     <div>
       <PageHeader title="Nastavení" />
       <div className="space-y-7 stagger">
+        <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Předplatné</h2>
+          <Card className="divide-y divide-ink/5 dark:divide-white/5">
+            {prem.isPremium && prem.ent ? (<>
+              <Row icon="✦" title="Tlapka Premium" sub={`${{ monthly: 'Měsíční', yearly: 'Roční', family: 'Rodinný', trial: 'Zkušební (14 dní)' }[prem.ent.plan]} tarif · platí do ${fmtDate(toISO(new Date(prem.ent.exp)))}`} right={<PremiumBadge />} onClick={() => prem.openPaywall('obecne')} />
+              {prem.ent.test && <Row icon="🧪" title="Vypnout testovací Premium" sub="TEST – vrátí appku do verze zdarma" onClick={() => prem.deactivate()} />}
+            </>) : (
+              <Row icon="✦" title="Získat Premium" sub="Aivet bez omezení, bez reklam, PDF pas, výdaje · 14 dní zdarma" right={<span className="text-sm font-bold text-primary">79 Kč</span>} onClick={() => prem.openPaywall('obecne')} />
+            )}
+          </Card>
+        </section>
         <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Vzhled</h2>
-          <Segmented value={data.settings.theme} onChange={setTheme} options={[{ v: 'system', l: 'Automaticky' }, { v: 'light', l: 'Světlý' }, { v: 'dark', l: 'Tmavý' }]} />
+          <Segmented value={data.settings.theme} onChange={setTheme} options={[{ v: 'system', l: 'Auto' }, { v: 'light', l: 'Světlý' }, { v: 'dark', l: 'Tmavý' }, { v: 'glass', l: 'Sklo' }]} />
         </section>
         <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Upozornění</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
@@ -401,6 +427,25 @@ export function Settings() {
   );
 }
 
+function PassButton({ pet }: { pet: Pet }) {
+  const { data } = useStore();
+  const prem = usePremium();
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    if (!prem.isPremium) return prem.openPaywall('pdf');
+    setBusy(true);
+    try { const { healthPassPdf, saveOrShare } = await import('@/lib/pdf'); const b = await healthPassPdf(data, pet); const where = await saveOrShare(b, `zdravotni-pas-${pet.name.normalize('NFD').replace(/[^\w-]/g, '').toLowerCase() || 'mazlicek'}.pdf`); if (where.startsWith('file:')) alert('Uloženo do Dokumentů: ' + where); }
+    catch (e) { console.error(e); alert('PDF se nepodařilo vytvořit.'); } finally { setBusy(false); }
+  };
+  return (
+    <button onClick={run} disabled={busy} className="press w-full mb-3 flex items-center gap-3 rounded-[22px] p-3.5 text-left bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 disabled:opacity-60">
+      <span className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-xl">📄</span>
+      <span className="flex-1"><b className="flex items-center gap-2">Zdravotní pas (PDF + QR) {!prem.isPremium && <PremiumBadge small />}</b><span className="text-sm text-muted">{busy ? 'Připravuji…' : 'Očkování, léky a alergie pro veterináře'}</span></span>
+      <Icon name="chev" className="w-4 h-4" />
+    </button>
+  );
+}
+
 /* ---------------- Onboarding ---------------- */
 export function Onboarding() {
   const { finishOnboarding } = useStore();
@@ -429,5 +474,5 @@ export function Onboarding() {
   );
 }
 
-export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai';
+export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses';
 export type { Pet };

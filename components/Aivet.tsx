@@ -6,6 +6,7 @@ import { age, speciesOf } from '@/lib/utils';
 import { SEVERITY } from './forms';
 import { Card, Icon, PageHeader } from './ui';
 import { PetChip } from './parts';
+import { usePremium, FREE } from '@/lib/premium';
 
 type Msg = { role: 'user' | 'assistant'; content: string; emergency?: boolean };
 const ENDPOINT = `${API_BASE}/api/aivet`;
@@ -24,6 +25,7 @@ function render(text: string) {
 
 export default function Aivet({ initialPet, openMap }: { initialPet?: string; openMap: () => void }) {
   const { data } = useStore();
+  const prem = usePremium();
   const [petId, setPetId] = useState(initialPet || data.pets[0]?.id || '');
   const [status, setStatus] = useState<'checking' | 'ready' | 'off' | 'unreachable'>('checking');
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -53,8 +55,10 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
     const next: Msg[] = [...msgs, { role: 'user', content: q, emergency: local }];
     setMsgs(next); setInput(''); setBusy(true); setErr('');
     try {
-      const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })), pet: profile() }) });
+      const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', ...prem.headers() }, body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })), pet: profile() }) });
       const j = await r.json().catch(() => ({}));
+      if (typeof j.trialLeft === 'number') prem.setTrialLeft(j.trialLeft);
+      if (r.status === 402) { prem.openPaywall('aivet'); throw new Error(`Vyčerpal jsi ${FREE.aivet} zkušební dotazy. S Premium se můžeš Aiveta ptát bez omezení. V nouzi ti Aivet vždy ukáže pohotovost zdarma.`); }
       if (!r.ok) throw new Error(j.error === 'rate_limited_client' ? `Dosáhl jsi limitu dotazů (${j.window === 'den' ? 'denní' : 'na 10 minut'}). Zkus to za ${Math.max(1, Math.round((j.retryAfter ?? 60) / 60))} min.` : j.error === 'rate_limited' ? 'Aivet je teď přetížený, zkus to za chvíli.' : j.error === 'not_configured' ? 'Aivet ještě není nastavený.' : 'Odpověď se nepodařilo získat.');
       setMsgs([...next, { role: 'assistant', content: j.reply, emergency: !!j.emergency }]);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Chyba spojení.'); }
@@ -67,6 +71,12 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
   return (
     <div>
       <PageHeader title="Aivet" sub="Aivet ti radí" />
+      {!prem.isPremium && (
+        <button onClick={() => prem.openPaywall('aivet')} className="press w-full mb-4 flex items-center justify-between gap-2 rounded-full px-4 py-2.5 text-sm bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">
+          <span>{prem.trialLeft > 0 ? <>Zbývají <b>{prem.trialLeft}</b> z {FREE.aivet} zkušebních dotazů</> : 'Zkušební dotazy vyčerpány'}</span>
+          <span className="font-semibold text-primary">Premium ›</span>
+        </button>
+      )}
       {data.pets.length > 1 && (
         <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 mb-4">
           {data.pets.map((p) => <PetChip key={p.id} pet={p} active={petId === p.id} onClick={() => setPetId(p.id)} />)}

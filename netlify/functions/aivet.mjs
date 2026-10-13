@@ -1,6 +1,7 @@
 // AIVET – server-side proxy to an OpenAI-compatible chat API. The API key never reaches the client.
 // Env: AIVET_API_KEY (required), AIVET_BASE_URL (default Gemini OpenAI-compat), AIVET_MODEL (default gemini-flash-latest)
 import { getStore } from '@netlify/blobs';
+import { verify } from './_entitlement.mjs';
 
 const DEFAULT_BASE = 'https://generativelanguage.googleapis.com/v1beta/openai/';
 const DEFAULT_MODEL = 'gemini-flash-latest';
@@ -10,7 +11,7 @@ const DEFAULT_FALLBACKS = 'gemini-flash-lite-latest,gemini-3.6-flash';
 const CORS = {
   Vary: 'Origin',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Tlapka-Device, X-Tlapka-Entitlement',
 };
 const json = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS, ...extra } });
 const env = (k) => (typeof Netlify !== 'undefined' && Netlify.env?.get(k)) || process.env[k] || '';
@@ -66,6 +67,17 @@ Pravidla:
 - Při jakýchkoli přetrvávajících nebo závažných příznacích vždy doporuč návštěvu veterináře.
 - Na konci připoj krátkou větu, že rada nenahrazuje vyšetření veterinářem.`;
 
+// ---- freemium: free devices get AIVET_FREE_QUESTIONS (3) trial questions; emergencies are never blocked ----
+const EMERG = /(nedýchá|nedycha|dus[ií]|křeč|krec|bezvědom|bezvedom|krvác|krvac|otrav|sežral|sezral|spolkl|pozřel|nafouk|nemůže močit|nemuze mocit|srazil|srazilo|úraz|uraz|úpal|upal|zvrac.*krev|ochrn|kolaps|umír|umir|jed\b|jedovat|potkan|xylitol|čokolád|cokolad)/i;
+const EMERG_REPLY = 'Tohle může být akutní stav. Neodkládej to a hned zavolej nebo jeď na nejbližší veterinární pohotovost – seznam nonstop klinik najdeš na mapě (vždy zdarma). Pokud zvíře nedýchá, je v bezvědomí, má křeče nebo silně krvácí, jednej okamžitě. Tato rada nenahrazuje vyšetření veterinářem.';
+async function trialUse(kind, id, max, consume) {
+  const key = kind + ':' + (await hashIp(id || 'unknown'));
+  let store = null; try { store = getStore({ name: 'aivet-trial', consistency: 'strong' }); } catch {}
+  let n = 0; try { n = store ? Number((await store.get(key)) || 0) : (mem.get(key) || 0); } catch { n = mem.get(key) || 0; }
+  if (consume && n < max) { n++; try { if (store) await store.set(key, String(n)); else mem.set(key, n); } catch { mem.set(key, n); } }
+  return n;
+}
+
 function profileText(p) {
   if (!p || typeof p !== 'object') return 'Profil zvířete není k dispozici.';
   const lines = [
@@ -104,6 +116,23 @@ export default async (req, context) => {
     .map((m) => ({ role: m.role, content: clip(m.content, 2000) }));
   if (!messages.length || messages[messages.length - 1].role !== 'user') return json({ error: 'no_message' }, 400, cors);
 
+  const deviceId = clip(req.headers.get('x-tlapka-device'), 64);
+  const ent = await verify(req.headers.get('x-tlapka-entitlement'), deviceId);
+  const FREE = Number(env('AIVET_FREE_QUESTIONS')) || 3;
+  let trialLeft = null;
+  if (!ent) {
+    if (!/^[a-z0-9-]{16,64}$/i.test(deviceId)) return json({ error: 'no_device' }, 400, cors);
+    const used = await trialUse('dev', deviceId, FREE, false);
+    const ipUsed = await trialUse('ip', ip, FREE * 3, false); // stops trivial device-id resets
+    if (used >= FREE || ipUsed >= FREE * 3) {
+      const last = messages[messages.length - 1].content;
+      if (EMERG.test(last)) return json({ reply: EMERG_REPLY, emergency: true, trialLeft: 0, canned: true }, 200, cors);
+      return json({ error: 'premium_required', trialLeft: 0 }, 402, cors);
+    }
+    await trialUse('dev', deviceId, FREE, true); await trialUse('ip', ip, FREE * 3, true);
+    trialLeft = FREE - used - 1;
+  }
+
   const base = (env('AIVET_BASE_URL') || DEFAULT_BASE).replace(/\/+$/, '') + '/';
   const primary = env('AIVET_MODEL') || DEFAULT_MODEL;
   const fallbacks = (env('AIVET_FALLBACK_MODELS') || (env('AIVET_BASE_URL') ? '' : DEFAULT_FALLBACKS)).split(',').map((x) => x.trim()).filter(Boolean);
@@ -132,7 +161,7 @@ export default async (req, context) => {
       const emergency = text.startsWith('[POHOTOVOST]');
       text = text.replace(/\[POHOTOVOST\][^\n]*?(neplatí|není)[^\n]*\n?/gi, '').replace(/\[POHOTOVOST\]\s*/g, '').trim();
       if (!text) { lastStatus = 502; continue; }
-      return json({ reply: text, emergency }, 200, { ...cors, 'X-RateLimit-Remaining': String(rl.remaining) });
+      return json({ reply: text, emergency, trialLeft, premium: !!ent }, 200, { ...cors, 'X-RateLimit-Remaining': String(rl.remaining) });
     } catch (e) {
       console.error('AIVET fetch failed', model, e?.message);
       lastStatus = 504;
