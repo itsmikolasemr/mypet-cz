@@ -27,7 +27,7 @@ function Shell() {
   const overdue = data.reminders.filter((r) => status(r) === 'overdue').length;
   return (
     <div className="min-h-[100dvh]">
-      <main className="max-w-md mx-auto px-4 pt-[calc(env(safe-area-inset-top)+12px)] pb-[calc(env(safe-area-inset-bottom)+96px)]">
+      <main className="max-w-md mx-auto px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-[calc(env(safe-area-inset-bottom)+132px)]">
         <div key={tab + (petId ?? '')} className="animate-screen">
           {tab === 'home' && <Dashboard go={(t) => nav(t)} openPet={(id) => nav('pets', id)} />}
           {tab === 'pets' && (petId ? <PetDetail id={petId} back={() => history.length > 1 ? history.back() : nav('pets')} /> : <PetsList openPet={(id) => nav('pets', id)} />)}
@@ -36,15 +36,17 @@ function Shell() {
           {tab === 'settings' && <Settings />}
         </div>
       </main>
-      <nav className="fixed bottom-0 inset-x-0 z-40 bg-surface/85 dark:bg-surface-d/85 backdrop-blur-xl border-t border-ink/[0.06] dark:border-white/[0.07]" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="max-w-md mx-auto grid grid-cols-5">
+      <nav aria-label="Hlavní navigace" className="fixed inset-x-0 z-40 flex justify-center px-5 pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
+        <div className="pointer-events-auto relative w-full max-w-[360px] grid grid-cols-5 p-1.5 rounded-full bg-surface/70 dark:bg-[#2a201b]/70 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-ink/[0.06] dark:ring-white/10 shadow-float dark:shadow-float-d">
+          <span aria-hidden className="absolute top-1.5 bottom-1.5 left-1.5 rounded-full bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_6px_16px_-4px_rgba(232,85,58,.55)] transition-transform duration-500 ease-spring"
+            style={{ width: 'calc((100% - 12px) / 5)', transform: `translateX(${TABS.findIndex((t) => t.id === tab) * 100}%)` }} />
           {TABS.map((t) => {
             const a = tab === t.id;
             return (
-              <button key={t.id} onClick={() => nav(t.id)} aria-current={a ? 'page' : undefined} className={`relative flex flex-col items-center gap-0.5 pt-2.5 pb-2 text-[11px] font-semibold transition ${a ? 'text-primary' : 'text-muted'}`}>
-                <span className={`transition-transform ${a ? 'scale-110' : ''}`}>{t.id === 'calendar' ? <CalIcon /> : <Icon name={t.i} fill={a && t.i !== 'cog'} className="w-6 h-6" />}</span>
-                {t.l}
-                {t.id === 'reminders' && overdue > 0 && <span className="absolute top-1.5 left-1/2 ml-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">{overdue}</span>}
+              <button key={t.id} onClick={() => nav(t.id)} aria-label={t.l} title={t.l} aria-current={a ? 'page' : undefined}
+                className={`relative z-10 h-12 flex items-center justify-center rounded-full transition-colors duration-300 ${a ? 'text-white' : 'text-muted hover:text-ink dark:hover:text-white'}`}>
+                <span className={`transition-transform duration-300 ease-spring ${a ? 'scale-110 -translate-y-px' : 'scale-100'}`}>{t.id === 'calendar' ? <CalIcon /> : <Icon name={t.i} fill={a && t.i !== 'cog'} className="w-6 h-6" />}</span>
+                {t.id === 'reminders' && overdue > 0 && <span className="absolute top-1.5 right-2.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-surface dark:ring-surface-d">{overdue}</span>}
               </button>
             );
           })}

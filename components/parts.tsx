@@ -12,7 +12,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true }: { r: Reminder; p
   const t = typeOf(r.type);
   const [pop, setPop] = useState(false);
   return (
-    <Card className={`p-3.5 flex items-center gap-3 ${s === 'done' ? 'opacity-60' : ''}`}>
+    <Card className={`p-4 flex items-center gap-3.5 ${s === 'done' ? 'opacity-60' : ''}`}>
       <button onClick={onEdit} className="flex items-center gap-3 flex-1 min-w-0 text-left">
         <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${s === 'overdue' ? 'bg-red-100 dark:bg-red-500/15' : s === 'soon' ? 'bg-amber-100 dark:bg-amber-500/15' : 'bg-primary/10'}`}>{t.emoji}</div>
         <div className="min-w-0 flex-1">
@@ -37,7 +37,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true }: { r: Reminder; p
 
 export function VisitRow({ v, pet, onClick }: { v: Visit; pet?: Pet; onClick: () => void }) {
   return (
-    <Card onClick={onClick} className="p-3.5 flex gap-3 items-start">
+    <Card onClick={onClick} className="p-4 flex gap-3.5 items-start">
       <div className="w-12 shrink-0 text-center rounded-xl bg-secondary/20 py-1.5">
         <div className="text-lg font-bold leading-none">{Number(v.date.slice(8))}</div>
         <div className="text-[11px] uppercase text-muted">{new Date(v.date).toLocaleDateString('cs-CZ', { month: 'short' })}</div>

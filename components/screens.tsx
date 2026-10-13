@@ -28,8 +28,8 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
       {!data.pets.length ? (
         <Empty emoji="🐾" title="Zatím tu nikdo není" text="Přidej svého prvního mazlíčka a Tlapka ti pohlídá odčervení, očkování i veterinu." action={<Button onClick={() => setNewPet(true)}><Icon name="plus" /> Přidat mazlíčka</Button>} />
       ) : (
-        <div className="space-y-6">
-          <div className="rounded-3xl p-5 text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-lg shadow-primary/25 relative overflow-hidden">
+        <div className="space-y-8 stagger">
+          <div className="rounded-[28px] p-6 text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_18px_40px_-14px_rgba(232,85,58,.6),0_6px_14px_-6px_rgba(232,85,58,.35)] relative overflow-hidden">
             <Icon name="paw" fill className="absolute -right-6 -bottom-6 w-36 h-36 text-white/15" />
             <p className="text-white/85 text-sm font-medium">Tento měsíc</p>
             <p className="text-3xl font-bold mt-1">{upcoming.length} {upcoming.length === 1 ? 'úkol' : upcoming.length >= 2 && upcoming.length <= 4 ? 'úkoly' : 'úkolů'}</p>
@@ -37,10 +37,10 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
           </div>
           <section>
             <div className="flex items-center justify-between mb-2"><h2 className="font-semibold text-lg">Mazlíčci</h2><button className="text-sm font-semibold text-primary" onClick={() => go('pets')}>Vše</button></div>
-            <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1">
+            <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 pt-1 pb-3">
               {data.pets.map((p) => (
                 <button key={p.id} onClick={() => openPet(p.id)} className="press shrink-0 w-24 text-center">
-                  <Avatar pet={p} size="w-20 h-20 mx-auto" text="text-4xl" />
+                  <Avatar pet={p} size="w-20 h-20 mx-auto shadow-card dark:shadow-card-d" text="text-4xl" />
                   <p className="font-semibold mt-1.5 truncate">{p.name}</p>
                   <p className="text-xs text-muted truncate">{age(p.birthDate) || speciesOf(p.species).name}</p>
                 </button>
@@ -75,9 +75,9 @@ export function PetsList({ openPet }: { openPet: (id: string) => void }) {
   const [add, setAdd] = useState(false);
   return (
     <div>
-      <PageHeader title="Mazlíčci" action={<Fab label="Přidat mazlíčka" onClick={() => setAdd(true)} />} />
+      <PageHeader title="Mazlíčci" fab={<Fab label="Přidat mazlíčka" onClick={() => setAdd(true)} />} />
       {!data.pets.length && <Empty emoji="🐶" title="Žádní mazlíčci" text="Vytvoř profil s fotkou, plemenem a váhou." action={<Button onClick={() => setAdd(true)}>Přidat mazlíčka</Button>} />}
-      <div className="space-y-3">
+      <div className="space-y-3.5 stagger">
         {data.pets.map((p) => {
           const next = data.reminders.filter((r) => r.petId === p.id && !r.completedAt).sort(sortRem)[0];
           const w = p.weights[p.weights.length - 1];
@@ -113,12 +113,12 @@ export function PetDetail({ id, back }: { id: string; back: () => void }) {
   const info: [string, string][] = ([['Druh', speciesOf(pet.species).name], ['Plemeno', pet.breed], ['Narozen(a)', pet.birthDate && `${fmtDate(pet.birthDate)} (${age(pet.birthDate)})`], ['Pohlaví', pet.sex === 'samec' ? 'Samec' : pet.sex === 'samice' ? 'Samice' : ''], ['Barva', pet.color], ['Čip', pet.microchip]] as [string, string][]).filter(([, v]) => v);
   return (
     <div>
-      <div className="flex items-center justify-between pt-1 pb-3">
-        <button onClick={back} className="press -ml-2 flex items-center gap-1 text-primary font-semibold px-2 py-2"><Icon name="back" /> Zpět</button>
-        <button onClick={() => setEdit(true)} className="press flex items-center gap-1.5 text-primary font-semibold px-2 py-2"><Icon name="edit" className="w-4 h-4" /> Upravit</button>
+      <div className="sticky z-30 flex items-center justify-between mb-4 -mx-1 px-1.5 py-1.5 rounded-full bg-surface/70 dark:bg-surface-d/70 backdrop-blur-2xl ring-1 ring-ink/5 dark:ring-white/10 shadow-card dark:shadow-card-d" style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}>
+        <button onClick={back} className="press flex items-center gap-1 text-primary font-semibold pl-2 pr-3 py-1.5 rounded-full"><Icon name="back" /> Zpět</button>
+        <button onClick={() => setEdit(true)} className="press flex items-center gap-1.5 text-primary font-semibold px-3 py-1.5 rounded-full"><Icon name="edit" className="w-4 h-4" /> Upravit</button>
       </div>
       <div className="flex items-center gap-4 mb-4">
-        <Avatar pet={pet} size="w-24 h-24" text="text-5xl" />
+        <Avatar pet={pet} size="w-24 h-24 shadow-float dark:shadow-float-d" text="text-5xl" />
         <div className="min-w-0">
           <h1 className="text-[28px] font-bold leading-tight">{pet.name}</h1>
           <p className="text-muted">{[pet.breed || speciesOf(pet.species).name, age(pet.birthDate)].filter(Boolean).join(' · ')}</p>
@@ -131,7 +131,7 @@ export function PetDetail({ id, back }: { id: string; back: () => void }) {
         </Card>
       )}
       <Segmented value={tab} onChange={setTab} options={[{ v: 'pece', l: 'Péče' }, { v: 'zdravi', l: 'Zdraví' }, { v: 'vaha', l: 'Váha' }, { v: 'doklady', l: 'Doklady' }]} />
-      <div className="mt-4 space-y-2.5 animate-screen" key={tab}>
+      <div className="mt-5 space-y-3 stagger" key={tab}>
         {tab === 'pece' && (<>
           <Button variant="soft" className="w-full" onClick={() => setRem('new')}><Icon name="plus" /> Nová připomínka</Button>
           {!rems.length && <p className="text-sm text-muted text-center py-4">Žádné připomínky. Přidej třeba odčervení Milbemaxem.</p>}
@@ -185,7 +185,7 @@ export function Reminders() {
   ];
   return (
     <div>
-      <PageHeader title="Připomínky" action={data.pets.length ? <Fab label="Nová připomínka" onClick={() => setEdit('new')} /> : undefined} />
+      <PageHeader title="Připomínky" fab={data.pets.length ? <Fab label="Nová připomínka" onClick={() => setEdit('new')} /> : undefined} />
       <Segmented value={filter} onChange={setFilter} options={[{ v: 'aktivni', l: 'Aktivní' }, { v: 'hotove', l: 'Hotové' }]} />
       {data.pets.length > 1 && (
         <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 mt-3">
@@ -197,7 +197,7 @@ export function Reminders() {
         <Empty emoji={filter === 'aktivni' ? '🔔' : '✅'} title={filter === 'aktivni' ? 'Žádné připomínky' : 'Nic dokončeného'} text={filter === 'aktivni' ? 'Nastav odčervení, očkování nebo léky a Tlapka ti včas připomene.' : 'Jednorázové úkoly se po splnění objeví tady.'}
           action={filter === 'aktivni' && data.pets.length ? <Button onClick={() => setEdit('new')}>Přidat připomínku</Button> : undefined} />
       ) : (
-        <div className="space-y-5 mt-4">
+        <div className="space-y-7 mt-5 stagger">
           {groups.filter(([, l]) => l.length).map(([g, l]) => (
             <section key={g} className="space-y-2.5">
               <h2 className={`text-sm font-semibold uppercase tracking-wide ${g === 'Po termínu' ? 'text-red-600 dark:text-red-400' : 'text-muted'}`}>{g}</h2>
@@ -239,7 +239,7 @@ export function CalendarScreen() {
   const mv = month.getMonth();
   return (
     <div>
-      <PageHeader title="Kalendář" action={data.pets.length ? <Fab label="Nová návštěva" onClick={() => setEdit('new')} /> : undefined} />
+      <PageHeader title="Kalendář" fab={data.pets.length ? <Fab label="Nová návštěva" onClick={() => setEdit('new')} /> : undefined} />
       <Segmented value={mode} onChange={setMode} options={[{ v: 'mesic', l: 'Měsíc' }, { v: 'seznam', l: 'Návštěvy' }]} />
       {mode === 'mesic' ? (
         <div className="animate-screen">
@@ -309,7 +309,7 @@ export function Settings() {
   return (
     <div>
       <PageHeader title="Nastavení" />
-      <div className="space-y-5">
+      <div className="space-y-7 stagger">
         <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Vzhled</h2>
           <Segmented value={data.settings.theme} onChange={setTheme} options={[{ v: 'system', l: 'Automaticky' }, { v: 'light', l: 'Světlý' }, { v: 'dark', l: 'Tmavý' }]} />
         </section>
@@ -341,7 +341,7 @@ export function Settings() {
           Verze 1.0 · data zůstávají jen v tomto zařízení
         </div>
       </div>
-      {msg && <div className="fixed left-1/2 -translate-x-1/2 bottom-28 z-50 rounded-full bg-ink text-white dark:bg-white dark:text-ink px-4 py-2 text-sm shadow-lg animate-fade">{msg}</div>}
+      {msg && <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(env(safe-area-inset-bottom)+100px)] z-50 rounded-full bg-ink text-white dark:bg-white dark:text-ink px-4 py-2 text-sm shadow-lg animate-fade">{msg}</div>}
     </div>
   );
 }

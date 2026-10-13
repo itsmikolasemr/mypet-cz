@@ -1,5 +1,6 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { Pet } from '@/lib/types';
 import { speciesOf, type Status } from '@/lib/utils';
 
@@ -52,14 +53,14 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" role="dialog" aria-modal aria-label={title}>
-      <div className="absolute inset-0 bg-black/40 animate-fade" onClick={onClose} />
-      <div className="relative w-full max-w-md max-h-[92dvh] overflow-y-auto rounded-t-3xl bg-surface dark:bg-surface-d shadow-2xl animate-up pb-safe">
+      <div className="absolute inset-0 bg-ink/30 dark:bg-black/60 backdrop-blur-[2px] animate-fade" onClick={onClose} />
+      <div className="relative w-[calc(100%-16px)] max-w-md max-h-[90dvh] overflow-y-auto rounded-[30px] bg-surface/95 dark:bg-surface-d/95 backdrop-blur-xl ring-1 ring-ink/5 dark:ring-white/10 shadow-float dark:shadow-float-d animate-up" style={{ marginBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
         <div className="sticky top-0 z-10 bg-surface/95 dark:bg-surface-d/95 backdrop-blur px-5 pt-3 pb-3 flex items-center justify-between">
           <div className="absolute left-1/2 -translate-x-1/2 top-1.5 h-1 w-10 rounded-full bg-ink/15 dark:bg-white/20" />
           <h2 className="text-lg font-semibold pt-2">{title}</h2>
           <button onClick={onClose} aria-label="Zavřít" className="mt-2 w-9 h-9 rounded-full bg-ink/5 dark:bg-white/10 flex items-center justify-center"><Icon name="x" className="w-4 h-4" /></button>
         </div>
-        <div className="px-5 pb-6">{children}</div>
+        <div className="px-5 pb-5">{children}</div>
       </div>
     </div>
   );
@@ -73,27 +74,27 @@ export function Field({ label, children }: { label: string; children: React.Reac
     </label>
   );
 }
-export const inputCls = 'w-full rounded-xl bg-bg dark:bg-white/5 text-ink dark:text-white border border-ink/10 dark:border-white/10 px-3.5 py-3 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
+export const inputCls = 'w-full rounded-2xl bg-bg dark:bg-white/5 text-ink dark:text-white border border-ink/10 dark:border-white/10 px-3.5 py-3 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition';
 
 export function Button({ children, variant = 'primary', className = '', ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' | 'danger' | 'soft' }) {
   const v = {
-    primary: 'bg-primary text-white shadow-sm shadow-primary/30 active:bg-primary-d',
+    primary: 'bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white shadow-[0_8px_20px_-8px_rgba(232,85,58,.6)]',
     ghost: 'border border-ink/10 dark:border-white/15 text-ink dark:text-white',
     soft: 'bg-primary/10 text-primary dark:text-primary-l',
     danger: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
   }[variant];
-  return <button {...rest} className={`press inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold disabled:opacity-40 ${v} ${className}`}>{children}</button>;
+  return <button {...rest} className={`press inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3.5 font-semibold disabled:opacity-40 ${v} ${className}`}>{children}</button>;
 }
 
 export function Card({ children, className = '', onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
   const C = onClick ? 'button' : 'div';
-  return <C onClick={onClick} className={`block w-full text-left rounded-2xl bg-surface dark:bg-surface-d border border-ink/[0.06] dark:border-white/[0.07] shadow-card ${onClick ? 'press' : ''} ${className}`}>{children}</C>;
+  return <C onClick={onClick} className={`block w-full text-left rounded-[22px] bg-surface dark:bg-surface-d ring-1 ring-ink/[0.04] dark:ring-white/[0.06] shadow-card dark:shadow-card-d transition-[transform,box-shadow] duration-200 ${onClick ? 'lift' : ''} ${className}`}>{children}</C>;
 }
 
 export function Empty({ emoji, title, text, action }: { emoji: string; title: string; text: string; action?: React.ReactNode }) {
   return (
     <div className="text-center py-12 px-6 animate-fade">
-      <div className="mx-auto w-20 h-20 rounded-3xl bg-secondary/20 flex items-center justify-center text-4xl mb-4">{emoji}</div>
+      <div className="mx-auto w-24 h-24 rounded-[30px] bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d flex items-center justify-center text-5xl mb-5 animate-float">{emoji}</div>
       <h3 className="font-semibold text-lg">{title}</h3>
       <p className="text-muted mt-1 text-[15px]">{text}</p>
       {action && <div className="mt-5">{action}</div>}
@@ -112,32 +113,51 @@ export function StatusPill({ s }: { s: Status }) {
 }
 
 export function Segmented<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: { v: T; l: string }[] }) {
+  const i = Math.max(0, options.findIndex((o) => o.v === value));
   return (
-    <div className="flex rounded-xl bg-ink/5 dark:bg-white/10 p-1 gap-1 overflow-x-auto no-scrollbar">
+    <div className="relative grid rounded-full bg-ink/[0.05] dark:bg-white/[0.07] p-1" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
+      <span aria-hidden className="absolute top-1 bottom-1 left-1 rounded-full bg-surface dark:bg-white/[0.14] shadow-card dark:shadow-none transition-transform duration-300 ease-spring" style={{ width: `calc((100% - 8px) / ${options.length})`, transform: `translateX(${i * 100}%)` }} />
       {options.map((o) => (
-        <button key={o.v} onClick={() => onChange(o.v)} className={`flex-1 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition ${value === o.v ? 'bg-surface dark:bg-surface-d shadow-sm text-ink dark:text-white' : 'text-muted'}`}>{o.l}</button>
+        <button key={o.v} onClick={() => onChange(o.v)} className={`relative z-10 whitespace-nowrap rounded-full px-2 py-2 text-sm font-semibold transition-colors ${value === o.v ? 'text-ink dark:text-white' : 'text-muted'}`}>{o.l}</button>
       ))}
     </div>
   );
 }
 
-export function PageHeader({ title, sub, action }: { title: string; sub?: string; action?: React.ReactNode }) {
+export function PageHeader({ title, sub, action, fab }: { title: string; sub?: string; action?: React.ReactNode; fab?: React.ReactNode }) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const f = () => setScrolled(window.scrollY > 12);
+    f(); window.addEventListener('scroll', f, { passive: true });
+    return () => window.removeEventListener('scroll', f);
+  }, []);
   return (
-    <div className="flex items-end justify-between gap-3 pt-2 pb-4">
-      <div>
-        {sub && <p className="text-sm text-muted">{sub}</p>}
-        <h1 className="text-[28px] leading-tight font-bold tracking-tight">{title}</h1>
+    <>
+      <div className="sticky z-30 -mx-2 mb-5" style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}>
+        <div className={`flex items-center justify-between gap-3 rounded-[26px] px-4 transition-all duration-300 ${scrolled ? 'py-2.5 bg-surface/70 dark:bg-surface-d/70 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-ink/5 dark:ring-white/10 shadow-float dark:shadow-float-d' : 'py-2'}`}>
+          <div className="min-w-0">
+            {sub && <p className={`text-sm text-muted first-letter:uppercase transition-all duration-300 ${scrolled ? 'h-0 opacity-0' : 'h-5 opacity-100'} overflow-hidden`}>{sub}</p>}
+            <h1 className={`font-bold tracking-tight truncate transition-all duration-300 ${scrolled ? 'text-lg' : 'text-[30px] leading-tight'}`}>{title}</h1>
+          </div>
+          {action}
+        </div>
       </div>
-      {action}
-    </div>
+      {fab}
+    </>
   );
 }
 
 export function Fab({ onClick, label }: { onClick: () => void; label: string }) {
-  return (
-    <button onClick={onClick} aria-label={label} className="press w-11 h-11 rounded-full bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center">
-      <Icon name="plus" className="w-5 h-5" />
-    </button>
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return createPortal(
+    <button onClick={onClick} aria-label={label}
+      className="fab fixed z-40 right-5 w-14 h-14 rounded-full text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_10px_24px_-6px_rgba(232,85,58,.55),0_4px_10px_rgba(232,85,58,.25)] ring-4 ring-bg/60 dark:ring-bg-d/60 flex items-center justify-center animate-pop"
+      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 96px)' }}>
+      <Icon name="plus" className="w-6 h-6" />
+    </button>,
+    document.body,
   );
 }
 
