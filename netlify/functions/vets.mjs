@@ -10,7 +10,8 @@ export default async (req) => {
   const q = `[out:json][timeout:20];nwr["amenity"="veterinary"](around:${r},${lat.toFixed(2)},${lon.toFixed(2)});out center tags;`;
   for (const m of MIRRORS) {
     try {
-      const res = await fetch(m, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'Tlapka/1.0 (https://mypet-cz.netlify.app)', Accept: 'application/json' }, signal: AbortSignal.timeout(9000) });
+      const res = await fetch(m, { method: 'POST', body: 'data=' + encodeURIComponent(q), // NB: overpass-api.de answers 406 to User-Agents containing a URL, so keep it plain.
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'Tlapka/1.0 vet-map' }, signal: AbortSignal.timeout(m === MIRRORS[0] ? 14000 : 5000) });
       if (!res.ok) { console.error('overpass', m, res.status); continue; }
       const text = await res.text();
       if (!text.startsWith('{')) continue;
