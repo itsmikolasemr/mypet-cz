@@ -55,7 +55,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
     try {
       const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })), pet: profile() }) });
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(j.error === 'rate_limited_client' ? `Dosáhl jsi limitu dotazů (${j.window === 'den' ? 'denní' : 'na 10 minut'}). Zkus to za ${Math.max(1, Math.round((j.retryAfter ?? 60) / 60))} min.` : j.error === 'rate_limited' ? 'AIVET je teď přetížený, zkus to za chvíli.' : j.error === 'not_configured' ? 'AIVET ještě není nastavený.' : 'Odpověď se nepodařilo získat.');
+      if (!r.ok) throw new Error(j.error === 'rate_limited_client' ? `Dosáhl jsi limitu dotazů (${j.window === 'den' ? 'denní' : 'na 10 minut'}). Zkus to za ${Math.max(1, Math.round((j.retryAfter ?? 60) / 60))} min.` : j.error === 'rate_limited' ? 'Aivet je teď přetížený, zkus to za chvíli.' : j.error === 'not_configured' ? 'Aivet ještě není nastavený.' : 'Odpověď se nepodařilo získat.');
       setMsgs([...next, { role: 'assistant', content: j.reply, emergency: !!j.emergency }]);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Chyba spojení.'); }
     finally { setBusy(false); }
@@ -66,7 +66,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
 
   return (
     <div>
-      <PageHeader title="AIVET" sub="Virtuální poradce" />
+      <PageHeader title="Aivet" sub="Aivet ti radí" />
       {data.pets.length > 1 && (
         <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 mb-4">
           {data.pets.map((p) => <PetChip key={p.id} pet={p} active={petId === p.id} onClick={() => setPetId(p.id)} />)}
@@ -82,7 +82,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
       {status === 'off' || status === 'unreachable' ? (
         <Card className="p-6 text-center">
           <div className="mx-auto w-20 h-20 rounded-[26px] bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-4xl flex items-center justify-center shadow-float mb-4 animate-float">🩺</div>
-          <h2 className="text-lg font-bold">AIVET se teprve chystá</h2>
+          <h2 className="text-lg font-bold">Aivet se teprve chystá</h2>
           <p className="text-muted mt-1.5 text-[15px]">{status === 'off' ? 'Poradce zatím není zapnutý – brzy tu bude. Do té doby se při potížích obrať na svého veterináře.' : 'Poradce je teď nedostupný (offline nebo lokální verze). Zkus to později.'}</p>
           <button onClick={openMap} className="press mt-5 w-full rounded-2xl py-3 font-semibold bg-primary/10 text-primary">🗺️ Veteriny v okolí</button>
         </Card>
@@ -112,12 +112,12 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
             {err && <p className="text-center text-sm text-red-600 dark:text-red-400">{err}</p>}
             <div ref={end} className="scroll-mb-48" />
           </div>
-          <p className="text-[11px] text-muted text-center mt-4">AIVET je AI a může se mýlit. Nenahrazuje vyšetření veterinářem.</p>
+          <p className="text-[11px] text-muted text-center mt-4">Aivet je AI a může se mýlit. Nenahrazuje vyšetření veterinářem.</p>
           <form onSubmit={(e) => { e.preventDefault(); send(input); }}
             className="fixed z-40 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[420px] flex items-end gap-2 p-1.5 rounded-[26px] bg-surface/80 dark:bg-[#2a201b]/80 backdrop-blur-2xl ring-1 ring-ink/[0.06] dark:ring-white/10 shadow-float dark:shadow-float-d"
             style={{ bottom: 'calc(env(safe-area-inset-bottom) + 86px)' }}>
             <textarea rows={1} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input); } }}
-              placeholder={status === 'checking' ? 'Připojuji…' : 'Napiš dotaz…'} disabled={status !== 'ready'} aria-label="Dotaz pro AIVET"
+              placeholder={status === 'checking' ? 'Připojuji…' : 'Napiš Aivetovi…'} disabled={status !== 'ready'} aria-label="Dotaz pro Aiveta"
               className="flex-1 resize-none bg-transparent px-3 py-2.5 outline-none max-h-32 text-base" />
             <button type="submit" aria-label="Odeslat" disabled={!input.trim() || busy || status !== 'ready'} className="press w-11 h-11 shrink-0 rounded-full text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] disabled:opacity-40 flex items-center justify-center"><Icon name="upload" className="w-5 h-5" /></button>
           </form>

@@ -6,7 +6,7 @@
 html.dark { color-scheme: dark; }
 html, body { background: radial-gradient(120% 60% at 50% -10%, #FFE9D9 0%, #FFF8F0 55%) fixed, #FFF8F0; color: #3B2A24; -webkit-tap-highlight-color: transparent; }
 html.dark, html.dark body { background: radial-gradient(120% 60% at 50% -10%, #2E1D16 0%, #17110E 55%) fixed, #17110E; color: #F5EAE2; }
-html.dark .text-muted { color: #B39D92; }
+html.dark .text-muted { color: #CDB9AE; }
 body { overscroll-behavior-y: none; -webkit-font-smoothing: antialiased; }
 input, select, textarea { font-size: 16px; }
 input[type='date'] { min-height: 50px; -webkit-appearance: none; }

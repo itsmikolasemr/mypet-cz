@@ -7,7 +7,7 @@ import { API_BASE } from '@/lib/api';
 
 type Vet = { id: string; lat: number; lon: number; name: string; tags: Record<string, string>; dist: number; nonstop: boolean };
 const BRNO = { lat: 49.1951, lon: 16.6068 };
-const ENDPOINTS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+const ENDPOINTS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
 
 const km = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
   const R = 6371, dLat = ((b.lat - a.lat) * Math.PI) / 180, dLon = ((b.lon - a.lon) * Math.PI) / 180;
@@ -26,8 +26,8 @@ async function fetchVets(c: { lat: number; lon: number }, radius: number): Promi
   let lastErr: unknown;
   type Raw = { elements: { id: number; type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[] };
   const sources: (() => Promise<Response>)[] = [
-    () => fetch(`${API_BASE}/api/vets?lat=${c.lat.toFixed(2)}&lon=${c.lon.toFixed(2)}&r=${radius}`, { signal: AbortSignal.timeout(20000) }),
-    ...ENDPOINTS.map((ep) => () => fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: AbortSignal.timeout(15000) })),
+    ...ENDPOINTS.map((ep) => () => fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: AbortSignal.timeout(12000) })),
+    () => fetch(`${API_BASE}/api/vets?lat=${c.lat.toFixed(2)}&lon=${c.lon.toFixed(2)}&r=${radius}`, { signal: AbortSignal.timeout(10000) }),
   ];
   for (const src of sources) {
     try {
@@ -45,6 +45,15 @@ async function fetchVets(c: { lat: number; lon: number }, radius: number): Promi
         .sort((a, b) => a.dist - b.dist);
     } catch (e) { lastErr = e; }
   }
+  // Ultimate fallback: bundled snapshot of all Czech clinics (OSM, ODbL)
+  try {
+    const r = await fetch('/vets-cz.json');
+    const all = (await r.json()) as [number, number, Record<string, string>, string][];
+    return all
+      .map(([lat, lon, tags, id]) => ({ id, lat, lon, tags, name: tags.name ?? tags.operator ?? 'Veterinární ordinace', dist: km(c, { lat, lon }), nonstop: is247(tags) }))
+      .filter((v) => v.dist * 1000 <= radius)
+      .sort((a, b) => a.dist - b.dist);
+  } catch (e) { lastErr = e; }
   throw lastErr;
 }
 

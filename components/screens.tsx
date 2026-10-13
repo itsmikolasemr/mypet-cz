@@ -41,7 +41,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
           <div className="grid grid-cols-2 gap-3">
             <Card onClick={() => go('ai')} className="p-4">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white text-xl flex items-center justify-center shadow-[0_8px_18px_-8px_rgba(232,85,58,.7)] mb-3">🩺</div>
-              <p className="font-semibold">AIVET</p><p className="text-[13px] text-muted">Poradí, co dělat</p>
+              <p className="font-semibold">Aivet</p><p className="text-[13px] text-muted">Poradí, co dělat</p>
             </Card>
             <Card onClick={() => go('map')} className="p-4">
               <div className="w-11 h-11 rounded-2xl bg-primary/10 text-xl flex items-center justify-center mb-3">🗺️</div>
@@ -152,7 +152,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
       )}
       {ask && <button onClick={ask} className="press w-full mb-4 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_14px_30px_-14px_rgba(232,85,58,.7)]">
         <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">🩺</span>
-        <span className="flex-1"><b className="block">Zeptat se AIVET</b><span className="text-sm text-white/85">Poradce zná profil {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
+        <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-white/85">Poradce zná profil {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
       </button>}
       <Segmented value={tab} onChange={setTab} options={[{ v: 'pece', l: 'Péče' }, { v: 'zdravi', l: 'Zdraví' }, { v: 'vaha', l: 'Váha' }, { v: 'doklady', l: 'Doklady' }]} />
       <div className="mt-5 space-y-3 stagger" key={tab}>
