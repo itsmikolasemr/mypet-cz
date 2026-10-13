@@ -2,7 +2,7 @@
 import { useMemo, useRef, useState } from 'react';
 import type { Pet, Reminder, Visit } from '@/lib/types';
 import { useStore, validate } from '@/lib/store';
-import { age, diffDays, fmtDate, parse, speciesOf, status, toISO, today } from '@/lib/utils';
+import { age, diffDays, fmtDate, parse, plural, speciesOf, status, toISO, today } from '@/lib/utils';
 import { notifySupported, requestPermission, showNow } from '@/lib/notify';
 import { Avatar, Button, Card, Empty, Fab, Icon, Logo, PageHeader, Segmented } from './ui';
 import { AllergyForm, MedForm, PetForm, ReminderForm, SEVERITY, VisitForm, WeightForm } from './forms';
@@ -142,7 +142,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
   const visits = data.visits.filter((v) => v.petId === id).sort((a, b) => b.date.localeCompare(a.date));
   const meds = data.meds.filter((m) => m.petId === id).sort((a, b) => Number(!!a.end && a.end < today()) - Number(!!b.end && b.end < today()));
   const allergies = data.allergies.filter((a) => a.petId === id);
-  const info: [string, string][] = ([['Druh', speciesOf(pet.species).name], ['Plemeno', pet.breed], ['Narozen(a)', pet.birthDate && `${fmtDate(pet.birthDate)} (${age(pet.birthDate)})`], ['Pohlaví', pet.sex === 'samec' ? 'Samec' : pet.sex === 'samice' ? 'Samice' : ''], ['Barva', pet.color], ['Čip', pet.microchip]] as [string, string][]).filter(([, v]) => v);
+  const info: [string, string][] = ([['Druh', speciesOf(pet.species).name], ['Plemeno', pet.breed], [pet.sex === 'samice' ? 'Narozena' : pet.sex === 'samec' ? 'Narozen' : 'Datum narození', pet.birthDate && `${fmtDate(pet.birthDate)} (${age(pet.birthDate)})`], ['Pohlaví', pet.sex === 'samec' ? 'Samec' : pet.sex === 'samice' ? 'Samice' : ''], ['Barva', pet.color], ['Čip', pet.microchip]] as [string, string][]).filter(([, v]) => v);
   return (
     <div>
       <div className="sticky z-30 flex items-center justify-between mb-4 -mx-1 px-1.5 py-1.5 rounded-full bg-surface/70 dark:bg-surface-d/70 backdrop-blur-2xl ring-1 ring-ink/5 dark:ring-white/10 shadow-card dark:shadow-card-d" style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}>
@@ -167,7 +167,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
       <PassButton pet={pet} />
       {ask && <button onClick={ask} className="press w-full mb-4 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_14px_30px_-14px_rgba(232,85,58,.7)]">
         <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">🩺</span>
-        <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-white/85">Poradce zná profil {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
+        <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-white/85">Zná profil, léky i alergie – {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
       </button>}
       <Segmented value={tab} onChange={setTab} options={[{ v: 'pece', l: 'Péče' }, { v: 'zdravi', l: 'Zdraví' }, { v: 'vaha', l: 'Váha' }, { v: 'doklady', l: 'Doklady' }]} />
       <div className="mt-5 space-y-3 stagger" key={tab}>
@@ -396,7 +396,7 @@ export function Settings() {
         </section>
         <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Upozornění</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
-            <Row icon="🔔" title="Připomínat termíny" sub={notifySupported() ? 'Upozornění v den termínu' : 'Tento prohlížeč upozornění nepodporuje'} onClick={toggleNotify}
+            <Row icon="🔔" title="Připomínat termíny" sub={notifySupported() ? 'Upozornění v den termínu' : /iP(hone|ad|od)/.test(navigator.userAgent) ? 'Na iPhonu: Sdílet → Přidat na plochu, pak upozornění zapneš (iOS 16.4+)' : 'Tento prohlížeč upozornění nepodporuje'} onClick={toggleNotify}
               right={<span className={`w-12 h-7 rounded-full p-0.5 transition ${data.settings.notify ? 'bg-primary' : 'bg-ink/15 dark:bg-white/20'}`}><span className={`block w-6 h-6 rounded-full bg-white shadow transition ${data.settings.notify ? 'translate-x-5' : ''}`} /></span>} />
             {data.settings.notify && (<>
               <div className="flex items-center gap-3 px-4 py-3"><span className="text-xl w-7 text-center">⏰</span><span className="flex-1 font-medium">Čas upozornění</span>
@@ -410,11 +410,11 @@ export function Settings() {
             <Row icon="📤" title="Exportovat zálohu" sub="JSON se všemi záznamy (bez souborů dokumentů)" onClick={exportJson} />
             <Row icon="📥" title="Importovat zálohu" sub="Nahradí aktuální data" onClick={() => ref.current?.click()} />
             <Row icon="🐕" title="Načíst ukázková data" onClick={() => { if (confirm('Nahradit data ukázkou?')) finishOnboarding(true); }} />
-            <Row icon="🗑️" title="Smazat všechna data" onClick={() => { if (confirm('Opravdu smazat všechna data? Nelze vrátit.')) reset(); }} />
+            <Row icon="🗑️" title="Smazat všechna data" onClick={() => { if (confirm('Opravdu smazat všechna data mazlíčků? Nelze vrátit. Předplatné Premium a počet zkušebních dotazů Aivetovi zůstávají zachovány (jsou vázané na zařízení).')) reset(); }} />
           </Card>
           <input ref={ref} type="file" accept="application/json,.json" hidden onChange={async (e) => {
             const f = e.target.files?.[0]; e.target.value = ''; if (!f) return;
-            try { const v = validate(JSON.parse(await f.text())); if (!v) throw 0; if (confirm(`Importovat ${v.pets.length} mazlíčků a ${v.reminders.length} připomínek?`)) { importData(v); flash('Záloha obnovena'); } } catch { flash('Neplatný soubor zálohy'); }
+            try { const v = validate(JSON.parse(await f.text())); if (!v) throw 0; if (confirm(`Importovat ${v.pets.length} ${plural(v.pets.length, 'mazlíčka', 'mazlíčky', 'mazlíčků')} a ${v.reminders.length} ${plural(v.reminders.length, 'připomínku', 'připomínky', 'připomínek')}?${v.docs.length ? ' Soubory dokumentů nejsou v záloze – záznamy dokumentů se nenahrají.' : ''}`)) { importData(v); flash('Záloha obnovena'); } } catch { flash('Neplatný soubor zálohy'); }
           }} />
         </section>
         <div className="text-center pt-4 pb-2 text-muted text-sm">
@@ -422,7 +422,7 @@ export function Settings() {
           Verze 1.0 · data zůstávají jen v tomto zařízení
         </div>
       </div>
-      {msg && <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(env(safe-area-inset-bottom)+100px)] z-50 rounded-full bg-ink text-white dark:bg-white dark:text-ink px-4 py-2 text-sm shadow-lg animate-fade">{msg}</div>}
+      {msg && <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(env(safe-area-inset-bottom)+var(--badge,0px)+100px)] z-50 rounded-full bg-ink text-white dark:bg-white dark:text-ink px-4 py-2 text-sm shadow-lg animate-fade">{msg}</div>}
     </div>
   );
 }
@@ -457,7 +457,7 @@ export function Onboarding() {
   ];
   const s = slides[step];
   return (
-    <div className="min-h-[100dvh] flex flex-col px-6 pt-safe pb-safe bg-gradient-to-b from-[#FFE6D3] to-bg dark:from-[#3a2219] dark:to-bg-d">
+    <div style={{ paddingBottom: "calc(max(env(safe-area-inset-bottom), 16px) + var(--badge, 0px))" }} className="min-h-[100dvh] flex flex-col px-6 pt-safe bg-gradient-to-b from-[#FFE6D3] to-bg dark:from-[#3a2219] dark:to-bg-d">
       <div className="pt-10"><Logo className="h-10 text-ink dark:text-white" /></div>
       <div className="flex-1 flex flex-col justify-center animate-screen" key={step}>
         <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-6xl flex items-center justify-center shadow-xl shadow-primary/30 mb-8">{s.e}</div>

@@ -21,10 +21,21 @@ const is247 = (t: Record<string, string>) => {
 const address = (t: Record<string, string>) =>
   [[t['addr:street'] ?? t['addr:place'], t['addr:housenumber'] ?? t['addr:conscriptionnumber']].filter(Boolean).join(' '), [t['addr:postcode'], t['addr:city']].filter(Boolean).join(' ')].filter(Boolean).join(', ');
 
-async function fetchVets(c: { lat: number; lon: number }, radius: number): Promise<Vet[]> {
+type Raw = { elements: { id: number; type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[] };
+const toVet = (c: { lat: number; lon: number }, id: string, lat: number, lon: number, tags: Record<string, string>): Vet => ({ id, lat, lon, tags, name: tags.name ?? tags.operator ?? 'Veterinární ordinace', dist: km(c, { lat, lon }), nonstop: is247(tags) });
+
+let bundledP: Promise<[number, number, Record<string, string>, string][]> | null = null;
+/** Bundled snapshot of all Czech clinics (OSM + a few verified 24/7 corrections). Instant & offline. */
+export async function bundledVets(c: { lat: number; lon: number }): Promise<Vet[]> {
+  bundledP ??= fetch('/vets-cz.json').then((r) => r.json());
+  const all = await bundledP;
+  return all.map(([lat, lon, tags, id]) => toVet(c, id, lat, lon, tags)).sort((a, b) => a.dist - b.dist);
+}
+
+/** Live refresh: browser → Overpass (de, kumi), then optional /api/vets proxy. */
+async function liveVets(c: { lat: number; lon: number }, radius: number): Promise<Vet[]> {
   const q = `[out:json][timeout:25];nwr["amenity"="veterinary"](around:${radius},${c.lat},${c.lon});out center tags;`;
   let lastErr: unknown;
-  type Raw = { elements: { id: number; type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[] };
   const sources: (() => Promise<Response>)[] = [
     ...ENDPOINTS.map((ep) => () => fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: AbortSignal.timeout(12000) })),
     () => fetch(`${API_BASE}/api/vets?lat=${c.lat.toFixed(2)}&lon=${c.lon.toFixed(2)}&r=${radius}`, { signal: AbortSignal.timeout(10000) }),
@@ -35,25 +46,9 @@ async function fetchVets(c: { lat: number; lon: number }, radius: number): Promi
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const j = (await r.json()) as Raw;
       if (!Array.isArray(j.elements)) throw new Error('bad');
-      return j.elements
-        .map((e) => {
-          const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon, tags = e.tags ?? {};
-          if (lat == null || lon == null) return null;
-          return { id: `${e.type}/${e.id}`, lat, lon, tags, name: tags.name ?? tags.operator ?? 'Veterinární ordinace', dist: km(c, { lat, lon }), nonstop: is247(tags) };
-        })
-        .filter((v): v is Vet => !!v)
-        .sort((a, b) => a.dist - b.dist);
+      return j.elements.flatMap((e) => { const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon; return lat == null || lon == null ? [] : [toVet(c, `${e.type}/${e.id}`, lat, lon, e.tags ?? {})]; });
     } catch (e) { lastErr = e; }
   }
-  // Ultimate fallback: bundled snapshot of all Czech clinics (OSM, ODbL)
-  try {
-    const r = await fetch('/vets-cz.json');
-    const all = (await r.json()) as [number, number, Record<string, string>, string][];
-    return all
-      .map(([lat, lon, tags, id]) => ({ id, lat, lon, tags, name: tags.name ?? tags.operator ?? 'Veterinární ordinace', dist: km(c, { lat, lon }), nonstop: is247(tags) }))
-      .filter((v) => v.dist * 1000 <= radius)
-      .sort((a, b) => a.dist - b.dist);
-  } catch (e) { lastErr = e; }
   throw lastErr;
 }
 
@@ -68,7 +63,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   const [nonstop, setNonstop] = useState(initialNonstop);
   const [sel, setSel] = useState<Vet | null>(null);
   const [stale, setStale] = useState(false);
-  const shown = useMemo(() => (nonstop ? vets.filter((v) => v.nonstop) : vets), [vets, nonstop]);
+
 
   useEffect(() => {
     if (!navigator.geolocation) { setLocNote('Poloha není dostupná – zobrazuji Brno.'); setCenter(BRNO); return; }
@@ -79,21 +74,28 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
     );
   }, []);
 
+  const [allNs, setAllNs] = useState<Vet[]>([]);
+  const shown = useMemo(() => {
+    if (!nonstop) return vets;
+    const m = new Map([...allNs, ...vets.filter((v) => v.nonstop)].map((v) => [v.id, v]));
+    return [...m.values()].sort((a, b) => a.dist - b.dist).slice(0, 15);
+  }, [vets, nonstop, allNs]);
   const load = useCallback(async (c: { lat: number; lon: number }) => {
     setState('loading');
-    const key = `tlapka:vets:${c.lat.toFixed(1)},${c.lon.toFixed(1)}`;
+    let base: Vet[] = [];
     try {
-      let v = await fetchVets(c, 12000);
-      if (v.length < 5) v = await fetchVets(c, 35000);
-      setVets(v); setState('ok'); setStale(false);
-      try { localStorage.setItem(key, JSON.stringify(v)); } catch {}
-    } catch {
-      try {
-        const cached = JSON.parse(localStorage.getItem(key) || 'null') as Vet[] | null;
-        if (cached?.length) { setVets(cached); setState('ok'); setStale(true); return; }
-      } catch {}
-      setState('error');
-    }
+      const all = await bundledVets(c);
+      setAllNs(all.filter((v) => v.nonstop));
+      base = all.filter((v) => v.dist <= 12);
+      if (base.length < 5) base = all.filter((v) => v.dist <= 35);
+      if (base.length) { setVets(base); setState('ok'); setStale(true); }
+    } catch {}
+    try {
+      const live = await liveVets(c, base.length >= 5 && base[base.length - 1].dist > 12 ? 35000 : 12000);
+      const curated = new Map(base.filter((v) => v.tags['source:ns']).map((v) => [v.id, v]));
+      const merged = [...live.map((v) => curated.get(v.id) ?? v), ...[...curated.values()].filter((v) => !live.some((l) => l.id === v.id))].sort((a, b) => a.dist - b.dist);
+      if (merged.length) { setVets(merged); setState('ok'); setStale(false); }
+    } catch { if (!base.length) setState('error'); }
   }, []);
 
   useEffect(() => {
@@ -125,8 +127,12 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         L.marker([v.lat, v.lon], { icon: L.divIcon({ className: '', html: `<div class="vet-pin ${v.nonstop ? 'ns' : ''}"><span>${v.nonstop ? '24' : '🩺'}</span></div>`, iconSize: [34, 34], iconAnchor: [17, 34] }) })
           .on('click', () => setSel(v)).addTo(layer.current!);
       });
+      if (nonstop && shown.length && map.current && center) {
+        const pts = [[center.lat, center.lon] as [number, number], ...shown.slice(0, 3).map((v) => [v.lat, v.lon] as [number, number])];
+        map.current.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [30, 90], paddingBottomRight: [30, 40], maxZoom: 14, animate: !matchMedia('(prefers-reduced-motion: reduce)').matches });
+      }
     })();
-  }, [shown]);
+  }, [shown, nonstop, center]);
 
   const focus = (v: Vet) => { map.current?.setView([v.lat, v.lon], 16, { animate: true }); setSel(v); };
   const t = sel?.tags ?? {};
@@ -144,13 +150,13 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         {state === 'loading' && <div className="absolute inset-x-0 bottom-3 z-[500] mx-auto w-max rounded-full bg-surface/90 dark:bg-surface-d/90 backdrop-blur px-4 py-2 text-sm shadow-card animate-fade">Hledám veteriny…</div>}
       </div>
       <p className="text-[12px] text-muted mt-3 px-1 leading-snug">
-        Data pocházejí z <a className="underline" href="https://www.openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> (komunitní mapa) a mohou být neúplná nebo zastaralá. Filtr „nonstop“ ukazuje jen místa s otevírací dobou 24/7 v OSM. <b>V nouzi vždy nejdřív zavolej.</b>
+        Data pocházejí z <a className="underline" href="https://www.openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> (komunitní mapa) a mohou být neúplná nebo zastaralá. Filtr „nonstop“ ukazuje nejbližší místa s otevírací dobou 24/7 (OSM + několik pražských klinik ověřených na jejich webu). <b>V nouzi vždy nejdřív zavolej.</b>
       </p>
       <div className="mt-4 space-y-3 stagger">
         {state === 'error' && (
           <Card className="p-4 text-center"><p className="font-semibold">Nepodařilo se načíst data</p><p className="text-sm text-muted mt-1">Mapová služba OpenStreetMap (Overpass) je teď přetížená. Zkus to za pár minut.</p><Button variant="soft" className="mt-3" onClick={() => center && load(center)}>Zkusit znovu</Button></Card>
         )}
-        {stale && <p className="text-[12px] text-amber-700 dark:text-amber-300 px-1">Zobrazuji naposledy uložená data – služba OSM teď neodpovídá.</p>}
+        {stale && <p className="text-[12px] text-muted px-1">Uložený seznam klinik (OSM, říjen 2026) – živá data se načítají na pozadí.</p>}
         {state === 'ok' && !shown.length && (
           <Card className="p-4 text-center text-sm text-muted">{nonstop ? 'V okolí není v OSM žádná ordinace označená jako nonstop (24/7). Zkus vypnout filtr a obvolat nejbližší kliniky.' : 'V okolí jsme nic nenašli.'}</Card>
         )}
@@ -168,7 +174,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
       <Sheet open={!!sel} onClose={() => setSel(null)} title={sel?.name ?? ''}>
         {sel && (
           <div className="space-y-3">
-            {sel.nonstop && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]">Nonstop 24/7 (dle OSM)</span>}
+            {sel.nonstop && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]">{sel.tags['source:ns'] ? 'Nonstop 24/7 (ověřeno na webu kliniky)' : 'Nonstop 24/7 (dle OSM)'}</span>}
             <Card className="p-4 space-y-2.5 text-[15px]">
               <p><span className="text-muted text-xs block">Adresa</span>{address(t) || 'Neuvedena'}</p>
               <p><span className="text-muted text-xs block">Otevírací doba</span>{t.opening_hours ? <code className="text-sm">{t.opening_hours}</code> : 'Neuvedena v OSM'}</p>

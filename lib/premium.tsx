@@ -60,6 +60,7 @@ function usePremiumImpl() {
     try { const e = JSON.parse(localStorage.getItem(K_ENT) || 'null'); if (e && e.exp > Date.now()) setEnt(e); } catch {}
     const t = localStorage.getItem(K_TRIAL); if (t != null) setTrialLeftS(Number(t));
   }, []);
+  useEffect(() => { const c = () => setPaywall(null); addEventListener('hashchange', c); addEventListener('popstate', c); return () => { removeEventListener('hashchange', c); removeEventListener('popstate', c); }; }, []);
   const save = (e: Entitlement | null) => { setEnt(e); if (e) localStorage.setItem(K_ENT, JSON.stringify(e)); else localStorage.removeItem(K_ENT); };
   const provider = useCallback(async () => ((await RevenueCatProvider.available()) ? RevenueCatProvider : MockProvider), []);
   const isPremium = !!ent && ent.exp > Date.now();

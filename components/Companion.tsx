@@ -1,7 +1,8 @@
 'use client';
 import { useMemo, useState } from 'react';
 import type { AppData, Pet } from '@/lib/types';
-import { diffDays, status, today } from '@/lib/utils';
+import { diffDays, REMINDER_TYPES, status, today } from '@/lib/utils';
+const low = (t: string) => (REMINDER_TYPES.some((x) => x.name === t) ? t.toLowerCase() : t);
 import { useAmbient } from './ambient';
 
 export type Mood = 'happy' | 'ok' | 'sad';
@@ -15,7 +16,7 @@ export function careOf(data: AppData, petId: string) {
   const worst = overdue.reduce((m, r) => Math.max(m, diffDays(today(), r.dueDate)), 0);
   let score = 100 - overdue.length * 22 - Math.min(30, worst) - dueToday.length * 6 + Math.min(10, recent.length * 5);
   score = Math.max(0, Math.min(100, score));
-  const mood: Mood = score >= 80 ? 'happy' : score >= 50 ? 'ok' : 'sad';
+  const mood: Mood = overdue.length ? (score >= 50 ? 'ok' : 'sad') : score >= 80 ? 'happy' : score >= 50 ? 'ok' : 'sad';
   return { score, mood, overdue, dueToday, recent };
 }
 
@@ -25,8 +26,8 @@ function line(pet: Pet, c: ReturnType<typeof careOf>) {
     const r = c.overdue[0];
     return `${r.product || r.title} mělo být ${diffDays(today(), r.dueDate) === 1 ? 'včera' : `před ${diffDays(today(), r.dueDate)} dny`}… nezapomeň na mě 🥺`;
   }
-  if (c.dueToday.length) return `Dneska nás čeká: ${c.dueToday[0].title.toLowerCase()}. Zvládneme to! 💪`;
-  if (c.recent.length) return `Díky za ${c.recent[0].r.product || c.recent[0].r.title.toLowerCase()}! Cítím se skvěle 💛`;
+  if (c.dueToday.length) return `Dneska nás čeká: ${low(c.dueToday[0].title)}. Zvládneme to! 💪`;
+  if (c.recent.length) return `Díky za ${c.recent[0].r.product || low(c.recent[0].r.title)}! Cítím se skvěle 💛`;
   return `Jsem v pohodě a spokojen${he || 'ý'}. Pojď si hrát! 🐾`;
 }
 
@@ -39,7 +40,8 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
   const cat = pet.species === 'kocka';
   const fur = ambient ?? (cat ? '#C9B8A8' : '#E3B27A');
   const pet_ = () => { setBump((b) => b + 1); try { navigator.vibrate?.(c.mood === 'sad' ? [10, 40, 10] : 15); } catch {} };
-  const label = { happy: 'Šťastný', ok: 'V pohodě', sad: 'Smutný' }[c.mood];
+  const f = pet.sex === 'samice';
+  const label = c.overdue.length ? (c.mood === 'sad' ? (f ? 'Smutná' : 'Smutný') : 'Čeká na péči') : { happy: f ? 'Šťastná' : 'Šťastný', ok: 'V pohodě', sad: f ? 'Smutná' : 'Smutný' }[c.mood];
   const R = 46, C = 2 * Math.PI * R;
   return (
     <section aria-label={`Živý mazlíček ${pet.name}: ${label}, péče ${c.score} %`} className="relative rounded-[30px] p-5 pb-4 overflow-hidden bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d ring-1 ring-ink/5 dark:ring-white/10">

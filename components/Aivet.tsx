@@ -60,7 +60,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
       if (typeof j.trialLeft === 'number') prem.setTrialLeft(j.trialLeft);
       if (r.status === 402) { prem.openPaywall('aivet'); throw new Error(`Vyčerpal jsi ${FREE.aivet} zkušební dotazy. S Premium se můžeš Aiveta ptát bez omezení. V nouzi ti Aivet vždy ukáže pohotovost zdarma.`); }
       if (!r.ok) throw new Error(j.error === 'rate_limited_client' ? `Dosáhl jsi limitu dotazů (${j.window === 'den' ? 'denní' : 'na 10 minut'}). Zkus to za ${Math.max(1, Math.round((j.retryAfter ?? 60) / 60))} min.` : j.error === 'rate_limited' ? 'Aivet je teď přetížený, zkus to za chvíli.' : j.error === 'not_configured' ? 'Aivet ještě není nastavený.' : 'Odpověď se nepodařilo získat.');
-      setMsgs([...next, { role: 'assistant', content: j.reply, emergency: !!j.emergency }]);
+      setMsgs([...next, { role: 'assistant', content: j.reply, emergency: !!j.emergency || local }]);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Chyba spojení.'); }
     finally { setBusy(false); }
   };
@@ -73,7 +73,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
       <PageHeader title="Aivet" sub="Aivet ti radí" />
       {!prem.isPremium && (
         <button onClick={() => prem.openPaywall('aivet')} className="press w-full mb-4 flex items-center justify-between gap-2 rounded-full px-4 py-2.5 text-sm bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">
-          <span>{prem.trialLeft > 0 ? <>Zbývají <b>{prem.trialLeft}</b> z {FREE.aivet} zkušebních dotazů</> : 'Zkušební dotazy vyčerpány'}</span>
+          <span>{prem.trialLeft > 0 ? <>{prem.trialLeft === 1 ? 'Zbývá' : 'Zbývají'} <b>{prem.trialLeft}</b> z {FREE.aivet} zkušebních dotazů</> : 'Zkušební dotazy vyčerpány'}</span>
           <span className="font-semibold text-primary">Premium ›</span>
         </button>
       )}
@@ -82,8 +82,9 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
           {data.pets.map((p) => <PetChip key={p.id} pet={p} active={petId === p.id} onClick={() => setPetId(p.id)} />)}
         </div>
       )}
+      {/* sticky under the header so auto-scroll never hides it */}
       {emergency && (
-        <div role="alert" className="mb-4 rounded-[24px] p-4 text-white bg-gradient-to-br from-red-500 to-red-700 shadow-[0_14px_30px_-12px_rgba(220,38,38,.7)] animate-pop">
+        <div role="alert" style={{ top: 'calc(env(safe-area-inset-top) + 72px)' }} className="sticky z-20 mb-4 rounded-[24px] p-4 text-white bg-gradient-to-br from-red-500 to-red-700 shadow-[0_14px_30px_-12px_rgba(220,38,38,.7)] animate-pop">
           <p className="font-bold text-lg">🚨 Může jít o akutní stav</p>
           <p className="text-sm text-white/90 mt-1">Nečekej na odpověď z chatu. Kontaktuj co nejdřív veterinární pohotovost.</p>
           <button onClick={openMap} className="press mt-3 w-full rounded-2xl bg-white text-red-700 font-bold py-3">Najít nonstop veterinu</button>
@@ -100,7 +101,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
         <>
           {pet && (
             <Card className="p-3.5 mb-4 text-[13px] text-muted">
-              Radím s ohledem na profil <b className="text-ink dark:text-white">{pet.name}</b> ({[speciesOf(pet.species).name, age(pet.birthDate), pet.weights.length ? `${pet.weights[pet.weights.length - 1].kg} kg` : ''].filter(Boolean).join(', ')})
+              Radím s ohledem na profil <b className="text-ink dark:text-white">{pet.name}</b> ({[speciesOf(pet.species).name, age(pet.birthDate), pet.weights.length ? `${pet.weights[pet.weights.length - 1].kg.toLocaleString('cs-CZ')} kg` : ''].filter(Boolean).join(', ')})
               {allergies.length > 0 && <> · <span className="text-red-600 dark:text-red-400 font-semibold">alergie: {allergies.map((a) => a.allergen).join(', ')}</span></>}
             </Card>
           )}
@@ -115,6 +116,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-screen`}>
                 <div className={`max-w-[85%] rounded-[22px] px-4 py-3 text-[15px] leading-relaxed space-y-0.5 ${m.role === 'user' ? 'bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white rounded-br-md shadow-[0_8px_20px_-10px_rgba(232,85,58,.7)]' : 'bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 rounded-bl-md'}`}>
                   {m.role === 'assistant' ? render(m.content) : m.content}
+                  {m.role === 'assistant' && m.emergency && <button onClick={openMap} className="press mt-2 w-full rounded-2xl bg-red-600 text-white font-bold py-2.5">🚨 Najít nonstop veterinu</button>}
                 </div>
               </div>
             ))}
@@ -125,7 +127,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
           <p className="text-[11px] text-muted text-center mt-4">Aivet je AI a může se mýlit. Nenahrazuje vyšetření veterinářem.</p>
           <form onSubmit={(e) => { e.preventDefault(); send(input); }}
             className="fixed z-40 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[420px] flex items-end gap-2 p-1.5 rounded-[26px] bg-surface/80 dark:bg-[#2a201b]/80 backdrop-blur-2xl ring-1 ring-ink/[0.06] dark:ring-white/10 shadow-float dark:shadow-float-d"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom) + 86px)' }}>
+            style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + 86px)' }}>
             <textarea rows={1} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input); } }}
               placeholder={status === 'checking' ? 'Připojuji…' : 'Napiš Aivetovi…'} disabled={status !== 'ready'} aria-label="Dotaz pro Aiveta"
               className="flex-1 resize-none bg-transparent px-3 py-2.5 outline-none max-h-32 text-base" />

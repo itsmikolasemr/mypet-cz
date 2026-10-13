@@ -139,25 +139,20 @@ export function PageHeader({ title, sub, action, fab }: { title: string; sub?: s
             {sub && <p className={`text-sm text-muted first-letter:uppercase transition-all duration-300 ${scrolled ? 'h-0 opacity-0' : 'h-5 opacity-100'} overflow-hidden`}>{sub}</p>}
             <h1 className={`font-bold tracking-tight truncate transition-all duration-300 ${scrolled ? 'text-lg' : 'text-[30px] leading-tight'}`}>{title}</h1>
           </div>
-          {action}
+          <div className="flex items-center gap-2 shrink-0">{action}{fab}</div>
         </div>
       </div>
-      {fab}
     </>
   );
 }
 
 export function Fab({ onClick, label }: { onClick: () => void; label: string }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
-  return createPortal(
+  // Lives in the page header (not floating) so it never covers list actions or the bottom nav.
+  return (
     <button onClick={onClick} aria-label={label}
-      className="fab fixed z-40 right-5 w-14 h-14 rounded-full text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_10px_24px_-6px_rgba(232,85,58,.55),0_4px_10px_rgba(232,85,58,.25)] ring-4 ring-bg/60 dark:ring-bg-d/60 flex items-center justify-center animate-pop"
-      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 96px)' }}>
+      className="fab shrink-0 w-12 h-12 rounded-full text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_10px_24px_-8px_rgba(232,85,58,.6)] flex items-center justify-center">
       <Icon name="plus" className="w-6 h-6" />
-    </button>,
-    document.body,
+    </button>
   );
 }
 

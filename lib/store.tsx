@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { Allergy, AppData, DocMeta, Medication, Pet, Reminder, Visit } from './types';
-import { deleteBlob } from './docs';
+import { deleteBlob, loadBlob } from './docs';
 import { syncNotifications } from './notify';
 import { addDays, today, uid } from './utils';
 import { sampleData } from './sample';
@@ -100,7 +100,11 @@ function useStoreImpl() {
     deleteVisit: (id: string) => upd((d) => ({ ...d, visits: d.visits.filter((v) => v.id !== id) })),
     setTheme: (theme: AppData['settings']['theme']) => upd((d) => ({ ...d, settings: { ...d.settings, theme } })),
     finishOnboarding: (withSample: boolean) => upd((d) => ({ ...(withSample ? sampleData() : { version: 1 as const, pets: [], reminders: [], visits: [], docs: [], meds: [], allergies: [] }), settings: { ...d.settings, onboarded: true } })),
-    importData: (x: AppData) => setData(x),
+    importData: async (x: AppData) => {
+      // backups carry no files: keep only document records whose file still exists on this device
+      const docs = (await Promise.all(x.docs.map(async (d) => ((await loadBlob(d.id, d.mime).catch(() => null)) ? d : null)))).filter((d): d is DocMeta => !!d);
+      setData({ ...x, docs });
+    },
     reset: () => { data.docs.forEach((x) => deleteBlob(x.id).catch(() => {})); setData(empty()); },
   };
 }

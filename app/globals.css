@@ -123,3 +123,5 @@ html.glass .leaflet-container { background: rgba(255,255,255,.4); }
   html.glass :is(.bg-surface, .bg-surface\/70, .bg-surface\/80, .bg-surface\/85, .bg-surface\/90, .bg-surface\/95, .bg-bg\/90) { background: rgba(255,249,245,.96) !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 html.glass :is(.text-red-600, .text-red-700) { color: #8E1414; }
+
+html.glass nav[aria-label="Hlavní navigace"] > div { background: linear-gradient(140deg, rgba(255,255,255,.86), rgba(255,255,255,.72)) !important; -webkit-backdrop-filter: blur(30px) saturate(190%); backdrop-filter: blur(30px) saturate(190%); }

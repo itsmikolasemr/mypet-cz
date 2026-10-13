@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { usePremium, PLANS, FREE, type PlanId } from '@/lib/premium';
 import { useStore } from '@/lib/store';
-import { fmtDate } from '@/lib/utils';
+import { fmtDate, plural } from '@/lib/utils';
 import { Card, PageHeader, Sheet } from './ui';
 import { Avatar } from './ui';
 
@@ -77,17 +77,23 @@ export function AdSlot({ id }: { id: string }) {
   );
 }
 
+const Y = new Date().getFullYear();
+const DEMO = [3, 5, 9].map((m, i) => ({ id: 'd' + i, petId: 'demo', date: `${Y}-${String(m).padStart(2, '0')}-10`, clinic: '', reason: 'Ukázková návštěva', notes: '', cost: [900, 1500, 600][i] }));
+
 export function Expenses() {
   const { data } = useStore();
   const p = usePremium();
   const [year, setYear] = useState(new Date().getFullYear());
-  const costs = data.visits.filter((v) => v.cost != null && v.cost > 0);
+  // Free users get a demo dataset under the blur – real amounts never reach the DOM / screen readers.
+  const demoPets = useMemo(() => [{ ...(data.pets[0] ?? ({} as never)), id: 'demo', name: 'Ukázka', photo: undefined, species: 'pes' as const }], [data.pets]);
+  const costs = (p.isPremium ? data.visits : DEMO).filter((v) => v.cost != null && v.cost > 0);
+  const pets = p.isPremium ? data.pets : demoPets;
   const years = useMemo(() => [...new Set([new Date().getFullYear(), ...costs.map((v) => Number(v.date.slice(0, 4)))])].sort((a, b) => b - a), [costs]);
   const inY = costs.filter((v) => Number(v.date.slice(0, 4)) === year);
   const total = inY.reduce((s, v) => s + (v.cost ?? 0), 0);
   const months = Array.from({ length: 12 }, (_, m) => inY.filter((v) => Number(v.date.slice(5, 7)) === m + 1).reduce((s, v) => s + (v.cost ?? 0), 0));
   const max = Math.max(1, ...months);
-  const byPet = data.pets.map((pet) => ({ pet, sum: inY.filter((v) => v.petId === pet.id).reduce((s, v) => s + (v.cost ?? 0), 0) })).filter((x) => x.sum > 0).sort((a, b) => b.sum - a.sum);
+  const byPet = pets.map((pet) => ({ pet, sum: inY.filter((v) => v.petId === pet.id).reduce((s, v) => s + (v.cost ?? 0), 0) })).filter((x) => x.sum > 0).sort((a, b) => b.sum - a.sum);
   const allTime = costs.reduce((s, v) => s + (v.cost ?? 0), 0);
   const kc = (n: number) => `${Math.round(n).toLocaleString('cs-CZ')} Kč`;
   const MN = ['led', 'úno', 'bře', 'dub', 'kvě', 'čvn', 'čvc', 'srp', 'zář', 'říj', 'lis', 'pro'];
@@ -99,7 +105,7 @@ export function Expenses() {
         <Card className="p-5">
           <p className="text-sm text-muted">Celkem v roce {year}</p>
           <p className="text-[34px] font-bold tracking-tight leading-tight">{kc(total)}</p>
-          <p className="text-[13px] text-muted">{inY.length ? `${inY.length} placených návštěv · průměr ${kc(total / inY.length)}` : 'Žádné placené návštěvy'}</p>
+          <p className="text-[13px] text-muted">{inY.length ? `${inY.length} ${plural(inY.length, 'placená návštěva', 'placené návštěvy', 'placených návštěv')} · průměr ${kc(total / inY.length)}` : 'Žádné placené návštěvy'}</p>
           <div className="mt-4 flex items-end gap-1.5 h-28" role="img" aria-label={`Výdaje po měsících v roce ${year}`}>
             {months.map((m, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
@@ -118,7 +124,7 @@ export function Expenses() {
         </Card>}
         <Card className="p-4"><h2 className="font-semibold mb-2">Poslední platby</h2>
           {inY.length ? [...inY].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8).map((v) => (
-            <div key={v.id} className="flex justify-between gap-3 py-1.5 text-sm border-b last:border-0 border-ink/5 dark:border-white/5"><span className="min-w-0"><span className="block truncate">{v.reason || 'Návštěva'}</span><span className="text-[12px] text-muted">{fmtDate(v.date)} · {data.pets.find((x) => x.id === v.petId)?.name}</span></span><b className="shrink-0">{kc(v.cost ?? 0)}</b></div>
+            <div key={v.id} className="flex justify-between gap-3 py-1.5 text-sm border-b last:border-0 border-ink/5 dark:border-white/5"><span className="min-w-0"><span className="block truncate">{v.reason || 'Návštěva'}</span><span className="text-[12px] text-muted">{fmtDate(v.date)} · {pets.find((x) => x.id === v.petId)?.name}</span></span><b className="shrink-0">{kc(v.cost ?? 0)}</b></div>
           )) : <p className="text-sm text-muted">Cenu doplníš u návštěvy v kalendáři.</p>}
         </Card>
         <p className="text-center text-sm text-muted">Za celou dobu: <b>{kc(allTime)}</b></p>

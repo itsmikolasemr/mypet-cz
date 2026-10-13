@@ -24,9 +24,15 @@ function Shell() {
     const read = () => { const [t, p] = location.hash.slice(1).split('/'); if (TABS.some((x) => x.id === t) || EXTRA.includes(t as Tab)) setTab(t as Tab); setPetId(p || null); };
     read(); addEventListener('popstate', read); return () => removeEventListener('popstate', read);
   }, []);
+  // Netlify's "Powered by Netlify" badge iframe sits bottom-right on the web build: lift floating UI above it.
+  useEffect(() => {
+    const f = () => { const b = document.getElementById('nl-badge-frame') || document.querySelector('iframe[id*="badge" i]'); const h = b && b.getBoundingClientRect().height; document.documentElement.style.setProperty('--badge', h ? `${Math.ceil(h) + 10}px` : '0px'); };
+    f(); const mo = new MutationObserver(f); mo.observe(document.body, { childList: true }); const t = setInterval(f, 2000); setTimeout(() => clearInterval(t), 12000);
+    return () => { mo.disconnect(); clearInterval(t); };
+  }, []);
   useEffect(() => { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('/sw.js').catch(() => {}); }, []);
   const nav = (t: Tab, p: string | null = null) => {
-    const h = `#${t}${p ? '/' + p : ''}`; if (location.hash !== h) history.pushState(null, '', h);
+    const h = `#${t}${p ? '/' + p : ''}`; if (location.hash !== h) { history.pushState(null, '', h); dispatchEvent(new HashChangeEvent('hashchange')); }
     setTab(t); setPetId(p); window.scrollTo({ top: 0 });
   };
   if (!ready) return <div className="min-h-[100dvh]" />;
@@ -34,7 +40,7 @@ function Shell() {
   const overdue = data.reminders.filter((r) => status(r) === 'overdue').length;
   return (
     <div className="min-h-[100dvh]">
-      <main className="max-w-md mx-auto px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-[calc(env(safe-area-inset-bottom)+132px)]">
+      <main className="max-w-md mx-auto px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-[calc(env(safe-area-inset-bottom)+var(--badge,0px)+132px)]">
         <div key={tab + (petId ?? '')} className="animate-screen">
           {tab === 'home' && <Dashboard go={(t) => nav(t)} openPet={(id) => nav('pets', id)} />}
           {tab === 'map' && <VetMap initialNonstop={petId === 'nonstop'} />}
@@ -46,7 +52,7 @@ function Shell() {
           {tab === 'expenses' && <Expenses />}
         </div>
       </main>
-      <nav aria-label="Hlavní navigace" className="fixed inset-x-0 z-40 flex justify-center px-5 pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
+      <nav aria-label="Hlavní navigace" className="fixed inset-x-0 z-40 flex justify-center px-5 pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + 12px)' }}>
         <div className="pointer-events-auto relative w-full max-w-[360px] grid grid-cols-5 p-1.5 rounded-full bg-surface/70 dark:bg-[#2a201b]/70 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-ink/[0.06] dark:ring-white/10 shadow-float dark:shadow-float-d">
           <span aria-hidden className="absolute top-1.5 bottom-1.5 left-1.5 rounded-full bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_6px_16px_-4px_rgba(232,85,58,.55)] transition-[transform,opacity] duration-500 ease-spring"
             style={{ width: 'calc((100% - 12px) / 5)', transform: `translateX(${Math.max(0, TABS.findIndex((t) => t.id === tab)) * 100}%)`, opacity: TABS.some((t) => t.id === tab) ? 1 : 0 }} />

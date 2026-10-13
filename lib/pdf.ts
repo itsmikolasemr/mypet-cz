@@ -42,13 +42,13 @@ export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
     try { const img = pet.photo.includes('png') ? await doc.embedPng(pet.photo) : await doc.embedJpg(pet.photo); page.drawImage(img, { x: M, y: top - 96, width: 96, height: 96 }); } catch {}
   }
   const col = pet.photo ? M + 112 : M;
-  const rows: [string, string][] = [['Jméno', pet.name], ['Druh / plemeno', `${speciesOf(pet.species).name}${pet.breed ? ' – ' + pet.breed : ''}`], ['Pohlaví', SEX[pet.sex] ?? ''], ['Narození', pet.birthDate ? `${fmtDate(pet.birthDate)} (${age(pet.birthDate)})` : 'neuvedeno'], ['Číslo čipu', pet.microchip || 'neuvedeno'], ['Barva', pet.color || '–'], ['Poslední váha', w ? `${w.kg} kg (${fmtDate(w.date)})` : 'neuvedeno']];
+  const rows: [string, string][] = [['Jméno', pet.name], ['Druh / plemeno', `${speciesOf(pet.species).name}${pet.breed ? ' – ' + pet.breed : ''}`], ['Pohlaví', SEX[pet.sex] ?? ''], ['Narození', pet.birthDate ? `${fmtDate(pet.birthDate)} (${age(pet.birthDate)})` : 'neuvedeno'], ['Číslo čipu', pet.microchip || 'neuvedeno'], ['Barva', pet.color || '–'], ['Poslední váha', w ? `${w.kg.toLocaleString('cs-CZ')} kg (${fmtDate(w.date)})` : 'neuvedeno']];
   for (const [k, v] of rows) { page.drawText(k, { x: col, y: y - 10, size: 8.5, font: F, color: muted }); page.drawText(v, { x: col + 92, y: y - 10, size: 10.5, font: B, color: ink, maxWidth: W - M - 120 - col - 92 }); y -= 16; }
   y = Math.min(y, top - 132);
 
   h2('Alergie a intolerance');
   if (!allergies.length) text('Žádné zaznamenané.', { color: muted });
-  for (const a of allergies) text(`• ${a.allergen}${a.reaction ? ' – ' + a.reaction : ''} (${SEVERITY.find((s) => s.id === a.severity)?.n ?? a.severity})`, { font: B, color: red });
+  for (const a of allergies) text(`• ${a.allergen}${a.reaction ? ' – ' + a.reaction : ''} (${SEVERITY.find((s) => s.id === a.severity)?.n.toLowerCase() ?? a.severity})`, { font: B, color: red });
   h2('Aktuální léky');
   if (!meds.length) text('Žádné.', { color: muted });
   for (const m of meds) text(`• ${m.name}${m.dose ? ', ' + m.dose : ''}${m.frequency ? ', ' + m.frequency : ''} – od ${fmtDate(m.start)}${m.end ? ' do ' + fmtDate(m.end) : ''}`);

@@ -35,7 +35,9 @@ export async function saveBlob(id: string, file: Blob) {
   if (native()) {
     await Filesystem.writeFile({ path: path(id), data: await blobToB64(file), directory: Directory.Data, recursive: true });
   } else {
-    await tx('readwrite', (s) => s.put(file, id));
+    // store raw bytes, not a Blob: WebKit private mode / some iOS PWAs can't persist Blobs in IndexedDB
+    const buf = await file.arrayBuffer();
+    await tx('readwrite', (s) => s.put({ buf, mime: file.type }, id));
   }
 }
 
@@ -48,7 +50,10 @@ export async function loadBlob(id: string, mime: string): Promise<Blob | null> {
     for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
     return new Blob([u], { type: mime });
   }
-  return (await tx<Blob | undefined>('readonly', (s) => s.get(id))) ?? null;
+  const v = await tx<Blob | { buf: ArrayBuffer; mime: string } | undefined>('readonly', (s) => s.get(id));
+  if (!v) return null;
+  if (v instanceof Blob) return v; // legacy records
+  return new Blob([v.buf], { type: v.mime || mime });
 }
 
 export async function deleteBlob(id: string) {

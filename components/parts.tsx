@@ -69,7 +69,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true }: { r: Reminder; p
           <button onClick={() => { if (!suppressClick.current) onEdit(); }} className="flex items-center gap-3 flex-1 min-w-0 text-left">
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${s === 'overdue' ? 'bg-red-100 dark:bg-red-500/15' : s === 'soon' ? 'bg-amber-100 dark:bg-amber-500/15' : 'bg-primary/10'}`}>{t.emoji}</div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 min-w-0"><p className="font-semibold truncate">{r.title}</p><span className="shrink-0"><StatusPill s={s} /></span></div>
+              <div className="flex items-start gap-2 min-w-0"><p className="font-semibold line-clamp-2 break-words">{r.title}</p><span className="shrink-0"><StatusPill s={s} /></span></div>
               <p className="text-[13px] text-muted truncate">
                 {showPet && pet ? `${pet.name} · ` : ''}{r.product ? `${r.product} · ` : ''}{s === 'done' ? `hotovo ${fmtDate(r.completedAt!)}` : `${fmtShort(r.dueDate)} (${relDue(r.dueDate)})`}
               </p>
@@ -108,7 +108,7 @@ export function VisitRow({ v, pet, onClick }: { v: Visit; pet?: Pet; onClick: ()
 
 export function WeightChart({ pet }: { pet: Pet }) {
   const w = pet.weights;
-  if (w.length < 2) return <p className="text-sm text-muted py-6 text-center">{w.length ? `Zatím jeden záznam: ${w[0].kg} kg. Přidej další pro graf.` : 'Zatím žádná váha.'}</p>;
+  if (w.length < 2) return <p className="text-sm text-muted py-6 text-center">{w.length ? `Zatím jeden záznam: ${w[0].kg.toLocaleString('cs-CZ')} kg. Přidej další pro graf.` : 'Zatím žádná váha.'}</p>;
   const W = 320, H = 150, px = 28, py = 18;
   const t0 = parse(w[0].date).getTime(), t1 = parse(w[w.length - 1].date).getTime();
   const ks = w.map((x) => x.kg);
@@ -193,7 +193,7 @@ export function Documents({ pet }: { pet: Pet }) {
             await saveBlob(id, pending);
             addDoc({ id, petId: pet.id, name: meta.name || pending.name, kind: meta.kind, mime: pending.type || 'application/octet-stream', size: pending.size, date: meta.date });
             setPending(null);
-          } catch { alert('Uložení se nezdařilo (málo místa?).'); } finally { setBusy(false); }
+          } catch (e) { console.error(e); alert(e instanceof DOMException && e.name === 'QuotaExceededError' ? 'V zařízení není dost místa pro tento soubor.' : 'Soubor se nepodařilo uložit. V anonymním režimu prohlížeče může být ukládání souborů omezené – zkus běžné okno nebo aplikaci.'); } finally { setBusy(false); }
         }}>
           <Field label="Název"><input className={inputCls} value={meta.name} onChange={(e) => setMeta({ ...meta, name: e.target.value })} /></Field>
           <div className="flex flex-wrap gap-2">{KINDS.map((k) => <button type="button" key={k.id} onClick={() => setMeta({ ...meta, kind: k.id })} className={`press rounded-full px-3 py-1.5 text-sm border ${meta.kind === k.id ? 'border-primary bg-primary/10 font-semibold' : 'border-ink/10 dark:border-white/10'}`}>{k.e} {k.n}</button>)}</div>
