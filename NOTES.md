@@ -10,3 +10,9 @@
 - Affiliate: Granulebardog 7%, SuperKotlik 11%, Happypet remarketing 20%+ tržeb
 - Non-stop veterin: Medicanima Praha 252 252 111, Zvíře+ Brno 778 011 112, Erika Praha 284 821 784
 - Otevřené: finální název, paleta, tech stack (Next.js?), hosting (Netlify?), doména
+
+## 2026-10-14
+- MVP označeno HOTOVO K TESTOVÁNÍ (lokálně).
+- Přidán sample SEO průvodce odčervení a rozšířen katalog plemen.
+- Issues pro QR, mapu a PDF připraveny (vyžadují potvrzení).
+- Pokračovat agresivně na zbývajících funkcích.
