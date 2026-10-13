@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import type { Pet, Reminder, ReminderType, Sex, Species, Visit } from '@/lib/types';
+import type { Allergy, Medication, Pet, Reminder, ReminderType, Severity, Sex, Species, Visit } from '@/lib/types';
 import { useStore } from '@/lib/store';
 import { BREEDS, INTERVALS, PRODUCTS, REMINDER_TYPES, SPECIES, addDays, resizeImage, today, typeOf, uid } from '@/lib/utils';
 import { Button, Field, Icon, Sheet, inputCls } from './ui';
@@ -160,6 +160,84 @@ export function WeightForm({ open, onClose, petId }: { open: boolean; onClose: (
           <Field label="Datum"><input type="date" className={inputCls} value={date} max={today()} onChange={(e) => setDate(e.target.value)} /></Field>
         </div>
         <Button type="submit" className="w-full" disabled={!(v > 0)}>Uložit</Button>
+      </form>
+    </Sheet>
+  );
+}
+
+const FREQ = ['Denně ráno', 'Denně večer', '2× denně', '3× denně', 'Obden', 'Týdně', 'Měsíčně', 'Dle potřeby'];
+const FREQ_DAYS: Record<string, number> = { 'Denně ráno': 1, 'Denně večer': 1, '2× denně': 1, '3× denně': 1, Obden: 2, Týdně: 7, Měsíčně: 30 };
+
+export function MedForm({ open, onClose, med, petId }: { open: boolean; onClose: () => void; med?: Medication; petId: string }) {
+  const { saveMed, deleteMed, saveReminder, deleteReminder } = useStore();
+  const mk = (): Medication => ({ id: uid(), petId, name: '', dose: '', frequency: 'Denně ráno', start: today(), end: '', notes: '' });
+  const [f, setF] = useState<Medication>(med ?? mk());
+  const [remind, setRemind] = useState(false);
+  useEffect(() => { if (open) { setF(med ?? mk()); setRemind(!!med?.reminderId); } }, [open, med]); // eslint-disable-line react-hooks/exhaustive-deps
+  const set = <K extends keyof Medication>(k: K, v: Medication[K]) => setF((x) => ({ ...x, [k]: v }));
+  const interval = FREQ_DAYS[f.frequency] ?? 0;
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!f.name.trim()) return;
+    let reminderId = f.reminderId;
+    if (remind) {
+      reminderId = reminderId ?? uid();
+      const due = f.start > today() ? f.start : today();
+      saveReminder({ id: reminderId, petId, type: 'leky', title: f.name.trim(), product: [f.dose, f.frequency].filter(Boolean).join(' · '), dueDate: due, intervalDays: interval, notes: f.notes, history: [] });
+    } else if (reminderId) { deleteReminder(reminderId); reminderId = undefined; }
+    saveMed({ ...f, name: f.name.trim(), reminderId });
+    onClose();
+  };
+  return (
+    <Sheet open={open} onClose={onClose} title={med ? 'Upravit lék' : 'Nový lék'}>
+      <form onSubmit={submit} className="space-y-4">
+        <Field label="Název léku"><input required autoFocus={!med} className={inputCls} value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="např. Previcox 57 mg" /></Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Dávka"><input className={inputCls} value={f.dose} onChange={(e) => set('dose', e.target.value)} placeholder="1/2 tablety" /></Field>
+          <Field label="Frekvence">
+            <select className={inputCls} value={f.frequency} onChange={(e) => set('frequency', e.target.value)}>{FREQ.map((x) => <option key={x}>{x}</option>)}</select>
+          </Field>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Od"><input type="date" className={inputCls} value={f.start} onChange={(e) => set('start', e.target.value)} /></Field>
+          <Field label="Do (volitelné)"><input type="date" className={inputCls} value={f.end} min={f.start} onChange={(e) => set('end', e.target.value)} /></Field>
+        </div>
+        <Field label="Poznámka"><textarea rows={2} className={inputCls} value={f.notes} onChange={(e) => set('notes', e.target.value)} placeholder="např. podávat s jídlem" /></Field>
+        <label className="flex items-center gap-3 rounded-2xl bg-primary/5 px-4 py-3">
+          <input type="checkbox" className="w-5 h-5 accent-[#E8553A]" checked={remind} onChange={(e) => setRemind(e.target.checked)} />
+          <span className="text-sm"><b>Vytvořit připomínku</b><br /><span className="text-muted">{interval ? `Opakovat každých ${interval} ${interval === 1 ? 'den' : 'dní'}` : 'Jednorázově'}</span></span>
+        </label>
+        <Button type="submit" className="w-full">Uložit</Button>
+        {med && <Button type="button" variant="danger" className="w-full" onClick={() => { if (confirm('Smazat lék?')) { if (med.reminderId) deleteReminder(med.reminderId); deleteMed(med.id); onClose(); } }}><Icon name="trash" /> Smazat</Button>}
+      </form>
+    </Sheet>
+  );
+}
+
+export const SEVERITY: { id: Severity; n: string; cls: string }[] = [
+  { id: 'mirna', n: 'Mírná', cls: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300' },
+  { id: 'stredni', n: 'Střední', cls: 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300' },
+  { id: 'tezka', n: 'Těžká', cls: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400' },
+];
+
+export function AllergyForm({ open, onClose, allergy, petId }: { open: boolean; onClose: () => void; allergy?: Allergy; petId: string }) {
+  const { saveAllergy, deleteAllergy } = useStore();
+  const mk = (): Allergy => ({ id: uid(), petId, allergen: '', reaction: '', severity: 'mirna' });
+  const [f, setF] = useState<Allergy>(allergy ?? mk());
+  useEffect(() => { if (open) setF(allergy ?? mk()); }, [open, allergy]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <Sheet open={open} onClose={onClose} title={allergy ? 'Upravit alergii' : 'Nová alergie'}>
+      <form onSubmit={(e) => { e.preventDefault(); if (!f.allergen.trim()) return; saveAllergy({ ...f, allergen: f.allergen.trim() }); onClose(); }} className="space-y-4">
+        <Field label="Alergen"><input required autoFocus={!allergy} className={inputCls} list="allergens" value={f.allergen} onChange={(e) => setF({ ...f, allergen: e.target.value })} placeholder="např. Kuřecí maso, penicilin" />
+          <datalist id="allergens">{['Kuřecí maso', 'Hovězí maso', 'Pšenice', 'Sója', 'Mléčné výrobky', 'Blechy (sliny)', 'Pyl', 'Roztoči', 'Penicilin', 'Vakcína'].map((a) => <option key={a} value={a} />)}</datalist>
+        </Field>
+        <Field label="Reakce"><input className={inputCls} value={f.reaction} onChange={(e) => setF({ ...f, reaction: e.target.value })} placeholder="např. svědění, zvracení, otok" /></Field>
+        <div>
+          <span className="block text-[13px] font-medium text-muted mb-1.5">Závažnost</span>
+          <div className="grid grid-cols-3 gap-2">{SEVERITY.map((x) => <button type="button" key={x.id} onClick={() => setF({ ...f, severity: x.id })} className={`press rounded-2xl py-2.5 text-sm font-semibold ring-2 transition ${f.severity === x.id ? `${x.cls} ring-current` : 'ring-ink/10 dark:ring-white/10'}`}>{x.n}</button>)}</div>
+        </div>
+        <Button type="submit" className="w-full">Uložit</Button>
+        {allergy && <Button type="button" variant="danger" className="w-full" onClick={() => { if (confirm('Smazat alergii?')) { deleteAllergy(allergy.id); onClose(); } }}><Icon name="trash" /> Smazat</Button>}
       </form>
     </Sheet>
   );

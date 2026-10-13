@@ -5,7 +5,8 @@ import { useStore, validate } from '@/lib/store';
 import { age, diffDays, fmtDate, parse, speciesOf, status, toISO, today } from '@/lib/utils';
 import { notifySupported, requestPermission, showNow } from '@/lib/notify';
 import { Avatar, Button, Card, Empty, Fab, Icon, Logo, PageHeader, Segmented } from './ui';
-import { PetForm, ReminderForm, VisitForm, WeightForm } from './forms';
+import { AllergyForm, MedForm, PetForm, ReminderForm, SEVERITY, VisitForm, WeightForm } from './forms';
+import type { Allergy, Medication } from '@/lib/types';
 import { Documents, PetChip, ReminderRow, VisitRow, WeightChart } from './parts';
 
 const sortRem = (a: Reminder, b: Reminder) => a.dueDate.localeCompare(b.dueDate);
@@ -34,6 +35,16 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             <p className="text-white/85 text-sm font-medium">Tento měsíc</p>
             <p className="text-3xl font-bold mt-1">{upcoming.length} {upcoming.length === 1 ? 'úkol' : upcoming.length >= 2 && upcoming.length <= 4 ? 'úkoly' : 'úkolů'}</p>
             <p className="text-white/90 text-sm mt-1">{overdue.length ? `⚠️ ${overdue.length} po termínu` : 'Vše v pořádku, nic nemeškáš ✨'}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Card onClick={() => go('ai')} className="p-4">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white text-xl flex items-center justify-center shadow-[0_8px_18px_-8px_rgba(232,85,58,.7)] mb-3">🩺</div>
+              <p className="font-semibold">AIVET</p><p className="text-[13px] text-muted">Poradí, co dělat</p>
+            </Card>
+            <Card onClick={() => go('map')} className="p-4">
+              <div className="w-11 h-11 rounded-2xl bg-primary/10 text-xl flex items-center justify-center mb-3">🗺️</div>
+              <p className="font-semibold">Veteriny</p><p className="text-[13px] text-muted">V okolí i nonstop</p>
+            </Card>
           </div>
           <section>
             <div className="flex items-center justify-between mb-2"><h2 className="font-semibold text-lg">Mazlíčci</h2><button className="text-sm font-semibold text-primary" onClick={() => go('pets')}>Vše</button></div>
@@ -85,7 +96,7 @@ export function PetsList({ openPet }: { openPet: (id: string) => void }) {
             <Card key={p.id} onClick={() => openPet(p.id)} className="p-3.5 flex items-center gap-3.5">
               <Avatar pet={p} size="w-16 h-16" text="text-3xl" />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-lg leading-tight">{p.name}</p>
+                <p className="font-semibold text-lg leading-tight flex items-center gap-2">{p.name}{data.allergies.some((a) => a.petId === p.id) && <span className="text-[11px] font-bold rounded-full px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400">⚠️ Alergie</span>}</p>
                 <p className="text-[13px] text-muted truncate">{[p.breed || speciesOf(p.species).name, age(p.birthDate), w && `${w.kg.toLocaleString('cs-CZ')} kg`].filter(Boolean).join(' · ')}</p>
                 {next && <p className={`text-[13px] mt-0.5 font-medium ${status(next) === 'overdue' ? 'text-red-600 dark:text-red-400' : 'text-primary'}`}>{next.title} · {fmtDate(next.dueDate)}</p>}
               </div>
@@ -99,7 +110,7 @@ export function PetsList({ openPet }: { openPet: (id: string) => void }) {
   );
 }
 
-export function PetDetail({ id, back }: { id: string; back: () => void }) {
+export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask?: () => void }) {
   const { data, deletePet, deleteWeight } = useStore();
   const pet = data.pets.find((p) => p.id === id);
   const [tab, setTab] = useState<'pece' | 'zdravi' | 'vaha' | 'doklady'>('pece');
@@ -107,9 +118,13 @@ export function PetDetail({ id, back }: { id: string; back: () => void }) {
   const [rem, setRem] = useState<Reminder | null | 'new'>(null);
   const [vis, setVis] = useState<Visit | null | 'new'>(null);
   const [wt, setWt] = useState(false);
+  const [med, setMed] = useState<Medication | null | 'new'>(null);
+  const [alg, setAlg] = useState<Allergy | null | 'new'>(null);
   if (!pet) return <Empty emoji="🤔" title="Mazlíček nenalezen" text="" action={<Button onClick={back}>Zpět</Button>} />;
   const rems = data.reminders.filter((r) => r.petId === id).sort((a, b) => Number(!!a.completedAt) - Number(!!b.completedAt) || sortRem(a, b));
   const visits = data.visits.filter((v) => v.petId === id).sort((a, b) => b.date.localeCompare(a.date));
+  const meds = data.meds.filter((m) => m.petId === id).sort((a, b) => Number(!!a.end && a.end < today()) - Number(!!b.end && b.end < today()));
+  const allergies = data.allergies.filter((a) => a.petId === id);
   const info: [string, string][] = ([['Druh', speciesOf(pet.species).name], ['Plemeno', pet.breed], ['Narozen(a)', pet.birthDate && `${fmtDate(pet.birthDate)} (${age(pet.birthDate)})`], ['Pohlaví', pet.sex === 'samec' ? 'Samec' : pet.sex === 'samice' ? 'Samice' : ''], ['Barva', pet.color], ['Čip', pet.microchip]] as [string, string][]).filter(([, v]) => v);
   return (
     <div>
@@ -122,6 +137,7 @@ export function PetDetail({ id, back }: { id: string; back: () => void }) {
         <div className="min-w-0">
           <h1 className="text-[28px] font-bold leading-tight">{pet.name}</h1>
           <p className="text-muted">{[pet.breed || speciesOf(pet.species).name, age(pet.birthDate)].filter(Boolean).join(' · ')}</p>
+          {allergies.length > 0 && <button onClick={() => setTab('zdravi')} className="mt-1.5 text-[12px] font-bold rounded-full px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400">⚠️ Alergie: {allergies.map((a) => a.allergen).join(', ')}</button>}
         </div>
       </div>
       {info.length > 0 && (
@@ -130,6 +146,10 @@ export function PetDetail({ id, back }: { id: string; back: () => void }) {
           {pet.notes && <div className="col-span-2"><p className="text-muted text-xs">Poznámky</p><p>{pet.notes}</p></div>}
         </Card>
       )}
+      {ask && <button onClick={ask} className="press w-full mb-4 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_14px_30px_-14px_rgba(232,85,58,.7)]">
+        <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">🩺</span>
+        <span className="flex-1"><b className="block">Zeptat se AIVET</b><span className="text-sm text-white/85">Poradce zná profil {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
+      </button>}
       <Segmented value={tab} onChange={setTab} options={[{ v: 'pece', l: 'Péče' }, { v: 'zdravi', l: 'Zdraví' }, { v: 'vaha', l: 'Váha' }, { v: 'doklady', l: 'Doklady' }]} />
       <div className="mt-5 space-y-3 stagger" key={tab}>
         {tab === 'pece' && (<>
@@ -138,6 +158,35 @@ export function PetDetail({ id, back }: { id: string; back: () => void }) {
           {rems.map((r) => <ReminderRow key={r.id} r={r} showPet={false} onEdit={() => setRem(r)} />)}
         </>)}
         {tab === 'zdravi' && (<>
+          <Card className="p-4">
+            <div className="flex items-center justify-between mb-2"><p className="font-semibold">⚠️ Alergie</p><button className="text-sm font-semibold text-primary" onClick={() => setAlg('new')}>+ Přidat</button></div>
+            {!allergies.length ? <p className="text-sm text-muted">Žádné známé alergie.</p> : (
+              <div className="space-y-2">{allergies.map((a) => (
+                <button key={a.id} onClick={() => setAlg(a)} className="press w-full flex items-center gap-3 text-left rounded-2xl bg-ink/[0.03] dark:bg-white/[0.04] px-3 py-2.5">
+                  <div className="flex-1 min-w-0"><p className="font-semibold">{a.allergen}</p>{a.reaction && <p className="text-[13px] text-muted truncate">{a.reaction}</p>}</div>
+                  <span className={`text-[11px] font-bold uppercase rounded-full px-2 py-0.5 ${SEVERITY.find((x) => x.id === a.severity)?.cls}`}>{SEVERITY.find((x) => x.id === a.severity)?.n}</span>
+                </button>
+              ))}</div>
+            )}
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center justify-between mb-2"><p className="font-semibold">💊 Léky</p><button className="text-sm font-semibold text-primary" onClick={() => setMed('new')}>+ Přidat</button></div>
+            {!meds.length ? <p className="text-sm text-muted">Žádné léky.</p> : (
+              <div className="space-y-2">{meds.map((m) => {
+                const ended = !!m.end && m.end < today();
+                return (
+                  <button key={m.id} onClick={() => setMed(m)} className={`press w-full flex items-center gap-3 text-left rounded-2xl bg-ink/[0.03] dark:bg-white/[0.04] px-3 py-2.5 ${ended ? 'opacity-55' : ''}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold">{m.name}{m.reminderId && <span className="ml-1.5 text-xs">🔔</span>}</p>
+                      <p className="text-[13px] text-muted">{[m.dose, m.frequency].filter(Boolean).join(' · ')}</p>
+                      <p className="text-[12px] text-muted/80">{ended ? `Ukončeno ${fmtDate(m.end)}` : `Od ${fmtDate(m.start)}${m.end ? ` do ${fmtDate(m.end)}` : ''}`}</p>
+                    </div>
+                    <Icon name="chev" className="w-4 h-4 text-muted" />
+                  </button>
+                );
+              })}</div>
+            )}
+          </Card>
           <Button variant="soft" className="w-full" onClick={() => setVis('new')}><Icon name="plus" /> Zapsat návštěvu</Button>
           {!visits.length && <p className="text-sm text-muted text-center py-4">Zdravotní deník je prázdný.</p>}
           {visits.map((v) => <VisitRow key={v.id} v={v} onClick={() => setVis(v)} />)}
@@ -167,6 +216,8 @@ export function PetDetail({ id, back }: { id: string; back: () => void }) {
       <ReminderForm open={rem !== null} reminder={rem && rem !== 'new' ? rem : undefined} petId={pet.id} onClose={() => setRem(null)} />
       <VisitForm open={vis !== null} visit={vis && vis !== 'new' ? vis : undefined} petId={pet.id} onClose={() => setVis(null)} />
       <WeightForm open={wt} petId={pet.id} onClose={() => setWt(false)} />
+      <MedForm open={med !== null} med={med && med !== 'new' ? med : undefined} petId={pet.id} onClose={() => setMed(null)} />
+      <AllergyForm open={alg !== null} allergy={alg && alg !== 'new' ? alg : undefined} petId={pet.id} onClose={() => setAlg(null)} />
     </div>
   );
 }
@@ -374,5 +425,5 @@ export function Onboarding() {
   );
 }
 
-export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings';
+export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai';
 export type { Pet };

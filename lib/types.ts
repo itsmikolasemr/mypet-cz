@@ -51,6 +51,8 @@ export interface AppData {
   reminders: Reminder[];
   visits: Visit[];
   docs: DocMeta[];
+  meds: Medication[];
+  allergies: Allergy[];
   settings: { theme: Theme; onboarded: boolean; notify: boolean; notifyHour: number };
 }
 
@@ -62,4 +64,25 @@ export interface DocMeta {
   mime: string;
   size: number;
   date: string;
+}
+
+export interface Medication {
+  id: string;
+  petId: string;
+  name: string;
+  dose: string;
+  frequency: string;
+  start: string;
+  end: string;
+  notes: string;
+  reminderId?: string;
+}
+
+export type Severity = 'mirna' | 'stredni' | 'tezka';
+export interface Allergy {
+  id: string;
+  petId: string;
+  allergen: string;
+  reaction: string;
+  severity: Severity;
 }

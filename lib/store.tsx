@@ -1,13 +1,13 @@
 'use client';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import type { AppData, DocMeta, Pet, Reminder, Visit } from './types';
+import type { Allergy, AppData, DocMeta, Medication, Pet, Reminder, Visit } from './types';
 import { deleteBlob } from './docs';
 import { syncNotifications } from './notify';
 import { addDays, today, uid } from './utils';
 import { sampleData } from './sample';
 
 const KEY = 'tlapka:data:v1';
-const empty = (): AppData => ({ version: 1, pets: [], reminders: [], visits: [], docs: [], settings: { theme: 'system', onboarded: false, notify: false, notifyHour: 9 } });
+const empty = (): AppData => ({ version: 1, pets: [], reminders: [], visits: [], docs: [], meds: [], allergies: [], settings: { theme: 'system', onboarded: false, notify: false, notifyHour: 9 } });
 
 export function validate(x: unknown): AppData | null {
   if (!x || typeof x !== 'object') return null;
@@ -19,6 +19,8 @@ export function validate(x: unknown): AppData | null {
     reminders: d.reminders.map((r) => ({ ...r, history: Array.isArray(r.history) ? r.history : [] })),
     visits: d.visits,
     docs: Array.isArray(d.docs) ? d.docs : [],
+    meds: Array.isArray(d.meds) ? d.meds : [],
+    allergies: Array.isArray(d.allergies) ? d.allergies : [],
     settings: { theme: d.settings?.theme ?? 'system', onboarded: true, notify: !!d.settings?.notify, notifyHour: d.settings?.notifyHour ?? 9 },
   };
 }
@@ -66,7 +68,11 @@ function useStoreImpl() {
   return {
     data, ready,
     savePet: (p: Pet) => upd((d) => ({ ...d, pets: d.pets.some((x) => x.id === p.id) ? d.pets.map((x) => (x.id === p.id ? p : x)) : [...d.pets, p] })),
-    deletePet: (id: string) => upd((d) => { d.docs.filter((x) => x.petId === id).forEach((x) => deleteBlob(x.id).catch(() => {})); return { ...d, docs: d.docs.filter((x) => x.petId !== id), pets: d.pets.filter((p) => p.id !== id), reminders: d.reminders.filter((r) => r.petId !== id), visits: d.visits.filter((v) => v.petId !== id) }; }),
+    deletePet: (id: string) => upd((d) => { d.docs.filter((x) => x.petId === id).forEach((x) => deleteBlob(x.id).catch(() => {})); return { ...d, docs: d.docs.filter((x) => x.petId !== id), meds: d.meds.filter((x) => x.petId !== id), allergies: d.allergies.filter((x) => x.petId !== id), pets: d.pets.filter((p) => p.id !== id), reminders: d.reminders.filter((r) => r.petId !== id), visits: d.visits.filter((v) => v.petId !== id) }; }),
+    saveMed: (m: Medication) => upd((d) => ({ ...d, meds: d.meds.some((x) => x.id === m.id) ? d.meds.map((x) => (x.id === m.id ? m : x)) : [...d.meds, m] })),
+    deleteMed: (id: string) => upd((d) => ({ ...d, meds: d.meds.filter((x) => x.id !== id) })),
+    saveAllergy: (a: Allergy) => upd((d) => ({ ...d, allergies: d.allergies.some((x) => x.id === a.id) ? d.allergies.map((x) => (x.id === a.id ? a : x)) : [...d.allergies, a] })),
+    deleteAllergy: (id: string) => upd((d) => ({ ...d, allergies: d.allergies.filter((x) => x.id !== id) })),
     addDoc: (m: DocMeta) => upd((d) => ({ ...d, docs: [...d.docs, m] })),
     deleteDoc: (id: string) => { deleteBlob(id).catch(() => {}); upd((d) => ({ ...d, docs: d.docs.filter((x) => x.id !== id) })); },
     setNotify: (notify: boolean, notifyHour?: number) => upd((d) => ({ ...d, settings: { ...d.settings, notify, notifyHour: notifyHour ?? d.settings.notifyHour } })),
@@ -88,7 +94,7 @@ function useStoreImpl() {
     saveVisit: (v: Visit) => upd((d) => ({ ...d, visits: d.visits.some((x) => x.id === v.id) ? d.visits.map((x) => (x.id === v.id ? v : x)) : [...d.visits, v] })),
     deleteVisit: (id: string) => upd((d) => ({ ...d, visits: d.visits.filter((v) => v.id !== id) })),
     setTheme: (theme: AppData['settings']['theme']) => upd((d) => ({ ...d, settings: { ...d.settings, theme } })),
-    finishOnboarding: (withSample: boolean) => upd((d) => ({ ...(withSample ? sampleData() : { version: 1 as const, pets: [], reminders: [], visits: [], docs: [] }), settings: { ...d.settings, onboarded: true } })),
+    finishOnboarding: (withSample: boolean) => upd((d) => ({ ...(withSample ? sampleData() : { version: 1 as const, pets: [], reminders: [], visits: [], docs: [], meds: [], allergies: [] }), settings: { ...d.settings, onboarded: true } })),
     importData: (x: AppData) => setData(x),
     reset: () => { data.docs.forEach((x) => deleteBlob(x.id).catch(() => {})); setData(empty()); },
   };

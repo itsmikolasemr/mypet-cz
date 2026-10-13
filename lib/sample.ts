@@ -34,6 +34,12 @@ export function sampleData(): Omit<AppData, 'settings'> {
       { id: 'r5', petId: 'mia', type: 'pece', title: 'Stříhání drápků', product: '', dueDate: addDays(t, 14), intervalDays: 30, notes: '', history: [] },
     ],
     docs: [],
+    meds: [
+      { id: 'm1', petId: 'max', name: 'Cosequin', dose: '1 tableta', frequency: 'Denně ráno', start: addDays(t, -60), end: '', notes: 'Kloubní výživa' },
+    ],
+    allergies: [
+      { id: 'a1', petId: 'max', allergen: 'Kuřecí maso', reaction: 'Svědění, zarudnutí uší', severity: 'stredni' },
+    ],
     visits: [
       { id: 'v1', petId: 'max', date: addDays(t, -40), clinic: 'Veterina U Parku', reason: 'Preventivní prohlídka', notes: 'Vše v pořádku, hlídat váhu.', cost: 650 },
       { id: 'v2', petId: 'mia', date: addDays(t, -110), clinic: 'Veterina U Parku', reason: 'Kastrace', notes: 'Hojení bez komplikací.', cost: 2400 },

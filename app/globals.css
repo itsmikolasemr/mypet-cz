@@ -41,3 +41,12 @@ input[type='date'] { min-height: 50px; -webkit-appearance: none; }
 @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+.leaflet-container { font: inherit; background: #f2ece6; }
+html.dark .leaflet-tile-pane { filter: brightness(.72) contrast(1.1) saturate(.6) hue-rotate(-10deg); }
+.vet-pin { width: 34px; height: 34px; border-radius: 50% 50% 50% 4px; transform: rotate(-45deg); background: #fff; box-shadow: 0 6px 14px -4px rgba(59,42,36,.45); display: flex; align-items: center; justify-content: center; font-size: 15px; border: 2px solid #E8553A; }
+.vet-pin > * , .vet-pin { line-height: 1; }
+.vet-pin.ns { background: linear-gradient(135deg,#FF9A5A,#E8553A); color: #fff; font-weight: 800; font-size: 12px; border-color: #fff; }
+.me-dot { width: 18px; height: 18px; border-radius: 50%; background: #3b82f6; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(59,130,246,.25); }
+.leaflet-control-zoom { border: none !important; box-shadow: 0 6px 16px -6px rgba(59,42,36,.35) !important; border-radius: 16px !important; overflow: hidden; }
+.vet-pin span { transform: rotate(45deg); }
