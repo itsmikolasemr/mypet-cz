@@ -1,27 +1,25 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { Nunito } from 'next/font/google';
+
+const font = Nunito({ subsets: ['latin', 'latin-ext'], variable: '--font', display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'MyPet CZ — Zdravotní záznamy mazlíčků',
-  description: 'Česká aplikace pro správu zdravotních záznamů, připomínek a dokumentů vašich mazlíčků.',
+  title: 'Tlapka – péče o mazlíčky',
+  description: 'Připomínky odčervení a očkování, zdravotní deník, váha a dokumenty tvých mazlíčků.',
+  manifest: '/manifest.webmanifest',
+  icons: { icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/favicon.png', type: 'image/png' }], apple: '/icons/apple-touch-icon.png' },
+  appleWebApp: { capable: true, title: 'Tlapka', statusBarStyle: 'default' },
 };
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#FFF8F0' };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const noFlash = `try{var d=JSON.parse(localStorage.getItem('tlapka:data:v1')||'{}');var t=(d.settings&&d.settings.theme)||'system';if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="cs">
-      <body className="min-h-screen antialiased">
-        <header className="bg-white border-b border-gray-100 px-4 py-3">
-          <div className="max-w-md mx-auto flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#2E7D6F] flex items-center justify-center text-white text-sm font-bold">M</div>
-            <span className="font-semibold text-lg">MyPet CZ</span>
-          </div>
-        </header>
-        <main className="max-w-md mx-auto p-4">{children}</main>
-      </body>
+    <html lang="cs" className={font.variable} suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: noFlash }} /></head>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }
