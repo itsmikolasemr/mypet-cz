@@ -29,7 +29,7 @@
 - Velikosti: h1 24-32px, body 16px, small 14px
 
 ## Logo
-Jednoduchá ikona tlapky (outline styl, barva #2E7D6F) + wordmark "MyPet" nebo "Mazlík". Favicon: zaoblená tlapka na světlém pozadí.
+Jednoduchá ikona tlapky (outline styl, barva #2E7D6F, 2px stroke) + wordmark "MyPet" nebo "Mazlík". Favicon: zaoblená tlapka na světlém pozadí #F7F5F2. OG karta: fotka mazlíčka + overlay s primární barvou a názvem.
 
 ## UI komponenty (směr)
 - Karty: rounded-2xl, bílé, jemný border, shadow-sm
