@@ -13,7 +13,10 @@ const km = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) =>
   const x = Math.sin(dLat / 2) ** 2 + Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(x));
 };
-const is247 = (t: Record<string, string>) => /^\s*24\s*\/\s*7\s*$/.test(t.opening_hours ?? '') || t['emergency'] === 'yes' && /24\/7/.test(t.opening_hours ?? '');
+const is247 = (t: Record<string, string>) => {
+  const oh = (t.opening_hours ?? '').replace(/\s+/g, ' ').trim();
+  return /^24 ?\/ ?7$/.test(oh) || /^(Mo-Su )?00:00-(24:00|23:59)$/.test(oh);
+};
 const address = (t: Record<string, string>) =>
   [[t['addr:street'] ?? t['addr:place'], t['addr:housenumber'] ?? t['addr:conscriptionnumber']].filter(Boolean).join(' '), [t['addr:postcode'], t['addr:city']].filter(Boolean).join(' ')].filter(Boolean).join(', ');
 

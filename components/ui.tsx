@@ -127,7 +127,7 @@ export function Segmented<T extends string>({ value, onChange, options }: { valu
 export function PageHeader({ title, sub, action, fab }: { title: string; sub?: string; action?: React.ReactNode; fab?: React.ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const f = () => setScrolled(window.scrollY > 12);
+    const f = () => setScrolled((was) => (was ? window.scrollY > 4 : window.scrollY > 40));
     f(); window.addEventListener('scroll', f, { passive: true });
     return () => window.removeEventListener('scroll', f);
   }, []);
