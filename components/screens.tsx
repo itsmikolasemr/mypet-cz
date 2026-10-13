@@ -8,6 +8,8 @@ import { Avatar, Button, Card, Empty, Fab, Icon, Logo, PageHeader, Segmented } f
 import { AllergyForm, MedForm, PetForm, ReminderForm, SEVERITY, VisitForm, WeightForm } from './forms';
 import type { Allergy, Medication } from '@/lib/types';
 import { Documents, PetChip, ReminderRow, VisitRow, WeightChart } from './parts';
+import { Companion } from './Companion';
+import { useAmbient } from './ambient';
 
 const sortRem = (a: Reminder, b: Reminder) => a.dueDate.localeCompare(b.dueDate);
 const greeting = () => { const h = new Date().getHours(); return h < 10 ? 'Dobré ráno' : h < 18 ? 'Dobrý den' : 'Dobrý večer'; };
@@ -30,12 +32,12 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
         <Empty emoji="🐾" title="Zatím tu nikdo není" text="Přidej svého prvního mazlíčka a Tlapka ti pohlídá odčervení, očkování i veterinu." action={<Button onClick={() => setNewPet(true)}><Icon name="plus" /> Přidat mazlíčka</Button>} />
       ) : (
         <div className="space-y-8 stagger">
-          <div className="rounded-[28px] p-6 text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_18px_40px_-14px_rgba(232,85,58,.6),0_6px_14px_-6px_rgba(232,85,58,.35)] relative overflow-hidden">
-            <Icon name="paw" fill className="absolute -right-6 -bottom-6 w-36 h-36 text-white/15" />
-            <p className="text-white/85 text-sm font-medium">Tento měsíc</p>
-            <p className="text-3xl font-bold mt-1">{upcoming.length} {upcoming.length === 1 ? 'úkol' : upcoming.length >= 2 && upcoming.length <= 4 ? 'úkoly' : 'úkolů'}</p>
-            <p className="text-white/90 text-sm mt-1">{overdue.length ? `⚠️ ${overdue.length} po termínu` : 'Vše v pořádku, nic nemeškáš ✨'}</p>
+          <Companion data={data} pets={data.pets} onOpen={openPet} />
+          <div className="flex gap-2 -mt-4">
+            <span className="flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">📅 {upcoming.length} {upcoming.length === 1 ? 'úkol' : upcoming.length >= 2 && upcoming.length <= 4 ? 'úkoly' : 'úkolů'} / 30 dní</span>
+            <span className={`flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold shadow-card dark:shadow-card-d ring-1 ${overdue.length ? 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:ring-red-500/20' : 'bg-surface dark:bg-surface-d ring-ink/5 dark:ring-white/10'}`}>{overdue.length ? `⚠️ ${overdue.length} po termínu` : '✨ Nic nemeškáš'}</span>
           </div>
+          <p className="text-[12px] text-muted -mt-5 px-1">Tip: připomínku odškrtneš i potažením doprava 🐾</p>
           <div className="grid grid-cols-2 gap-3">
             <Card onClick={() => go('ai')} className="p-4">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white text-xl flex items-center justify-center shadow-[0_8px_18px_-8px_rgba(232,85,58,.7)] mb-3">🩺</div>
@@ -120,6 +122,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
   const [wt, setWt] = useState(false);
   const [med, setMed] = useState<Medication | null | 'new'>(null);
   const [alg, setAlg] = useState<Allergy | null | 'new'>(null);
+  const ambient = useAmbient(pet?.photo);
   if (!pet) return <Empty emoji="🤔" title="Mazlíček nenalezen" text="" action={<Button onClick={back}>Zpět</Button>} />;
   const rems = data.reminders.filter((r) => r.petId === id).sort((a, b) => Number(!!a.completedAt) - Number(!!b.completedAt) || sortRem(a, b));
   const visits = data.visits.filter((v) => v.petId === id).sort((a, b) => b.date.localeCompare(a.date));
@@ -132,10 +135,11 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
         <button onClick={back} className="press flex items-center gap-1 text-primary font-semibold pl-2 pr-3 py-1.5 rounded-full"><Icon name="back" /> Zpět</button>
         <button onClick={() => setEdit(true)} className="press flex items-center gap-1.5 text-primary font-semibold px-3 py-1.5 rounded-full"><Icon name="edit" className="w-4 h-4" /> Upravit</button>
       </div>
+      {ambient && <div aria-hidden className="fixed inset-x-0 top-0 h-[55dvh] -z-10 pointer-events-none transition-opacity duration-700" style={{ background: `radial-gradient(100% 70% at 30% 0%, ${ambient}66, transparent 70%)` }} />}
       <div className="flex items-center gap-4 mb-4">
         <Avatar pet={pet} size="w-24 h-24 shadow-float dark:shadow-float-d" text="text-5xl" />
         <div className="min-w-0">
-          <h1 className="text-[28px] font-bold leading-tight">{pet.name}</h1>
+          <h1 className="text-[28px] font-bold leading-tight break-words">{pet.name}</h1>
           <p className="text-muted">{[pet.breed || speciesOf(pet.species).name, age(pet.birthDate)].filter(Boolean).join(' · ')}</p>
           {allergies.length > 0 && <button onClick={() => setTab('zdravi')} className="mt-1.5 text-[12px] font-bold rounded-full px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400">⚠️ Alergie: {allergies.map((a) => a.allergen).join(', ')}</button>}
         </div>
@@ -305,7 +309,7 @@ export function CalendarScreen() {
               {days.map((d) => {
                 const inM = parse(d).getMonth() === mv, isSel = d === sel, isT = d === today(), m = byDay[d];
                 return (
-                  <button key={d} onClick={() => setSel(d)} className={`relative h-11 mx-0.5 rounded-xl text-sm font-medium transition ${isSel ? 'bg-primary text-white' : isT ? 'bg-primary/10 text-primary' : inM ? '' : 'text-muted'}`}>
+                  <button key={d} onClick={() => setSel(d)} className={`relative h-11 mx-0.5 rounded-xl text-sm font-medium transition ${isSel ? 'bg-primary-d text-white' : isT ? 'bg-primary/10 text-primary' : inM ? '' : 'text-muted'}`}>
                     {Number(d.slice(8))}
                     {m && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">{m.v > 0 && <i className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white' : 'bg-primary'}`} />}{m.r > 0 && <i className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white/70' : 'bg-amber-500'}`} />}</span>}
                   </button>

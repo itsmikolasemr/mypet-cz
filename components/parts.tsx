@@ -6,32 +6,87 @@ import { MAX_DOC_BYTES, fmtDate, fmtShort, intervalName, parse, relDue, status, 
 import { loadBlob, saveBlob } from '@/lib/docs';
 import { Avatar, Button, Card, Field, Icon, Sheet, StatusPill, inputCls } from './ui';
 
+const PAW = 'M8.5 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm7 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM5 15a1.8 1.8 0 1 0 0-3.6A1.8 1.8 0 0 0 5 15Zm14 0a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Zm-7-1c-2.5 0-5 3-5 5 0 1.4 1.2 2 2.5 2 1 0 1.6-.5 2.5-.5s1.5.5 2.5.5c1.3 0 2.5-.6 2.5-2 0-2-2.5-5-5-5Z';
+
 export function ReminderRow({ r, pet, onEdit, showPet = true }: { r: Reminder; pet?: Pet; onEdit: () => void; showPet?: boolean }) {
   const { completeReminder, reopenReminder } = useStore();
   const s = status(r);
   const t = typeOf(r.type);
   const [pop, setPop] = useState(false);
+  const [dx, setDx] = useState(0);
+  const [paws, setPaws] = useState<{ id: number; x: number; y: number; r: number }[]>([]);
+  const drag = useRef<{ x0: number; y0: number; w: number; moved: boolean; last: number; locked?: 'x' | 'y'; id: number } | null>(null);
+  const suppressClick = useRef(false);
+  const done = () => {
+    setPop(true);
+    try { navigator.vibrate?.([12, 30, 18]); } catch {}
+    setTimeout(() => { completeReminder(r.id); setPop(false); setDx(0); }, 380);
+  };
+  const can = s !== 'done';
+  const onDown = (e: React.PointerEvent) => {
+    if (!can || e.pointerType === 'mouse' && e.button !== 0) return;
+    drag.current = { x0: e.clientX, y0: e.clientY, w: (e.currentTarget as HTMLElement).offsetWidth, moved: false, last: 0, id: e.pointerId };
+  };
+  const onMove = (e: React.PointerEvent) => {
+    const d = drag.current; if (!d) return;
+    const mx = e.clientX - d.x0, my = e.clientY - d.y0;
+    if (!d.locked && (Math.abs(mx) > 8 || Math.abs(my) > 8)) {
+      d.locked = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
+      if (d.locked === 'x') (e.currentTarget as HTMLElement).setPointerCapture(d.id);
+    }
+    if (d.locked !== 'x') return;
+    d.moved = true;
+    const x = Math.max(0, Math.min(d.w * 0.9, mx));
+    setDx(x);
+    if (x - d.last > 30) {
+      d.last = x;
+      const n = Math.floor(x / 30);
+      setPaws((p) => [...p.slice(-10), { id: Date.now() + n, x: x - 18, y: n % 2 ? 14 : 38, r: 90 + (n % 2 ? -12 : 12) }]);
+      try { navigator.vibrate?.(4); } catch {}
+    }
+  };
+  const onUp = () => {
+    const d = drag.current; drag.current = null; if (!d) return;
+    if (d.moved) { suppressClick.current = true; setTimeout(() => (suppressClick.current = false), 50); }
+    if (d.moved && dx > d.w * 0.38) done(); else setDx(0);
+  };
+  const progress = Math.min(1, dx / 140);
   return (
-    <Card className={`p-4 flex items-center gap-3.5 ${s === 'done' ? 'opacity-60' : ''}`}>
-      <button onClick={onEdit} className="flex items-center gap-3 flex-1 min-w-0 text-left">
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${s === 'overdue' ? 'bg-red-100 dark:bg-red-500/15' : s === 'soon' ? 'bg-amber-100 dark:bg-amber-500/15' : 'bg-primary/10'}`}>{t.emoji}</div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2"><p className="font-semibold truncate">{r.title}</p><StatusPill s={s} /></div>
-          <p className="text-[13px] text-muted truncate">
-            {showPet && pet ? `${pet.name} · ` : ''}{r.product ? `${r.product} · ` : ''}{s === 'done' ? `hotovo ${fmtDate(r.completedAt!)}` : `${fmtShort(r.dueDate)} (${relDue(r.dueDate)})`}
-          </p>
-          {r.intervalDays > 0 && s !== 'done' && <p className="text-[12px] text-muted flex items-center gap-1"><Icon name="repeat" className="w-3 h-3" />{intervalName(r.intervalDays)}</p>}
+    <div className="relative">
+      {can && (
+        <div aria-hidden className="absolute inset-0 rounded-[22px] overflow-hidden flex items-center pl-5 font-bold text-white bg-gradient-to-r from-[#FF9A5A] to-[#E8553A]" style={{ opacity: dx ? 0.35 + progress * 0.65 : 0 }}>
+          <span style={{ transform: `scale(${0.8 + progress * 0.3})` }} className="transition-transform">✓ Hotovo</span>
         </div>
-      </button>
-      {s === 'done' ? (
-        <button onClick={() => reopenReminder(r.id)} className="press text-xs font-semibold text-muted px-2 py-2">Obnovit</button>
-      ) : (
-        <button aria-label="Označit jako hotové" onClick={() => { setPop(true); setTimeout(() => { completeReminder(r.id); setPop(false); }, 350); }}
-          className={`press w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${pop ? 'bg-primary border-primary text-white scale-110' : 'border-primary/40 text-primary/50'}`}>
-          <Icon name="check" className="w-5 h-5" />
-        </button>
       )}
-    </Card>
+      <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden rounded-[22px] z-10">
+        {paws.map((p) => (
+          <svg key={p.id} viewBox="0 0 24 24" className="paw-print text-white" style={{ left: p.x, top: p.y, ['--r' as string]: `${p.r}deg` }} onAnimationEnd={() => setPaws((x) => x.filter((y) => y.id !== p.id))}><path d={PAW} fill="currentColor" /></svg>
+        ))}
+      </div>
+      <div className={`swipe-track select-none relative ${dx ? '' : 'transition-transform duration-300 ease-spring'}`} style={{ transform: `translateX(${dx}px)` }}
+        onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
+        <Card className={`p-4 flex items-center gap-3.5 ${s === 'done' ? 'opacity-60' : ''}`}>
+          <button onClick={() => { if (!suppressClick.current) onEdit(); }} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${s === 'overdue' ? 'bg-red-100 dark:bg-red-500/15' : s === 'soon' ? 'bg-amber-100 dark:bg-amber-500/15' : 'bg-primary/10'}`}>{t.emoji}</div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 min-w-0"><p className="font-semibold truncate">{r.title}</p><span className="shrink-0"><StatusPill s={s} /></span></div>
+              <p className="text-[13px] text-muted truncate">
+                {showPet && pet ? `${pet.name} · ` : ''}{r.product ? `${r.product} · ` : ''}{s === 'done' ? `hotovo ${fmtDate(r.completedAt!)}` : `${fmtShort(r.dueDate)} (${relDue(r.dueDate)})`}
+              </p>
+              {r.intervalDays > 0 && s !== 'done' && <p className="text-[12px] text-muted flex items-center gap-1"><Icon name="repeat" className="w-3 h-3" />{intervalName(r.intervalDays)}</p>}
+            </div>
+          </button>
+          {s === 'done' ? (
+            <button onClick={() => reopenReminder(r.id)} className="press text-xs font-semibold text-muted px-2 py-2">Obnovit</button>
+          ) : (
+            <button aria-label="Označit jako hotové" onClick={done}
+              className={`press w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all shrink-0 ${pop ? 'bg-primary border-primary text-white scale-110' : 'border-primary/40 text-primary'}`}>
+              <Icon name="check" className="w-5 h-5" />
+            </button>
+          )}
+        </Card>
+      </div>
+    </div>
   );
 }
 

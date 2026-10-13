@@ -1,0 +1,108 @@
+'use client';
+import { useMemo, useState } from 'react';
+import type { AppData, Pet } from '@/lib/types';
+import { diffDays, status, today } from '@/lib/utils';
+import { useAmbient } from './ambient';
+
+export type Mood = 'happy' | 'ok' | 'sad';
+
+/** Care score 0–100 from the pet's reminders: overdue items hurt, recent completions help. */
+export function careOf(data: AppData, petId: string) {
+  const rs = data.reminders.filter((r) => r.petId === petId);
+  const overdue = rs.filter((r) => status(r) === 'overdue');
+  const dueToday = rs.filter((r) => !r.completedAt && r.dueDate === today());
+  const recent = rs.flatMap((r) => r.history.map((h) => ({ h, r }))).filter(({ h }) => diffDays(today(), h) <= 7).sort((a, b) => b.h.localeCompare(a.h));
+  const worst = overdue.reduce((m, r) => Math.max(m, diffDays(today(), r.dueDate)), 0);
+  let score = 100 - overdue.length * 22 - Math.min(30, worst) - dueToday.length * 6 + Math.min(10, recent.length * 5);
+  score = Math.max(0, Math.min(100, score));
+  const mood: Mood = score >= 80 ? 'happy' : score >= 50 ? 'ok' : 'sad';
+  return { score, mood, overdue, dueToday, recent };
+}
+
+function line(pet: Pet, c: ReturnType<typeof careOf>) {
+  const he = pet.sex === 'samice' ? 'a' : '';
+  if (c.overdue.length) {
+    const r = c.overdue[0];
+    return `${r.product || r.title} mělo být ${diffDays(today(), r.dueDate) === 1 ? 'včera' : `před ${diffDays(today(), r.dueDate)} dny`}… nezapomeň na mě 🥺`;
+  }
+  if (c.dueToday.length) return `Dneska nás čeká: ${c.dueToday[0].title.toLowerCase()}. Zvládneme to! 💪`;
+  if (c.recent.length) return `Díky za ${c.recent[0].r.product || c.recent[0].r.title.toLowerCase()}! Cítím se skvěle 💛`;
+  return `Jsem v pohodě a spokojen${he || 'ý'}. Pojď si hrát! 🐾`;
+}
+
+export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; onOpen: (id: string) => void }) {
+  const [idx, setIdx] = useState(0);
+  const [bump, setBump] = useState(0);
+  const pet = pets[Math.min(idx, pets.length - 1)];
+  const c = useMemo(() => careOf(data, pet.id), [data, pet.id]);
+  const ambient = useAmbient(pet.photo);
+  const cat = pet.species === 'kocka';
+  const fur = ambient ?? (cat ? '#C9B8A8' : '#E3B27A');
+  const pet_ = () => { setBump((b) => b + 1); try { navigator.vibrate?.(c.mood === 'sad' ? [10, 40, 10] : 15); } catch {} };
+  const label = { happy: 'Šťastný', ok: 'V pohodě', sad: 'Smutný' }[c.mood];
+  const R = 46, C = 2 * Math.PI * R;
+  return (
+    <section aria-label={`Živý mazlíček ${pet.name}: ${label}, péče ${c.score} %`} className="relative rounded-[30px] p-5 pb-4 overflow-hidden bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d ring-1 ring-ink/5 dark:ring-white/10">
+      <div aria-hidden className="absolute inset-0 opacity-60 dark:opacity-40 transition-colors duration-700" style={{ background: `radial-gradient(120% 90% at 20% 0%, ${fur}55, transparent 60%), radial-gradient(90% 80% at 100% 100%, ${c.mood === 'sad' ? '#7aa2c855' : '#FF9A5A44'}, transparent 60%)` }} />
+      <div className="relative flex items-center gap-4">
+        <button onClick={pet_} aria-label={`Pohladit ${pet.name}`} className={`companion mood-${c.mood} relative w-[132px] h-[132px] shrink-0`} key={bump}>
+          <svg viewBox="0 0 120 120" className="absolute inset-0 -rotate-90" aria-hidden>
+            <circle cx="60" cy="60" r={R} fill="none" strokeWidth="6" className="stroke-ink/10 dark:stroke-white/10" />
+            <circle cx="60" cy="60" r={R} fill="none" strokeWidth="6" strokeLinecap="round" stroke="url(#ring)" strokeDasharray={C} strokeDashoffset={C * (1 - c.score / 100)} style={{ transition: 'stroke-dashoffset 1s cubic-bezier(.3,1.2,.5,1)' }} />
+            <defs><linearGradient id="ring"><stop offset="0" stopColor={c.mood === 'sad' ? '#7aa2c8' : '#FF9A5A'} /><stop offset="1" stopColor={c.mood === 'sad' ? '#4f7bb0' : '#E8553A'} /></linearGradient></defs>
+          </svg>
+          <svg viewBox="0 0 120 120" className="relative w-full h-full" aria-hidden>
+            <g className="c-body">
+              {/* tail */}
+              <path className="c-tail" d={cat ? 'M86 86 C 104 84, 108 64, 98 56' : 'M84 84 C 98 82, 102 70, 100 62'} fill="none" stroke={fur} strokeWidth={cat ? 6 : 8} strokeLinecap="round" />
+              {/* body */}
+              <ellipse cx="60" cy="86" rx="26" ry="18" fill={fur} />
+              <ellipse cx="60" cy="90" rx="14" ry="10" fill="#FFF8F0" opacity=".55" />
+              {/* head */}
+              <g className="c-head">
+                {cat ? (<>
+                  <path className="c-ear l" d="M38 44 L42 24 L54 38 Z" fill={fur} />
+                  <path className="c-ear r" d="M82 44 L78 24 L66 38 Z" fill={fur} />
+                </>) : (<>
+                  <ellipse className="c-ear l" cx="36" cy="50" rx="8" ry="15" fill={fur} style={{ filter: 'brightness(.82)' }} />
+                  <ellipse className="c-ear r" cx="84" cy="50" rx="8" ry="15" fill={fur} style={{ filter: 'brightness(.82)' }} />
+                </>)}
+                <circle cx="60" cy="54" r="24" fill={fur} />
+                <ellipse cx="60" cy="63" rx="12" ry="9" fill="#FFF8F0" opacity=".7" />
+                {/* eyes */}
+                <g className="c-eyes">
+                  {c.mood === 'happy' ? (<>
+                    <path d="M46 52 q4 -5 8 0" stroke="#3B2A24" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+                    <path d="M66 52 q4 -5 8 0" stroke="#3B2A24" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+                  </>) : (<>
+                    <circle cx="50" cy="52" r="3.4" fill="#3B2A24" /><circle cx="70" cy="52" r="3.4" fill="#3B2A24" />
+                    <circle cx="51" cy="51" r="1" fill="#fff" /><circle cx="71" cy="51" r="1" fill="#fff" />
+                  </>)}
+                  {c.mood === 'sad' && (<><path d="M45 47 l9 -3" stroke="#3B2A24" strokeWidth="2" strokeLinecap="round" /><path d="M75 47 l-9 -3" stroke="#3B2A24" strokeWidth="2" strokeLinecap="round" /></>)}
+                </g>
+                {c.mood === 'sad' && <path className="c-tear" d="M48 57 q-2 4 0 6 q2 -2 0 -6z" fill="#7aa2c8" />}
+                <ellipse cx="60" cy="60" rx="3.4" ry="2.4" fill="#3B2A24" />
+                <path d={c.mood === 'sad' ? 'M54 68 q6 -4 12 0' : c.mood === 'happy' ? 'M53 64 q7 8 14 0' : 'M55 65 q5 3 10 0'} stroke="#3B2A24" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+                {c.mood === 'happy' && (<><circle cx="42" cy="62" r="4" fill="#FF8A7A" opacity=".45" /><circle cx="78" cy="62" r="4" fill="#FF8A7A" opacity=".45" /></>)}
+              </g>
+            </g>
+            {bump > 0 && <g className="c-hearts"><text x="30" y="30" fontSize="14">💛</text><text x="78" y="24" fontSize="11">💛</text><text x="56" y="16" fontSize="12">💛</text></g>}
+          </svg>
+          {pet.photo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={pet.photo} alt="" className="absolute -right-1 -bottom-1 w-9 h-9 rounded-full object-cover ring-[3px] ring-surface dark:ring-surface-d shadow-card" />)}
+        </button>
+        <div className="min-w-0 flex-1">
+          <p className="text-[12px] font-bold uppercase tracking-wider text-muted">{label} · péče {c.score} %</p>
+          <button onClick={() => onOpen(pet.id)} className="text-left text-2xl font-bold leading-tight truncate max-w-full">{pet.name}</button>
+          <div className="mt-2 relative rounded-2xl rounded-tl-md bg-bg/90 dark:bg-white/[0.07] px-3 py-2 text-[14px] leading-snug ring-1 ring-ink/5 dark:ring-white/10 animate-fade" key={pet.id + c.mood}>{line(pet, c)}</div>
+        </div>
+      </div>
+      {pets.length > 1 && (
+        <div className="relative flex justify-center gap-1.5 mt-3" role="tablist" aria-label="Vyber mazlíčka">
+          {pets.map((p, i) => <button key={p.id} role="tab" aria-selected={i === idx} aria-label={p.name} onClick={() => setIdx(i)} className={`h-2 rounded-full transition-all ${i === idx ? 'w-6 bg-primary' : 'w-2 bg-ink/20 dark:bg-white/25'}`} />)}
+        </div>
+      )}
+    </section>
+  );
+}
