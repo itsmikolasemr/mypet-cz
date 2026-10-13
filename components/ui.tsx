@@ -106,7 +106,7 @@ const STATUS: Record<Status, [string, string]> = {
   overdue: ['Po termínu', 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400'],
   soon: ['Brzy', 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300'],
   ok: ['Naplánováno', 'bg-primary/10 text-primary dark:text-primary-l'],
-  done: ['Hotovo', 'bg-ink/5 text-muted dark:bg-white/10'],
+  done: ['Hotovo', 'bg-ink/5 text-muted dark:bg-white/10 dark:text-white/85'],
 };
 export function StatusPill({ s }: { s: Status }) {
   return <span className={`text-[11px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 ${STATUS[s][1]}`}>{STATUS[s][0]}</span>;

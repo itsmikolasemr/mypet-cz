@@ -131,3 +131,10 @@ export async function resizeImage(file: File, max = 480): Promise<string> {
   c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
   return c.toDataURL('image/jpeg', 0.82);
 }
+
+/** Parse a user-typed Czech number like "1 200,50" → 1200.5; NaN when invalid. */
+export const num = (s: string) => {
+  const t = s.replace(/[\s\u00a0]/g, '').replace(',', '.');
+  return /^-?\d+(\.\d+)?$/.test(t) ? Number(t) : NaN;
+};
+export const MAX_DOC_BYTES = 25 * 1024 * 1024;

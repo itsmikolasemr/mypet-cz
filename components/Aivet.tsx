@@ -55,7 +55,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
     try {
       const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })), pet: profile() }) });
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(j.error === 'rate_limited' ? 'AIVET je teď přetížený, zkus to za chvíli.' : j.error === 'not_configured' ? 'AIVET ještě není nastavený.' : 'Odpověď se nepodařilo získat.');
+      if (!r.ok) throw new Error(j.error === 'rate_limited_client' ? `Dosáhl jsi limitu dotazů (${j.window === 'den' ? 'denní' : 'na 10 minut'}). Zkus to za ${Math.max(1, Math.round((j.retryAfter ?? 60) / 60))} min.` : j.error === 'rate_limited' ? 'AIVET je teď přetížený, zkus to za chvíli.' : j.error === 'not_configured' ? 'AIVET ještě není nastavený.' : 'Odpověď se nepodařilo získat.');
       setMsgs([...next, { role: 'assistant', content: j.reply, emergency: !!j.emergency }]);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Chyba spojení.'); }
     finally { setBusy(false); }

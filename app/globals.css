@@ -50,3 +50,7 @@ html.dark .leaflet-tile-pane { filter: brightness(.72) contrast(1.1) saturate(.6
 .me-dot { width: 18px; height: 18px; border-radius: 50%; background: #3b82f6; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(59,130,246,.25); }
 .leaflet-control-zoom { border: none !important; box-shadow: 0 6px 16px -6px rgba(59,42,36,.35) !important; border-radius: 16px !important; overflow: hidden; }
 .vet-pin span { transform: rotate(45deg); }
+/* contrast: brand orange text darker on light, lighter on dark (WCAG AA) */
+.text-primary { color: #C2412A; }
+html.dark .text-primary { color: #FF9A6A; }
+html.dark .text-red-600, html.dark .text-red-700 { color: #FCA5A5; }

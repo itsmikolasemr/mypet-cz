@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { DocMeta, Pet, Reminder, Visit } from '@/lib/types';
 import { useStore } from '@/lib/store';
-import { fmtDate, fmtShort, intervalName, relDue, status, today, typeOf, uid } from '@/lib/utils';
+import { MAX_DOC_BYTES, fmtDate, fmtShort, intervalName, parse, relDue, status, today, typeOf, uid } from '@/lib/utils';
 import { loadBlob, saveBlob } from '@/lib/docs';
 import { Avatar, Button, Card, Field, Icon, Sheet, StatusPill, inputCls } from './ui';
 
@@ -20,7 +20,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true }: { r: Reminder; p
           <p className="text-[13px] text-muted truncate">
             {showPet && pet ? `${pet.name} · ` : ''}{r.product ? `${r.product} · ` : ''}{s === 'done' ? `hotovo ${fmtDate(r.completedAt!)}` : `${fmtShort(r.dueDate)} (${relDue(r.dueDate)})`}
           </p>
-          {r.intervalDays > 0 && s !== 'done' && <p className="text-[12px] text-muted/80 flex items-center gap-1"><Icon name="repeat" className="w-3 h-3" />{intervalName(r.intervalDays)}</p>}
+          {r.intervalDays > 0 && s !== 'done' && <p className="text-[12px] text-muted flex items-center gap-1"><Icon name="repeat" className="w-3 h-3" />{intervalName(r.intervalDays)}</p>}
         </div>
       </button>
       {s === 'done' ? (
@@ -40,7 +40,7 @@ export function VisitRow({ v, pet, onClick }: { v: Visit; pet?: Pet; onClick: ()
     <Card onClick={onClick} className="p-4 flex gap-3.5 items-start">
       <div className="w-12 shrink-0 text-center rounded-xl bg-secondary/20 py-1.5">
         <div className="text-lg font-bold leading-none">{Number(v.date.slice(8))}</div>
-        <div className="text-[11px] uppercase text-muted">{new Date(v.date).toLocaleDateString('cs-CZ', { month: 'short' })}</div>
+        <div className="text-[11px] uppercase text-muted">{parse(v.date).toLocaleDateString('cs-CZ', { month: 'short' })}</div>
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{v.reason}</p>
@@ -55,12 +55,12 @@ export function WeightChart({ pet }: { pet: Pet }) {
   const w = pet.weights;
   if (w.length < 2) return <p className="text-sm text-muted py-6 text-center">{w.length ? `Zatím jeden záznam: ${w[0].kg} kg. Přidej další pro graf.` : 'Zatím žádná váha.'}</p>;
   const W = 320, H = 150, px = 28, py = 18;
-  const t0 = new Date(w[0].date).getTime(), t1 = new Date(w[w.length - 1].date).getTime() || t0 + 1;
+  const t0 = parse(w[0].date).getTime(), t1 = parse(w[w.length - 1].date).getTime();
   const ks = w.map((x) => x.kg);
   let lo = Math.min(...ks), hi = Math.max(...ks);
   const pad = Math.max((hi - lo) * 0.2, 0.5); lo -= pad; hi += pad;
   const same = t1 === t0;
-  const X = (d: string, i = 0) => px + (same ? i / (w.length - 1) : (new Date(d).getTime() - t0) / (t1 - t0)) * (W - px * 2);
+  const X = (d: string, i = 0) => px + (same ? i / (w.length - 1) : (parse(d).getTime() - t0) / (t1 - t0)) * (W - px * 2);
   const Y = (k: number) => py + (1 - (k - lo) / (hi - lo)) * (H - py * 2);
   const pts = w.map((x, i) => `${X(x.date, i)},${Y(x.kg)}`).join(' ');
   const last = w[w.length - 1], prev = w[w.length - 2];
@@ -117,7 +117,7 @@ export function Documents({ pet }: { pet: Pet }) {
   const close = () => { if (view) URL.revokeObjectURL(view.url); setView(null); };
   return (
     <div className="space-y-2.5">
-      <input ref={ref} type="file" accept="image/*,application/pdf" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) { setPending(f); setMeta({ name: f.name.replace(/\.[^.]+$/, ''), kind: f.type === 'application/pdf' ? 'faktura' : 'rtg', date: today() }); } e.target.value = ''; }} />
+      <input ref={ref} type="file" accept="image/*,application/pdf" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f && f.size > MAX_DOC_BYTES) { alert('Soubor je větší než 25 MB. Zmenši ho nebo vyfoť znovu.'); e.target.value = ''; return; } if (f) { setPending(f); setMeta({ name: f.name.replace(/\.[^.]+$/, ''), kind: f.type === 'application/pdf' ? 'faktura' : 'rtg', date: today() }); } e.target.value = ''; }} />
       <Button variant="soft" className="w-full" onClick={() => ref.current?.click()}><Icon name="upload" /> Nahrát dokument</Button>
       {!docs.length && <p className="text-sm text-muted text-center py-4">Faktury, RTG snímky, zprávy z veteriny – vše na jednom místě.</p>}
       {docs.map((d) => (

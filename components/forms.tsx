@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Allergy, Medication, Pet, Reminder, ReminderType, Severity, Sex, Species, Visit } from '@/lib/types';
 import { useStore } from '@/lib/store';
-import { BREEDS, INTERVALS, PRODUCTS, REMINDER_TYPES, SPECIES, addDays, resizeImage, today, typeOf, uid } from '@/lib/utils';
+import { BREEDS, INTERVALS, PRODUCTS, REMINDER_TYPES, SPECIES, addDays, num, resizeImage, today, typeOf, uid } from '@/lib/utils';
 import { Button, Field, Icon, Sheet, inputCls } from './ui';
 
 export function PetForm({ open, onClose, pet }: { open: boolean; onClose: () => void; pet?: Pet }) {
@@ -17,8 +17,8 @@ export function PetForm({ open, onClose, pet }: { open: boolean; onClose: () => 
     e.preventDefault();
     if (!f.name.trim()) return;
     savePet({ ...f, name: f.name.trim() });
-    const w = parseFloat(kg.replace(',', '.'));
-    if (!pet && w > 0) addWeight(f.id, w, today());
+    const w = num(kg);
+    if (!pet && w > 0 && w < 2000) addWeight(f.id, w, today());
     onClose();
   };
   return (
@@ -30,7 +30,7 @@ export function PetForm({ open, onClose, pet }: { open: boolean; onClose: () => 
             {f.photo ? <img src={f.photo} alt="" className="w-full h-full object-cover" /> : SPECIES.find((s) => s.id === f.species)?.emoji}
             <span className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center shadow"><Icon name="camera" className="w-4 h-4" /></span>
           </button>
-          <input ref={fileRef} type="file" accept="image/*" hidden onChange={async (e) => { const file = e.target.files?.[0]; if (file) set('photo', await resizeImage(file)); e.target.value = ''; }} />
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={async (e) => { const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try { set('photo', await resizeImage(file)); } catch { alert('Tento formát fotky se nepodařilo načíst. Zkus JPG nebo PNG.'); } }} />
         </div>
         {f.photo && <button type="button" className="block mx-auto text-sm text-muted -mt-2" onClick={() => set('photo', undefined)}>Odebrat fotku</button>}
         <Field label="Jméno"><input className={inputCls} value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="např. Rex" required autoFocus={!pet} /></Field>
@@ -126,7 +126,7 @@ export function VisitForm({ open, onClose, visit, petId, date }: { open: boolean
   if (!data.pets.length) return <Sheet open={open} onClose={onClose} title="Návštěva"><p className="text-muted py-6 text-center">Nejdřív přidej mazlíčka.</p></Sheet>;
   return (
     <Sheet open={open} onClose={onClose} title={visit ? 'Upravit návštěvu' : 'Návštěva veterináře'}>
-      <form onSubmit={(e) => { e.preventDefault(); const c = parseFloat(cost.replace(',', '.')); saveVisit({ ...f, cost: c >= 0 ? c : undefined }); onClose(); }} className="space-y-4">
+      <form onSubmit={(e) => { e.preventDefault(); const c = num(cost); saveVisit({ ...f, cost: c >= 0 ? c : undefined }); onClose(); }} className="space-y-4">
         <Field label="Mazlíček">
           <select className={inputCls} value={f.petId} onChange={(e) => set('petId', e.target.value)}>
             {data.pets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -151,15 +151,15 @@ export function WeightForm({ open, onClose, petId }: { open: boolean; onClose: (
   const [kg, setKg] = useState('');
   const [date, setDate] = useState(today());
   useEffect(() => { if (open) { setKg(''); setDate(today()); } }, [open]);
-  const v = parseFloat(kg.replace(',', '.'));
+  const v = num(kg);
   return (
     <Sheet open={open} onClose={onClose} title="Zapsat váhu">
-      <form onSubmit={(e) => { e.preventDefault(); if (v > 0) { addWeight(petId, v, date); onClose(); } }} className="space-y-4">
+      <form onSubmit={(e) => { e.preventDefault(); if (v > 0 && v < 2000) { addWeight(petId, v, date); onClose(); } }} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <Field label="Váha (kg)"><input autoFocus inputMode="decimal" className={inputCls} value={kg} onChange={(e) => setKg(e.target.value)} placeholder="0,0" /></Field>
           <Field label="Datum"><input type="date" className={inputCls} value={date} max={today()} onChange={(e) => setDate(e.target.value)} /></Field>
         </div>
-        <Button type="submit" className="w-full" disabled={!(v > 0)}>Uložit</Button>
+        <Button type="submit" className="w-full" disabled={!(v > 0 && v < 2000)}>Uložit</Button>
       </form>
     </Sheet>
   );
@@ -178,7 +178,7 @@ export function MedForm({ open, onClose, med, petId }: { open: boolean; onClose:
   const interval = FREQ_DAYS[f.frequency] ?? 0;
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!f.name.trim()) return;
+    if (!f.name.trim() || !f.start || (f.end && f.end < f.start)) return;
     let reminderId = f.reminderId;
     if (remind) {
       reminderId = reminderId ?? uid();
@@ -199,7 +199,7 @@ export function MedForm({ open, onClose, med, petId }: { open: boolean; onClose:
           </Field>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Od"><input type="date" className={inputCls} value={f.start} onChange={(e) => set('start', e.target.value)} /></Field>
+          <Field label="Od"><input type="date" required className={inputCls} value={f.start} onChange={(e) => set('start', e.target.value)} /></Field>
           <Field label="Do (volitelné)"><input type="date" className={inputCls} value={f.end} min={f.start} onChange={(e) => set('end', e.target.value)} /></Field>
         </div>
         <Field label="Poznámka"><textarea rows={2} className={inputCls} value={f.notes} onChange={(e) => set('notes', e.target.value)} placeholder="např. podávat s jídlem" /></Field>

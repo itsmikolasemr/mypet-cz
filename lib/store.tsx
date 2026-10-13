@@ -79,7 +79,7 @@ function useStoreImpl() {
     addWeight: (petId: string, kg: number, date: string) => upd((d) => ({ ...d, pets: d.pets.map((p) => (p.id === petId ? { ...p, weights: [...p.weights, { id: uid(), date, kg }].sort((a, b) => a.date.localeCompare(b.date)) } : p)) })),
     deleteWeight: (petId: string, wid: string) => upd((d) => ({ ...d, pets: d.pets.map((p) => (p.id === petId ? { ...p, weights: p.weights.filter((w) => w.id !== wid) } : p)) })),
     saveReminder: (r: Reminder) => upd((d) => ({ ...d, reminders: d.reminders.some((x) => x.id === r.id) ? d.reminders.map((x) => (x.id === r.id ? r : x)) : [...d.reminders, r] })),
-    deleteReminder: (id: string) => upd((d) => ({ ...d, reminders: d.reminders.filter((r) => r.id !== id) })),
+    deleteReminder: (id: string) => upd((d) => ({ ...d, reminders: d.reminders.filter((r) => r.id !== id), meds: d.meds.map((m) => (m.reminderId === id ? { ...m, reminderId: undefined } : m)) })),
     completeReminder: (id: string) => upd((d) => ({
       ...d,
       reminders: d.reminders.map((r) => {

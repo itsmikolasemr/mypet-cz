@@ -1,18 +1,58 @@
 // AIVET – server-side proxy to an OpenAI-compatible chat API. The API key never reaches the client.
 // Env: AIVET_API_KEY (required), AIVET_BASE_URL (default Gemini OpenAI-compat), AIVET_MODEL (default gemini-flash-latest)
+import { getStore } from '@netlify/blobs';
+
 const DEFAULT_BASE = 'https://generativelanguage.googleapis.com/v1beta/openai/';
 const DEFAULT_MODEL = 'gemini-flash-latest';
 // Tried in order when the primary model is overloaded (503/429/404). Override with AIVET_FALLBACK_MODELS (comma-separated).
 const DEFAULT_FALLBACKS = 'gemini-flash-lite-latest,gemini-3.6-flash';
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  Vary: 'Origin',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
-const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS } });
+const json = (body, status = 200, extra = {}) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS, ...extra } });
 const env = (k) => (typeof Netlify !== 'undefined' && Netlify.env?.get(k)) || process.env[k] || '';
 const clip = (s, n) => String(s ?? '').slice(0, n);
+
+// ---- origin check ----
+const DEFAULT_ORIGINS = 'https://mypet-cz.netlify.app,capacitor://localhost,https://localhost,http://localhost,ionic://localhost';
+function originOk(req) {
+  const origin = req.headers.get('origin');
+  if (!origin) return req.headers.get('sec-fetch-site') === 'same-origin';
+  const allowed = (env('AIVET_ALLOWED_ORIGINS') || DEFAULT_ORIGINS).split(',').map((x) => x.trim());
+  if (allowed.includes(origin)) return true;
+  return /^https:\/\/[a-z0-9-]+--mypet-cz\.netlify\.app$/.test(origin); // deploy previews
+}
+const corsFor = (req) => ({ ...CORS, ...(req.headers.get('origin') && originOk(req) ? { 'Access-Control-Allow-Origin': req.headers.get('origin') } : {}) });
+
+// ---- per-IP rate limit (Netlify Blobs, with in-memory fallback) ----
+const LIMITS = [
+  { win: 10 * 60 * 1000, max: Number(env('AIVET_LIMIT_10MIN')) || 15, label: '10 minut' },
+  { win: 24 * 60 * 60 * 1000, max: Number(env('AIVET_LIMIT_DAY')) || 60, label: 'den' },
+];
+const mem = new Map();
+async function hashIp(ip) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('tlapka:' + ip));
+  return [...new Uint8Array(d)].slice(0, 12).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+async function rateLimit(ip) {
+  const key = await hashIp(ip || 'unknown');
+  const now = Date.now();
+  let store = null;
+  try { store = getStore({ name: 'aivet-ratelimit', consistency: 'strong' }); } catch { store = null; }
+  let hits = [];
+  try { hits = store ? ((await store.get(key, { type: 'json' })) ?? []) : (mem.get(key) ?? []); } catch { hits = mem.get(key) ?? []; }
+  hits = hits.filter((t) => now - t < LIMITS[1].win);
+  for (const l of LIMITS) {
+    const inWin = hits.filter((t) => now - t < l.win);
+    if (inWin.length >= l.max) return { ok: false, retryAfter: Math.ceil((inWin[0] + l.win - now) / 1000), label: l.label, remaining: 0 };
+  }
+  hits.push(now);
+  try { if (store) await store.setJSON(key, hits); else mem.set(key, hits); } catch { mem.set(key, hits); }
+  return { ok: true, remaining: LIMITS[0].max - hits.filter((t) => now - t < LIMITS[0].win).length };
+}
 
 const SYSTEM = `Jsi AIVET, opatrný virtuální asistent aplikace Tlapka pro majitele domácích zvířat v Česku.
 Odpovídej česky, tykej, stručně a srozumitelně (max. ~180 slov, odrážky jsou v pořádku).
@@ -40,21 +80,28 @@ function profileText(p) {
   return 'Profil zvířete, o kterém se mluví:\n' + lines.filter(Boolean).join('\n');
 }
 
-export default async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+export default async (req, context) => {
+  const cors = corsFor(req);
+  if (req.method === 'OPTIONS') return new Response(null, { status: originOk(req) ? 204 : 403, headers: cors });
   const key = env('AIVET_API_KEY');
-  if (req.method === 'GET') return json({ configured: !!key, model: env('AIVET_MODEL') || DEFAULT_MODEL });
-  if (req.method !== 'POST') return json({ error: 'method' }, 405);
-  if (!key) return json({ error: 'not_configured' }, 503);
+  if (req.method === 'GET') return json({ configured: !!key }, 200, cors);
+  if (req.method !== 'POST') return json({ error: 'method' }, 405, cors);
+  if (!originOk(req)) return json({ error: 'forbidden_origin' }, 403, cors);
+  if (!key) return json({ error: 'not_configured' }, 503, cors);
+  if (Number(req.headers.get('content-length') || 0) > 32_000) return json({ error: 'too_large' }, 413, cors);
+
+  const ip = context?.ip || req.headers.get('x-nf-client-connection-ip') || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '';
+  const rl = await rateLimit(ip);
+  if (!rl.ok) return json({ error: 'rate_limited_client', retryAfter: rl.retryAfter, window: rl.label }, 429, { ...cors, 'Retry-After': String(rl.retryAfter), 'X-RateLimit-Remaining': '0' });
 
   let body;
-  try { body = await req.json(); } catch { return json({ error: 'bad_json' }, 400); }
+  try { body = JSON.parse(clip(await req.text(), 32_000)); } catch { return json({ error: 'bad_json' }, 400, cors); }
   const history = Array.isArray(body?.messages) ? body.messages : [];
   const messages = history
     .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
     .slice(-12)
     .map((m) => ({ role: m.role, content: clip(m.content, 2000) }));
-  if (!messages.length || messages[messages.length - 1].role !== 'user') return json({ error: 'no_message' }, 400);
+  if (!messages.length || messages[messages.length - 1].role !== 'user') return json({ error: 'no_message' }, 400, cors);
 
   const base = (env('AIVET_BASE_URL') || DEFAULT_BASE).replace(/\/+$/, '') + '/';
   const primary = env('AIVET_MODEL') || DEFAULT_MODEL;
@@ -78,19 +125,19 @@ export default async (req) => {
         lastStatus = r.status;
         console.error('AIVET upstream error', model, r.status, JSON.stringify(data).slice(0, 400));
         if ([429, 500, 503, 404].includes(r.status)) continue;
-        return json({ error: r.status === 401 || r.status === 403 ? 'auth' : 'upstream', status: r.status }, 502);
+        return json({ error: r.status === 401 || r.status === 403 ? 'auth' : 'upstream', status: r.status }, 502, cors);
       }
       let text = String(data?.choices?.[0]?.message?.content ?? '').trim();
       const emergency = text.startsWith('[POHOTOVOST]');
       text = text.replace(/\[POHOTOVOST\][^\n]*?(neplatí|není)[^\n]*\n?/gi, '').replace(/\[POHOTOVOST\]\s*/g, '').trim();
       if (!text) { lastStatus = 502; continue; }
-      return json({ reply: text, emergency, model });
+      return json({ reply: text, emergency }, 200, { ...cors, 'X-RateLimit-Remaining': String(rl.remaining) });
     } catch (e) {
       console.error('AIVET fetch failed', model, e?.message);
       lastStatus = 504;
     }
   }
-  return json({ error: lastStatus === 429 || lastStatus === 503 ? 'rate_limited' : 'upstream', status: lastStatus }, 502);
+  return json({ error: lastStatus === 429 || lastStatus === 503 ? 'rate_limited' : 'upstream', status: lastStatus }, 502, cors);
 };
 
 export const config = { path: '/api/aivet' };

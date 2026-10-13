@@ -179,7 +179,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold">{m.name}{m.reminderId && <span className="ml-1.5 text-xs">🔔</span>}</p>
                       <p className="text-[13px] text-muted">{[m.dose, m.frequency].filter(Boolean).join(' · ')}</p>
-                      <p className="text-[12px] text-muted/80">{ended ? `Ukončeno ${fmtDate(m.end)}` : `Od ${fmtDate(m.start)}${m.end ? ` do ${fmtDate(m.end)}` : ''}`}</p>
+                      <p className="text-[12px] text-muted">{ended ? `Ukončeno ${fmtDate(m.end)}` : `Od ${fmtDate(m.start)}${m.end ? ` do ${fmtDate(m.end)}` : ''}`}</p>
                     </div>
                     <Icon name="chev" className="w-4 h-4 text-muted" />
                   </button>
@@ -305,7 +305,7 @@ export function CalendarScreen() {
               {days.map((d) => {
                 const inM = parse(d).getMonth() === mv, isSel = d === sel, isT = d === today(), m = byDay[d];
                 return (
-                  <button key={d} onClick={() => setSel(d)} className={`relative h-11 mx-0.5 rounded-xl text-sm font-medium transition ${isSel ? 'bg-primary text-white' : isT ? 'bg-primary/10 text-primary' : inM ? '' : 'text-muted/50'}`}>
+                  <button key={d} onClick={() => setSel(d)} className={`relative h-11 mx-0.5 rounded-xl text-sm font-medium transition ${isSel ? 'bg-primary text-white' : isT ? 'bg-primary/10 text-primary' : inM ? '' : 'text-muted'}`}>
                     {Number(d.slice(8))}
                     {m && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">{m.v > 0 && <i className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white' : 'bg-primary'}`} />}{m.r > 0 && <i className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white/70' : 'bg-amber-500'}`} />}</span>}
                   </button>

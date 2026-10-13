@@ -7,7 +7,7 @@ import { API_BASE } from '@/lib/api';
 
 type Vet = { id: string; lat: number; lon: number; name: string; tags: Record<string, string>; dist: number; nonstop: boolean };
 const BRNO = { lat: 49.1951, lon: 16.6068 };
-const ENDPOINTS = ['https://overpass-api.de/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+const ENDPOINTS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
 
 const km = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
   const R = 6371, dLat = ((b.lat - a.lat) * Math.PI) / 180, dLon = ((b.lon - a.lon) * Math.PI) / 180;

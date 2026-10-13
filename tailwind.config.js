@@ -8,7 +8,7 @@ module.exports = {
         primary: { DEFAULT: '#E8553A', d: '#C9432C', l: '#FF9A5A' },
         secondary: '#FF9A5A',
         ink: '#3B2A24',
-        muted: '#8A746A',
+        muted: '#75625A',
         bg: '#FFF8F0',
         'bg-d': '#17110E',
         surface: { DEFAULT: '#FFFFFF', d: '#241B17' },
