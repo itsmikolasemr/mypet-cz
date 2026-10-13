@@ -1,0 +1,107 @@
+'use client';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import type { AppData, DocMeta, Pet, Reminder, Visit } from './types';
+import { deleteBlob } from './docs';
+import { syncNotifications } from './notify';
+import { addDays, today, uid } from './utils';
+import { sampleData } from './sample';
+
+const KEY = 'tlapka:data:v1';
+const empty = (): AppData => ({ version: 1, pets: [], reminders: [], visits: [], docs: [], settings: { theme: 'system', onboarded: false, notify: false, notifyHour: 9 } });
+
+export function validate(x: unknown): AppData | null {
+  if (!x || typeof x !== 'object') return null;
+  const d = x as Partial<AppData>;
+  if (!Array.isArray(d.pets) || !Array.isArray(d.reminders) || !Array.isArray(d.visits)) return null;
+  return {
+    version: 1,
+    pets: d.pets.map((p) => ({ ...p, weights: Array.isArray(p.weights) ? p.weights : [] })),
+    reminders: d.reminders.map((r) => ({ ...r, history: Array.isArray(r.history) ? r.history : [] })),
+    visits: d.visits,
+    docs: Array.isArray(d.docs) ? d.docs : [],
+    settings: { theme: d.settings?.theme ?? 'system', onboarded: true, notify: !!d.settings?.notify, notifyHour: d.settings?.notifyHour ?? 9 },
+  };
+}
+
+function useStoreImpl() {
+  const [data, setData] = useState<AppData>(empty);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const v = validate(JSON.parse(raw));
+        if (v) setData({ ...v, settings: { ...v.settings, onboarded: !!JSON.parse(raw).settings?.onboarded } });
+      }
+    } catch {}
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { alert('Úložiště je plné – zkus menší fotku.'); }
+  }, [data, ready]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(() => { syncNotifications(data).catch(() => {}); }, 400);
+    return () => clearTimeout(t);
+  }, [data.reminders, data.pets, data.settings.notify, data.settings.notifyHour, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const apply = () => {
+      const dark = data.settings.theme === 'dark' || (data.settings.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.classList.toggle('dark', dark);
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#141917' : '#F7F5F2');
+    };
+    apply();
+    const m = matchMedia('(prefers-color-scheme: dark)');
+    m.addEventListener('change', apply);
+    return () => m.removeEventListener('change', apply);
+  }, [data.settings.theme]);
+
+  const upd = useCallback((f: (d: AppData) => AppData) => setData((d) => f(d)), []);
+
+  return {
+    data, ready,
+    savePet: (p: Pet) => upd((d) => ({ ...d, pets: d.pets.some((x) => x.id === p.id) ? d.pets.map((x) => (x.id === p.id ? p : x)) : [...d.pets, p] })),
+    deletePet: (id: string) => upd((d) => { d.docs.filter((x) => x.petId === id).forEach((x) => deleteBlob(x.id).catch(() => {})); return { ...d, docs: d.docs.filter((x) => x.petId !== id), pets: d.pets.filter((p) => p.id !== id), reminders: d.reminders.filter((r) => r.petId !== id), visits: d.visits.filter((v) => v.petId !== id) }; }),
+    addDoc: (m: DocMeta) => upd((d) => ({ ...d, docs: [...d.docs, m] })),
+    deleteDoc: (id: string) => { deleteBlob(id).catch(() => {}); upd((d) => ({ ...d, docs: d.docs.filter((x) => x.id !== id) })); },
+    setNotify: (notify: boolean, notifyHour?: number) => upd((d) => ({ ...d, settings: { ...d.settings, notify, notifyHour: notifyHour ?? d.settings.notifyHour } })),
+    addWeight: (petId: string, kg: number, date: string) => upd((d) => ({ ...d, pets: d.pets.map((p) => (p.id === petId ? { ...p, weights: [...p.weights, { id: uid(), date, kg }].sort((a, b) => a.date.localeCompare(b.date)) } : p)) })),
+    deleteWeight: (petId: string, wid: string) => upd((d) => ({ ...d, pets: d.pets.map((p) => (p.id === petId ? { ...p, weights: p.weights.filter((w) => w.id !== wid) } : p)) })),
+    saveReminder: (r: Reminder) => upd((d) => ({ ...d, reminders: d.reminders.some((x) => x.id === r.id) ? d.reminders.map((x) => (x.id === r.id ? r : x)) : [...d.reminders, r] })),
+    deleteReminder: (id: string) => upd((d) => ({ ...d, reminders: d.reminders.filter((r) => r.id !== id) })),
+    completeReminder: (id: string) => upd((d) => ({
+      ...d,
+      reminders: d.reminders.map((r) => {
+        if (r.id !== id) return r;
+        const t = today();
+        return r.intervalDays > 0
+          ? { ...r, history: [...r.history, t], dueDate: addDays(t, r.intervalDays) }
+          : { ...r, history: [...r.history, t], completedAt: t };
+      }),
+    })),
+    reopenReminder: (id: string) => upd((d) => ({ ...d, reminders: d.reminders.map((r) => (r.id === id ? { ...r, completedAt: undefined } : r)) })),
+    saveVisit: (v: Visit) => upd((d) => ({ ...d, visits: d.visits.some((x) => x.id === v.id) ? d.visits.map((x) => (x.id === v.id ? v : x)) : [...d.visits, v] })),
+    deleteVisit: (id: string) => upd((d) => ({ ...d, visits: d.visits.filter((v) => v.id !== id) })),
+    setTheme: (theme: AppData['settings']['theme']) => upd((d) => ({ ...d, settings: { ...d.settings, theme } })),
+    finishOnboarding: (withSample: boolean) => upd((d) => ({ ...(withSample ? sampleData() : { version: 1 as const, pets: [], reminders: [], visits: [], docs: [] }), settings: { ...d.settings, onboarded: true } })),
+    importData: (x: AppData) => setData(x),
+    reset: () => { data.docs.forEach((x) => deleteBlob(x.id).catch(() => {})); setData(empty()); },
+  };
+}
+
+type Store = ReturnType<typeof useStoreImpl>;
+const Ctx = createContext<Store | null>(null);
+export function StoreProvider({ children }: { children: React.ReactNode }) {
+  const s = useStoreImpl();
+  return <Ctx.Provider value={s}>{children}</Ctx.Provider>;
+}
+export function useStore() {
+  const s = useContext(Ctx);
+  if (!s) throw new Error('StoreProvider missing');
+  return s;
+}
