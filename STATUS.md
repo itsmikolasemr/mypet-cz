@@ -1,19 +1,20 @@
 # MyPet CZ — Status
 
-Poslední aktualizace: 2026-10-14 00:15
+Poslední aktualizace: 2026-10-14 01:15
 
 ## Hotovo
 - Repo vytvořeno (itsmikolasemr/mypet-cz)
-- BRIEF.md, ROADMAP.md, BRAND.md, TEAM.md, NOTES.md, DESIGN.md
+- BRIEF.md, ROADMAP.md, BRAND.md, TEAM.md, NOTES.md, DESIGN.md (upřesněno logo/OG)
 - Datové schéma (data/schema.json): Pet, VetVisit, Deworming, Vaccination, Document, Reminder
-- Seed katalog zvířat (data/animals-seed.json)
+- Seed katalog zvířat (data/animals-seed.json) — rozšířeno o další plemena
 - Seed non-stop veterin (data/vets-seed.json)
 - Šablona affiliate e-mailu (templates/email-affiliate.md)
 - Sociální obsah (templates/social-content.md)
 - UI komponenty: PetCard, ReminderCard, DocumentCard, HealthTimeline, PetForm, ReminderForm, HealthForm, DocumentForm
 - **EmergencyVets** (filtr podle města, call tlačítka)
 - **EmergencyCard** (pohotovostní karta mazlíčka — QR placeholder)
-- SEO.md, QA.md
+- SEO.md (rozšířeno), QA.md
+- Sample SEO obsah: content/pruvodce-odcerveni.md
 - Next.js scaffold + plný CRUD profily mazlíčků s localStorage
 - CRUD zdravotních záznamů (návštěvy, odčervení, očkování) + timeline
 - Plné UI připomínek (přidávání, označení hotovo)
@@ -22,7 +23,7 @@ Poslední aktualizace: 2026-10-14 00:15
 - UI emergency karta (klik na mazlíčka)
 
 ## Běží
-- SEO obsahové stránky
+- SEO obsahové stránky (sample průvodce přidán)
 - Reálná mapa (Leaflet/Mapbox) + aktuální data klinik
 - Skutečný QR generátor
 - Export PDF profilu
@@ -35,9 +36,9 @@ Poslední aktualizace: 2026-10-14 00:15
 - Tech stack potvrzení (Next.js + Netlify doporučeno)
 
 ## HOTOVO K TESTOVÁNÍ
-MVP (profily, zdravotní záznamy, připomínky, základní dokumenty) + nově seznam non-stop veterin a emergency karta je vizuálně a funkčně připravené k lokálnímu testování. 
+MVP (profily, zdravotní záznamy, připomínky, základní dokumenty) + seznam non-stop veterin a emergency karta je vizuálně a funkčně připravené k lokálnímu testování. 
 
-**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm run dev`). Nic není nasazeno veřejně. Klikni na mazlíčka pro emergency kartu, dole je seznam pohotovostních klinik.
+**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm run dev`). Nic není nasazeno veřejně. Klikni na mazlíčka pro emergency kartu, dole je seznam pohotovostních klinik. Nově rozšířen katalog plemen a přidán sample průvodce odčervení.
 
 ## Další krok
-Reálná interaktivní mapa, generování QR kódu, PDF export. Issues vytvořeny.
+Reálná interaktivní mapa, generování QR kódu, PDF export. Issues připraveny k vytvoření.
