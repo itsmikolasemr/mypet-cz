@@ -3,12 +3,12 @@
     {
       "id": "pes",
       "name": "Pes",
-      "breeds": ["Německý ovčák", "Labrador retriever", "Zlatý retriever", "Jezevčík", "Border collie", "Čivava", "Jack Russell teriér", "Bulldog", "Pudl", "Kříženec", "Jiné"]
+      "breeds": ["Německý ovčák", "Labrador retriever", "Zlatý retriever", "Jezevčík", "Border collie", "Čivava", "Jack Russell teriér", "Bulldog", "Pudl", "Yorkshire teriér", "Maltezer", "Shiba inu", "Kříženec", "Jiné"]
     },
     {
       "id": "kocka",
       "name": "Kočka",
-      "breeds": ["Britská krátkosrstá", "Maine Coon", "Perská", "Siamská", "Ragdoll", "Sphynx", "Bengálská", "Kříženec", "Jiné"]
+      "breeds": ["Britská krátkosrstá", "Maine Coon", "Perská", "Siamská", "Ragdoll", "Sphynx", "Bengálská", "Ruská modrá", "Norská lesní", "Kříženec", "Jiné"]
     },
     {
       "id": "kralik",
