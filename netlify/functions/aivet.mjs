@@ -2,6 +2,8 @@
 // Env: AIVET_API_KEY (required), AIVET_BASE_URL (default Gemini OpenAI-compat), AIVET_MODEL (default gemini-flash-latest)
 const DEFAULT_BASE = 'https://generativelanguage.googleapis.com/v1beta/openai/';
 const DEFAULT_MODEL = 'gemini-flash-latest';
+// Tried in order when the primary model is overloaded (503/429/404). Override with AIVET_FALLBACK_MODELS (comma-separated).
+const DEFAULT_FALLBACKS = 'gemini-3.6-flash,gemini-flash-lite-latest';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -55,31 +57,39 @@ export default async (req) => {
   if (!messages.length || messages[messages.length - 1].role !== 'user') return json({ error: 'no_message' }, 400);
 
   const base = (env('AIVET_BASE_URL') || DEFAULT_BASE).replace(/\/+$/, '') + '/';
-  try {
-    const r = await fetch(base + 'chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-      body: JSON.stringify({
-        model: env('AIVET_MODEL') || DEFAULT_MODEL,
-        messages: [{ role: 'system', content: SYSTEM + '\n\n' + profileText(body.pet) }, ...messages],
-        max_tokens: 900,
-      }),
-      signal: AbortSignal.timeout(25000),
-    });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) {
-      console.error('AIVET upstream error', r.status, JSON.stringify(data).slice(0, 500));
-      return json({ error: r.status === 429 ? 'rate_limited' : 'upstream', status: r.status }, 502);
+  const primary = env('AIVET_MODEL') || DEFAULT_MODEL;
+  const fallbacks = (env('AIVET_FALLBACK_MODELS') || (env('AIVET_BASE_URL') ? '' : DEFAULT_FALLBACKS)).split(',').map((x) => x.trim()).filter(Boolean);
+  const models = [primary, ...fallbacks.filter((m) => m !== primary)];
+  const chat = [{ role: 'system', content: SYSTEM + '\n\n' + profileText(body.pet) }, ...messages];
+  const started = Date.now();
+  let lastStatus = 0;
+  for (const model of models) {
+    if (Date.now() - started > 20000) break;
+    try {
+      const r = await fetch(base + 'chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+        body: JSON.stringify({ model, messages: chat, max_tokens: 900 }),
+        signal: AbortSignal.timeout(Math.max(3000, 24000 - (Date.now() - started))),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        lastStatus = r.status;
+        console.error('AIVET upstream error', model, r.status, JSON.stringify(data).slice(0, 400));
+        if ([429, 500, 503, 404].includes(r.status)) continue;
+        return json({ error: r.status === 401 || r.status === 403 ? 'auth' : 'upstream', status: r.status }, 502);
+      }
+      let text = String(data?.choices?.[0]?.message?.content ?? '').trim();
+      const emergency = text.startsWith('[POHOTOVOST]');
+      text = text.replace(/^\[POHOTOVOST\]\s*/, '');
+      if (!text) { lastStatus = 502; continue; }
+      return json({ reply: text, emergency, model });
+    } catch (e) {
+      console.error('AIVET fetch failed', model, e?.message);
+      lastStatus = 504;
     }
-    let text = String(data?.choices?.[0]?.message?.content ?? '').trim();
-    const emergency = text.startsWith('[POHOTOVOST]');
-    text = text.replace(/^\[POHOTOVOST\]\s*/, '');
-    if (!text) return json({ error: 'empty' }, 502);
-    return json({ reply: text, emergency });
-  } catch (e) {
-    console.error('AIVET fetch failed', e?.message);
-    return json({ error: 'network' }, 502);
   }
+  return json({ error: lastStatus === 429 || lastStatus === 503 ? 'rate_limited' : 'upstream', status: lastStatus }, 502);
 };
 
 export const config = { path: '/api/aivet' };
