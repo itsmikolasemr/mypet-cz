@@ -2,17 +2,18 @@
 
 ## Fáze 0 — Okamžitě (tým pracuje)
 - [x] Návrh vizuální identity (paleta, typografie, logo, ikony zvířat) — DESIGN.md
-- [ ] Pojmenování — 10+ kandidátů, výběr top 3 s odůvodněním
+- [ ] Pojmenování — 10+ kandidátů, výběr top 3 s odůvodněním (doporučení: Mazlík / Mazel)
 - [x] Datový model: Pet, VetVisit, Deworming, Vaccination, Document, Reminder
 - [x] Katalog zvířat: druhy, plemena, rasy
 - [x] SEO základy (SEO.md)
-- [ ] Profil mazlíčka: jméno, druh, plemeno, datum narození, pohlaví, výška, váha, barva, mikročip, poznámky
+- [x] Profil mazlíčka: jméno, druh, plemeno, datum narození, pohlaví (localStorage CRUD hotovo)
 - [ ] Nahrávání dokumentů: faktury, doklady, zvířecí pas, výsledky vyšetření (OCR)
-- [ ] Připomínky: odčervení, očkování, kontroly
-- [x] Základní webová appka (mobil-first) — Next.js scaffold hotov
+- [ ] Připomínky: odčervení, očkování, kontroly (storage hotové, UI doplnit)
+- [x] Základní webová appka (mobil-first) — Next.js + interaktivní CRUD
 
 ## Fáze 1 — MVP
-- [ ] Kompletní CRUD pro mazlíčky a záznamy
+- [x] Kompletní CRUD pro mazlíčky (localStorage)
+- [ ] CRUD zdravotních záznamů (návštěvy, očkování, odčervení)
 - [ ] Timeline zdravotní historie
 - [ ] Export/sdílení profilu (PDF)
 - [ ] QR emergency karta pro mazlíčka
