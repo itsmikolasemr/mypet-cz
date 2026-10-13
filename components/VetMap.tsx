@@ -75,6 +75,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   }, []);
 
   const [allNs, setAllNs] = useState<Vet[]>([]);
+  const [mapReady, setMapReady] = useState(false);
   const shown = useMemo(() => {
     if (!nonstop) return vets;
     const m = new Map([...allNs, ...vets.filter((v) => v.nonstop)].map((v) => [v.id, v]));
@@ -109,6 +110,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map.current);
         L.control.zoom({ position: 'topright' }).addTo(map.current);
         layer.current = L.layerGroup().addTo(map.current);
+        setMapReady(true);
         L.marker([center.lat, center.lon], { icon: L.divIcon({ className: '', html: '<div class="me-dot"></div>', iconSize: [18, 18] }) }).addTo(map.current);
       }
     })();
@@ -132,7 +134,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         map.current.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [30, 90], paddingBottomRight: [30, 40], maxZoom: 14, animate: !matchMedia('(prefers-reduced-motion: reduce)').matches });
       }
     })();
-  }, [shown, nonstop, center]);
+  }, [shown, nonstop, center, mapReady]);
 
   const focus = (v: Vet) => { map.current?.setView([v.lat, v.lon], 16, { animate: true }); setSel(v); };
   const t = sel?.tags ?? {};
