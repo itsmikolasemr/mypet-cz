@@ -1,21 +1,32 @@
-import { Pet, Reminder } from './types';
+import { Pet, Reminder, VetVisit, Deworming, Vaccination } from './types';
 
 const PETS_KEY = 'mypet_cz_pets';
 const REMINDERS_KEY = 'mypet_cz_reminders';
+const VISITS_KEY = 'mypet_cz_visits';
+const DEWORMINGS_KEY = 'mypet_cz_dewormings';
+const VACCINATIONS_KEY = 'mypet_cz_vaccinations';
 
-export function getPets(): Pet[] {
+function safeGet<T>(key: string): T[] {
   if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(PETS_KEY);
+    const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-export function savePets(pets: Pet[]): void {
+function safeSet<T>(key: string, data: T[]): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(PETS_KEY, JSON.stringify(pets));
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+export function getPets(): Pet[] {
+  return safeGet<Pet>(PETS_KEY);
+}
+
+export function savePets(pets: Pet[]): void {
+  safeSet(PETS_KEY, pets);
 }
 
 export function addPet(pet: Omit<Pet, 'id'>): Pet {
@@ -32,18 +43,11 @@ export function deletePet(id: string): void {
 }
 
 export function getReminders(): Reminder[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(REMINDERS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  return safeGet<Reminder>(REMINDERS_KEY);
 }
 
 export function saveReminders(reminders: Reminder[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(REMINDERS_KEY, JSON.stringify(reminders));
+  safeSet(REMINDERS_KEY, reminders);
 }
 
 export function addReminder(reminder: Omit<Reminder, 'id' | 'done'>): Reminder {
@@ -52,4 +56,47 @@ export function addReminder(reminder: Omit<Reminder, 'id' | 'done'>): Reminder {
   reminders.push(newRem);
   saveReminders(reminders);
   return newRem;
+}
+
+export function toggleReminderDone(id: string): void {
+  const reminders = getReminders().map((r) =>
+    r.id === id ? { ...r, done: !r.done } : r
+  );
+  saveReminders(reminders);
+}
+
+export function getVisits(): VetVisit[] {
+  return safeGet<VetVisit>(VISITS_KEY);
+}
+
+export function addVisit(visit: Omit<VetVisit, 'id'>): VetVisit {
+  const visits = getVisits();
+  const newV: VetVisit = { ...visit, id: crypto.randomUUID() };
+  visits.push(newV);
+  safeSet(VISITS_KEY, visits);
+  return newV;
+}
+
+export function getDewormings(): Deworming[] {
+  return safeGet<Deworming>(DEWORMINGS_KEY);
+}
+
+export function addDeworming(d: Omit<Deworming, 'id'>): Deworming {
+  const list = getDewormings();
+  const newD: Deworming = { ...d, id: crypto.randomUUID() };
+  list.push(newD);
+  safeSet(DEWORMINGS_KEY, list);
+  return newD;
+}
+
+export function getVaccinations(): Vaccination[] {
+  return safeGet<Vaccination>(VACCINATIONS_KEY);
+}
+
+export function addVaccination(v: Omit<Vaccination, 'id'>): Vaccination {
+  const list = getVaccinations();
+  const newV: Vaccination = { ...v, id: crypto.randomUUID() };
+  list.push(newV);
+  safeSet(VACCINATIONS_KEY, list);
+  return newV;
 }

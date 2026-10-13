@@ -31,3 +31,29 @@ export interface Reminder {
   dueDate: string;
   done: boolean;
 }
+
+export interface VetVisit {
+  id: string;
+  petId: string;
+  date: string;
+  clinic?: string;
+  reason: string;
+  notes?: string;
+  cost?: number;
+}
+
+export interface Deworming {
+  id: string;
+  petId: string;
+  date: string;
+  product: string;
+  nextDue?: string;
+}
+
+export interface Vaccination {
+  id: string;
+  petId: string;
+  date: string;
+  type: string;
+  nextDue?: string;
+}

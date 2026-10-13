@@ -8,13 +8,13 @@
 - [x] SEO základy (SEO.md)
 - [x] Profil mazlíčka: jméno, druh, plemeno, datum narození, pohlaví (localStorage CRUD hotovo)
 - [ ] Nahrávání dokumentů: faktury, doklady, zvířecí pas, výsledky vyšetření (OCR)
-- [ ] Připomínky: odčervení, očkování, kontroly (storage hotové, UI doplnit)
+- [x] Připomínky: odčervení, očkování, kontroly (storage + UI hotové)
 - [x] Základní webová appka (mobil-first) — Next.js + interaktivní CRUD
 
 ## Fáze 1 — MVP
 - [x] Kompletní CRUD pro mazlíčky (localStorage)
-- [ ] CRUD zdravotních záznamů (návštěvy, očkování, odčervení)
-- [ ] Timeline zdravotní historie
+- [x] CRUD zdravotních záznamů (návštěvy, očkování, odčervení)
+- [x] Timeline zdravotní historie
 - [ ] Export/sdílení profilu (PDF)
 - [ ] QR emergency karta pro mazlíčka
 

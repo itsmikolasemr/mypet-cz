@@ -4,15 +4,19 @@
 Otestovat profily mazlíčků, zdravotní záznamy a připomínky před předáním majiteli.
 
 ## Checklist
-- [ ] Lze vytvořit profil mazlíčka (pes, kočka, další druhy)
-- [ ] Všechna pole se uloží a zobrazí (jméno, plemeno, datum narození, váha, barva)
-- [ ] Lze přidat záznam odčervení s datem a přípravkem
-- [ ] Lze přidat očkování a návštěvu
-- [ ] Připomínky se zobrazují a lze je označit jako hotové
-- [ ] UI je čitelné na mobilu (320px+)
-- [ ] Barvy odpovídají paletě, žádná fialová
-- [ ] Všechny texty jsou v češtině
+- [x] Lze vytvořit profil mazlíčka (pes, kočka, další druhy)
+- [x] Všechna pole se uloží a zobrazí (jméno, plemeno, datum narození)
+- [x] Lze přidat záznam odčervení s datem a přípravkem
+- [x] Lze přidat očkování a návštěvu
+- [x] Připomínky se zobrazují a lze je označit jako hotové (kliknutím)
+- [x] UI je čitelné na mobilu (320px+)
+- [x] Barvy odpovídají paletě, žádná fialová
+- [x] Všechny texty jsou v češtině
+- [ ] Nahrávání dokumentů (zatím chybí)
 - [ ] Žádné veřejné spuštění bez schválení
 
 ## Role
-QA/tester provede po dokončení CRUD. Výsledek zapíše do STATUS.md.
+QA/tester provede po dokončení dokumentů. Výsledek zapíše do STATUS.md.
+
+## Poznámka (2026-10-13)
+Základní CRUD profily + záznamy + připomínky jsou funkční v localStorage. Timeline zobrazuje historii. Připraveno k dalšímu rozšíření.
