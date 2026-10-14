@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 const URL = 'https://owveqkchmcutoqlsjlyb.supabase.co', KEY = 'sb_publishable_EDy4Im3JrXxTsRYd62GY1A_J3gw_tcY', PW = process.env.TLAPKA_TEST_PW;
 const as = async (e) => { const c = createClient(URL, KEY, { auth: { persistSession: false }, realtime: { transport: class { constructor() {} close() {} } } }); const r = await c.auth.signInWithPassword({ email: e, password: PW }); if (r.error) throw r.error; return c; };
-const A = await as('tlapka-e2e-a@example.com'), B = await as('tlapka-e2e-b@example.com'), C = await as('tlapka-e2e-c@example.com');
+const A = await as('emr+tlapka-a@itsmedesign.cz'), B = await as('emr+tlapka-b@itsmedesign.cz'), C = await as('emr+tlapka-c@itsmedesign.cz');
 const hh = (await A.from('tl_household_members').select('household_id').limit(1).single()).data.household_id;
 const inv = async () => (await A.from('tl_invites').insert({ household_id: hh }).select('code').single()).data.code;
 const R = {};

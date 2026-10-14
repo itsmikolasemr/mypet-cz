@@ -21,7 +21,7 @@ await A.getByRole('button', { name: 'Uložit', exact: true }).click(); await A.w
 R.aDocs = (await data(A)).docs.length;
 await A.evaluate(async () => { const dev = localStorage.getItem('tlapka:device'); const j = await (await fetch('/api/entitlement', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: dev, plan: 'family', test: true }) })).json(); localStorage.setItem('tlapka:ent', JSON.stringify({ plan: 'family', exp: j.exp, token: j.token, test: true, source: 'test' })); });
 await A.reload(); await A.waitForTimeout(1200);
-await login(A, 'tlapka-e2e-a@example.com'); await A.waitForTimeout(5000);
+await login(A, 'emr+tlapka-a@itsmedesign.cz'); await A.waitForTimeout(5000);
 await A.getByText('Synchronizovat teď').click(); await A.waitForTimeout(5000);
 R.aUploaded = JSON.parse(await ls(A, 'tlapka:sync:uploaded') || '[]').length;
 if (await A.locator('[role=alertdialog]').count()) { console.log('DIALOG:', await A.locator('[role=alertdialog]').innerText()); process.exit(1); }
@@ -30,7 +30,7 @@ await A.getByText('Odkaz pro hlídače').click(); const sh = await dlg(A); const
 await A.screenshot({ path: S + BR + '-92-e2e-A-account.png' });
 // B: empty app, login, join
 const B = await mk(); await B.context().addInitScript(() => { if (!localStorage.getItem('tlapka:data:v1')) localStorage.setItem('tlapka:data:v1', JSON.stringify({ version: 1, pets: [], reminders: [], visits: [], docs: [], meds: [], allergies: [], settings: { theme: 'system', onboarded: true, notify: false, notifyHour: 9 } })); }); await B.goto(BASE);
- await login(B, 'tlapka-e2e-b@example.com'); await B.waitForTimeout(3000);
+ await login(B, 'emr+tlapka-b@itsmedesign.cz'); await B.waitForTimeout(3000);
 await B.getByText('Mám kód pozvánky').click(); await B.locator('input[name=invite]').fill(code); await B.screenshot({ path: S + BR + '-93-e2e-B-join-dialog.png' });
 await B.getByRole('button', { name: 'Připojit', exact: true }).click(); await B.waitForTimeout(2500);
 await B.getByText('Synchronizovat teď').click(); await B.waitForTimeout(6000);
@@ -63,9 +63,9 @@ await A.getByText('Smazat data v cloudu').click(); await A.getByRole('button', {
 R.gdprToast = await A.getByText('Data v cloudu smazána').waitFor({ timeout: 15000 }).then(() => true, () => false);
 // free one-device backup: C on two devices
 const C1 = await mk(); await C1.goto(BASE); await C1.getByText('Vyzkoušet s ukázkovými daty').click();
-await login(C1, 'tlapka-e2e-c@example.com'); await C1.waitForTimeout(3000);
+await login(C1, 'emr+tlapka-c@itsmedesign.cz'); await C1.waitForTimeout(3000);
 const C2 = await mk(); await C2.goto(BASE); await C2.getByText('Vyzkoušet s ukázkovými daty').click();
-await login(C2, 'tlapka-e2e-c@example.com');
+await login(C2, 'emr+tlapka-c@itsmedesign.cz');
 R.deviceBanner = await C2.locator('[data-device-blocked]').waitFor({ timeout: 15000 }).then(() => true, () => false);
 await C2.screenshot({ path: S + BR + '-96-e2e-device-limit.png' });
 await C2.getByRole('button', { name: 'Zálohovat odsud' }).click();

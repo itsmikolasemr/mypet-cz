@@ -4,7 +4,7 @@ const URL = 'https://owveqkchmcutoqlsjlyb.supabase.co', KEY = 'sb_publishable_ED
 const mk = (dev) => createClient(URL, KEY, { global: { headers: { 'x-tlapka-device': dev } }, auth: { persistSession: false }, realtime: { transport: class { close() {} } } });
 const as = async (e, dev) => { const c = mk(dev); let r = await c.auth.signInWithPassword({ email: e, password: PW }); if (r.error) { r = await c.auth.signUp({ email: e, password: PW }); if (r.error) throw r.error; if (!r.data.session) throw new Error('signup needs confirmation: ' + e); } return c; };
 const R = {};
-const A = await as('tlapka-e2e-a@example.com', 'dev-a-0123456789'), B = await as('tlapka-e2e-b@example.com', 'dev-b-0123456789');
+const A = await as('emr+tlapka-a@itsmedesign.cz', 'dev-a-0123456789'), B = await as('emr+tlapka-b@itsmedesign.cz', 'dev-b-0123456789');
 const hh = (await A.rpc('tl_create_household', { p_name: 'Karty', p_display: 'Jana' })).data;
 await A.rpc('tl_claim_backup_device', { p_device: 'dev-a-0123456789' });
 const card = { id: 'c1', store: 'superzoo', name: '', code: '8591234567892', format: 'EAN13', notes: '', uses: 0, created: new Date().toISOString() };
