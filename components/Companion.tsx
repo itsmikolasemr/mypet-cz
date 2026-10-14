@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AppData, Pet } from '@/lib/types';
+import { Emo } from './glyphs';
 import { diffDays, REMINDER_TYPES, speciesOf, status, today } from '@/lib/utils';
 const low = (t: string) => (REMINDER_TYPES.some((x) => x.name === t) ? t.toLowerCase() : t);
 import { useAmbient } from './ambient';
@@ -24,11 +25,11 @@ function line(pet: Pet, c: ReturnType<typeof careOf>) {
   // keep it short: max ~40 chars, never wraps over 2 lines in the bubble
   if (c.overdue.length) {
     const r = c.overdue[0]; const d = diffDays(today(), r.dueDate);
-    return `${r.product || r.title}: ${d === 1 ? 'včera' : `${d} ${d < 5 ? 'dny' : 'dní'}`} po termínu 🥺`;
+    return `${r.product || r.title}: ${d === 1 ? 'včera' : `${d} ${d < 5 ? 'dny' : 'dní'}`}` + ' po termínu';
   }
-  if (c.dueToday.length) return `Dnes: ${low(c.dueToday[0].title)} 💪`;
-  if (c.recent.length) return `Díky za ${c.recent[0].r.product || low(c.recent[0].r.title)}! 💛`;
-  return `${pet.sex === 'samice' ? 'Spokojená' : 'Spokojený'}. Pojď si hrát! 🐾`;
+  if (c.dueToday.length) return `Dnes: ${low(c.dueToday[0].title)}`;
+  if (c.recent.length) return `Díky za ${c.recent[0].r.product || low(c.recent[0].r.title)}!`;
+  return `${pet.sex === 'samice' ? 'Spokojená' : 'Spokojený'}. Pojď si hrát!`;
 }
 
 export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; onOpen: (id: string) => void }) {
@@ -105,15 +106,15 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
                 {c.mood === 'happy' && (<><circle cx="42" cy="62" r="4" fill="#FF8A7A" opacity=".45" /><circle cx="78" cy="62" r="4" fill="#FF8A7A" opacity=".45" /></>)}
               </g>
             </g>
-            {bump > 0 && <g className="c-hearts"><text x="30" y="30" fontSize="14">💛</text><text x="78" y="24" fontSize="11">💛</text><text x="56" y="16" fontSize="12">💛</text></g>}
+            {bump > 0 && <g className="c-hearts">{[[30, 30, 1], [78, 24, .8], [56, 16, .9]].map(([x, y, k]) => <path key={x} transform={`translate(${x - 7 * k} ${y - 12 * k}) scale(${k * .6})`} d="M12 21S3 16 3 9.5A4.5 4.5 0 0 1 12 7.5a4.5 4.5 0 0 1 9 2C21 16 12 21 12 21Z" fill="#7FB3E8" />)}</g>}
           </svg>
-          {!pet.photo && !['pes', 'kocka'].includes(pet.species) && <span aria-hidden className="absolute -right-1 -bottom-1 w-9 h-9 rounded-full bg-surface dark:bg-surface-d shadow-card flex items-center justify-center text-lg">{speciesOf(pet.species).emoji}</span>}
+          {!pet.photo && !['pes', 'kocka'].includes(pet.species) && <span aria-hidden className="absolute -right-1 -bottom-1 w-9 h-9 rounded-full bg-surface dark:bg-surface-d shadow-card flex items-center justify-center text-primary-d dark:text-primary"><Emo e={speciesOf(pet.species).emoji} className="w-5 h-5" /></span>}
           {pet.photo && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={pet.photo} alt="" className="absolute -right-1 -bottom-1 w-9 h-9 rounded-full object-cover ring-[3px] ring-surface dark:ring-surface-d shadow-card" />)}
         </button>
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] font-bold uppercase tracking-wider text-muted">{label} · péče {c.score} %</p>
+          <p className="text-[11.5px] font-bold uppercase tracking-wide text-muted leading-snug"><span className="whitespace-nowrap">{label}</span> · <span className="whitespace-nowrap">péče {c.score} %</span></p>
           <button onClick={() => onOpen(pet.id)} className="text-left text-2xl font-bold leading-tight truncate max-w-full min-h-[44px]">{pet.name}</button>
           <div className="mt-2 relative rounded-2xl rounded-tl-md bg-bg/90 dark:bg-white/[0.07] px-3 py-2 text-[14px] leading-snug ring-1 ring-ink/5 dark:ring-white/10 animate-fade" key={pet.id + c.mood}>{line(pet, c)}</div>
         </div>

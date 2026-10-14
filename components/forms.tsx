@@ -1,4 +1,5 @@
 'use client';
+import { Emo, GT } from './glyphs';
 import { ask, notice, toast } from './feedback';
 import { useEffect, useRef, useState } from 'react';
 import type { Allergy, Medication, Pet, Reminder, ReminderType, Severity, Sex, Species, Visit } from '@/lib/types';
@@ -41,7 +42,7 @@ export function PetForm({ open, onClose, pet, onDelete }: { open: boolean; onClo
           <div className="grid grid-cols-4 gap-2">
             {SPECIES.map((s) => (
               <button type="button" key={s.id} onClick={() => set('species', s.id as Species)} className={`press rounded-xl py-2 text-center border transition ${f.species === s.id ? 'border-primary bg-primary/10' : 'border-ink/10 dark:border-white/10'}`}>
-                <div className="text-xl">{s.emoji}</div><div className="text-[12px] font-medium mt-0.5">{s.name}</div>
+                <div className="text-xl"><Emo e={s.emoji} className="w-6 h-6" /></div><div className="text-[12px] font-medium mt-0.5">{s.name}</div>
               </button>
             ))}
           </div>
@@ -94,7 +95,7 @@ export function ReminderForm({ open, onClose, reminder, petId, date }: { open: b
           <span className="block text-[13px] font-medium text-muted mb-1.5">Typ</span>
           <div className="flex flex-wrap gap-2">
             {REMINDER_TYPES.map((t) => (
-              <button type="button" key={t.id} onClick={() => pickType(t.id)} className={`press rounded-full px-3 py-1.5 text-sm border transition ${f.type === t.id ? 'border-primary bg-primary/10 text-primary dark:text-primary-l font-semibold' : 'border-ink/10 dark:border-white/10'}`}>{t.emoji} {t.name}</button>
+              <button type="button" key={t.id} onClick={() => pickType(t.id)} className={`press rounded-full px-3 py-1.5 text-sm border transition ${f.type === t.id ? 'border-primary bg-primary/10 text-primary dark:text-primary-l font-semibold' : 'border-ink/10 dark:border-white/10'}`}><Emo e={t.emoji} className="w-4 h-4 inline-block align-[-3px] mr-1" /> {t.name}</button>
             ))}
           </div>
         </div>
@@ -223,7 +224,7 @@ export function MedForm({ open, onClose, med, petId }: { open: boolean; onClose:
 
 export const SEVERITY: { id: Severity; n: string; cls: string }[] = [
   { id: 'mirna', n: 'Mírná', cls: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300' },
-  { id: 'stredni', n: 'Střední', cls: 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300' },
+  { id: 'stredni', n: 'Střední', cls: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300' },
   { id: 'tezka', n: 'Těžká', cls: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400' },
 ];
 

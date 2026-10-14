@@ -1,4 +1,5 @@
 'use client';
+import { Emo, GT } from './glyphs';
 // Věrnostní karty — glass wallet of pet-shop loyalty cards, shared within the household.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
@@ -43,7 +44,7 @@ function Cashier({ card, onClose }: { card: LoyaltyCard; onClose: () => void }) 
   return (
     <div data-cashier role="dialog" aria-modal aria-label={`Karta ${cardTitle(card)}`} className="fixed inset-0 z-[90] bg-white text-black flex flex-col items-center justify-center px-5" style={{ filter: 'none' }} onClick={onClose}>
       <div className="absolute top-[calc(env(safe-area-inset-top)+14px)] inset-x-5 flex items-center gap-3">
-        <span className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: `linear-gradient(135deg, ${s.from}, ${s.to})` }}>{s.emoji}</span>
+        <span className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: `linear-gradient(135deg, ${s.from}, ${s.to})` }}><Emo e={s.emoji} className="w-6 h-6" /></span>
         <span className="flex-1 font-bold text-lg truncate">{cardTitle(card)}</span>
         <button aria-label="Zavřít" onClick={onClose} className="w-11 h-11 rounded-full bg-black/5 flex items-center justify-center"><Icon name="x" className="w-5 h-5" /></button>
       </div>
@@ -99,15 +100,15 @@ function CardForm({ initial, onDone }: { initial: LoyaltyCard; onDone: () => voi
         {ORDER.map((k) => { const s = STORES[k]; const on = c.store === k; return (
           <button key={k} role="radio" aria-checked={on} data-store={k} onClick={() => set({ store: k })}
             className={`press rounded-2xl p-2 min-h-[64px] text-[12px] font-semibold leading-tight text-white ${on ? 'ring-[3px] ring-primary ring-offset-2 ring-offset-surface dark:ring-offset-surface-d' : 'opacity-80'}`}
-            style={{ background: `linear-gradient(135deg, ${s.from}, ${s.to})` }}><span className="block text-lg">{s.emoji}</span>{s.name}</button>); })}
+            style={{ background: `linear-gradient(135deg, ${s.from}, ${s.to})` }}><span className="block text-lg"><Emo e={s.emoji} className="w-6 h-6" /></span>{s.name}</button>); })}
       </div>
       {c.store === 'custom' && <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
         <Field label="Název obchodu"><input name="cardName" className={inputCls} value={c.name} onChange={(e) => set({ name: e.target.value })} placeholder="Např. Chovatelské potřeby U Tlapky" /></Field>
         <label className="block"><span className="sr-only">Barva</span><input name="cardColor" type="color" value={c.color ?? '#6B7280'} onChange={(e) => set({ color: e.target.value })} className="w-14 h-[50px] rounded-2xl bg-transparent" /></label>
       </div>}
       <div className="grid grid-cols-2 gap-2">
-        <Button type="button" variant="soft" onClick={scan} data-scan-camera>📷 Naskenovat</Button>
-        <Button type="button" variant="soft" onClick={() => photo.current?.click()}>🖼️ Z fotky</Button>
+        <Button type="button" variant="soft" onClick={scan} data-scan-camera><GT t="📷 Naskenovat" /></Button>
+        <Button type="button" variant="soft" onClick={() => photo.current?.click()}><GT t="🖼️ Z fotky" /></Button>
         <input ref={photo} data-scan-photo type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { fromPhoto(e.target.files?.[0]); e.target.value = ''; }} />
       </div>
       <Field label="Číslo karty"><input name="cardCode" inputMode={c.format === 'EAN13' ? 'numeric' : 'text'} autoComplete="off" className={`${inputCls} font-mono tracking-wider`} value={c.code}
@@ -138,10 +139,10 @@ export function Wallet() {
       <PageHeader title="Věrnostní karty" sub={cards.length ? `${cards.length} ${cards.length === 1 ? 'karta' : cards.length < 5 ? 'karty' : 'karet'} · sdílené s domácností` : 'Všechny zverimexy v kapse'} fab={<Fab label="Přidat kartu" onClick={() => setEdit(blank())} />} />
       {!cards.length ? (
         <Empty emoji="💳" title="Zatím žádná karta" text="Vyber obchod a naskenuj kartu. U pokladny ji pak jen ukážeš." action={<div data-quick-brands className="grid grid-cols-2 gap-2 text-left">
-          {ORDER.map((k) => { const st = STORES[k]; return <button key={k} data-brand={k} onClick={() => setEdit({ ...blank(), store: k })} className="press min-h-[56px] rounded-2xl px-3 py-2 flex items-center gap-2 font-semibold text-[14px] shadow-card" style={{ background: `linear-gradient(135deg, ${st.from}, ${st.to})`, color: st.ink }}><span aria-hidden className="text-lg">{st.emoji}</span><span className="leading-tight">{k === 'custom' ? 'Jiná karta' : st.name}</span></button>; })}
+          {ORDER.map((k) => { const st = STORES[k]; return <button key={k} data-brand={k} onClick={() => setEdit({ ...blank(), store: k })} className="press min-h-[56px] rounded-2xl px-3 py-2 flex items-center gap-2 font-semibold text-[14px] shadow-card" style={{ background: `linear-gradient(135deg, ${st.from}, ${st.to})`, color: st.ink }}><span aria-hidden className="shrink-0"><Emo e={st.emoji} className="w-5 h-5" /></span><span className="leading-tight">{k === 'custom' ? 'Jiná karta' : st.name}</span></button>; })}
         </div>} />
       ) : (<>
-        <p className="text-[13px] text-muted px-1 -mt-1 mb-3">👆 Klepni na kartu – u pokladny se ukáže velký kód a zesvětlí se displej.</p>
+        <p className="text-[13px] text-muted px-1 -mt-1 mb-3"><GT t="👆 Klepni na kartu – u pokladny se ukáže velký kód a zesvětlí se displej." /></p>
         <ul className="pb-4" aria-label="Karty">
           {cards.map((c, i) => { const s = look(c); return (
             <li key={c.id} data-card={c.id} className={`relative ${i ? '-mt-[86px]' : ''}`} style={{ zIndex: i + 1 }}>
@@ -151,10 +152,10 @@ export function Wallet() {
                 <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,.38),rgba(255,255,255,.06)_40%,transparent_60%)]" />
                 <span className="pointer-events-none absolute -right-10 -top-12 w-40 h-40 rounded-full bg-white/15 blur-2xl" />
                 <div className="relative flex items-start gap-3">
-                  <span className="w-10 h-10 rounded-xl bg-white/20 ring-1 ring-white/30 flex items-center justify-center text-xl">{s.emoji}</span>
+                  <span className="w-10 h-10 rounded-xl bg-white/20 ring-1 ring-white/30 flex items-center justify-center text-xl"><Emo e={s.emoji} className="w-6 h-6" /></span>
                   <span className="flex-1 min-w-0"><span className="block font-bold text-[17px] truncate" data-card-title>{cardTitle(c)}</span>
                     <span className="block text-[12px] opacity-80">{c.uses ? `Použito ${c.uses}×` : 'Zatím nepoužito'}</span></span>
-                  <button aria-label={`Upravit ${cardTitle(c)}`} onClick={(e) => { e.stopPropagation(); setEdit(c); }} className="w-10 h-10 -m-1 rounded-full bg-white/15 flex items-center justify-center text-lg">✎</button>
+                  <button aria-label={`Upravit ${cardTitle(c)}`} onClick={(e) => { e.stopPropagation(); setEdit(c); }} className="w-10 h-10 -m-1 rounded-full bg-white/15 flex items-center justify-center "><Emo e="✎" className="w-5 h-5" /></button>
                 </div>
                 <div className="relative mt-[38px] flex items-end justify-between gap-3">
                   <span className="font-mono text-[15px] tracking-[.14em] truncate">{c.format === 'QR' ? 'QR kód' : (/^\d{8,}$/.test(c.code) ? c.code.replace(/(\d{4})(?=\d)/g, '$1 ') : c.code)}</span>

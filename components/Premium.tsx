@@ -1,4 +1,5 @@
 'use client';
+import { Emo, GT } from './glyphs';
 import { useEffect, useMemo, useState } from 'react';
 import { usePremium, PLANS, FREE, type PlanId } from '@/lib/premium';
 import { useStore } from '@/lib/store';
@@ -48,7 +49,7 @@ export function Paywall() {
       </div>
       <ul className="space-y-2.5 mb-5">
         {PERKS.map((x) => (
-          <li key={x.t} className="flex gap-3 items-start"><span className="w-7 flex justify-center text-primary-d dark:text-primary">{EMOJI_GLYPH[x.e] ? <Glyph name={EMOJI_GLYPH[x.e]} /> : <span aria-hidden>{x.e}</span>}</span>
+          <li key={x.t} className="flex gap-3 items-start"><span className="w-7 flex justify-center text-primary-d dark:text-primary">{EMOJI_GLYPH[x.e] ? <Glyph name={EMOJI_GLYPH[x.e]} /> : <span aria-hidden><Emo e={x.e} className="w-6 h-6" /></span>}</span>
             <span className="flex-1"><b className="text-[15px]">{x.t}</b>{x.soon && <span className="ml-1.5 align-middle text-[12px] font-bold uppercase rounded-full px-1.5 py-0.5 bg-ink/10 dark:bg-white/15">brzy</span>}<span className="block text-[13px] text-muted">{x.d}</span></span></li>
         ))}
       </ul>
@@ -72,7 +73,7 @@ export function Paywall() {
       {err && <p className="text-center text-sm text-red-600 dark:text-red-400 mt-2">{err}</p>}
       <button disabled={busy} data-restore onClick={async () => { setBusy(true); setErr(''); try { const r = await p.restore(); if (r) p.closePaywall(); else setErr('Nenašli jsme žádný aktivní nákup k obnovení.'); } catch { setErr('Obnovení se nepovedlo.'); } finally { setBusy(false); } }} className="press w-full min-h-[44px] mt-1 text-sm font-semibold text-[#24609F] dark:text-primary">Obnovit nákupy</button>
       <p className="text-[12px] text-muted text-center leading-snug">Po zkušební době se předplatné automaticky obnovuje za uvedenou cenu, dokud ho nezrušíš nejméně 24 h před koncem období v nastavení App Store / Google Play. <a href="#terms" onClick={p.closePaywall} className="underline">Podmínky</a> · <a href="#privacy" onClick={p.closePaywall} className="underline">Soukromí</a></p>
-      <p className="mt-3 rounded-xl bg-amber-100 text-amber-900 dark:bg-amber-400/15 dark:text-amber-200 text-[12px] px-3 py-2 text-center">🧪 TESTOVACÍ REŽIM – nic se neplatí. Platby přes App Store / Google Play (RevenueCat) zatím nejsou zapnuté.</p>
+      <p className="mt-3 rounded-xl bg-amber-100 text-amber-900 dark:bg-amber-400/15 dark:text-amber-200 text-[12px] px-3 py-2 text-center"><GT t="🧪 TESTOVACÍ REŽIM – nic se neplatí. Platby přes App Store / Google Play (RevenueCat) zatím nejsou zapnuté." /></p>
       <details className="mt-4 text-sm"><summary className="text-muted cursor-pointer">Co zůstává zdarma navždy</summary>
         <ul className="mt-2 grid grid-cols-2 gap-1.5 text-[13px]">{FREE_LIST.map((f) => <li key={f}>✓ {f}</li>)}</ul>
         <p className="text-[13px] text-muted mt-2">Nouzové funkce (mapa nonstop pohotovostí a varování v Aivetovi) nikdy nezamkneme.</p></details>
@@ -91,7 +92,7 @@ export function AdSlot({ id }: { id: string }) {
   const x = PROMOS[id] ?? PROMOS.home;
   return (
     <aside aria-label="Tlapka Premium" data-ad-slot={id} className="rounded-[22px] p-3.5 flex items-center gap-3 bg-gradient-to-br from-[#EAF3FC] to-[#DCEBFA] dark:from-[#1E2733] dark:to-[#22262D] ring-1 ring-[#7FB3E8]/15">
-      <span className="w-11 h-11 rounded-2xl bg-white/70 dark:bg-white/10 flex items-center justify-center text-xl shrink-0">{x.e}</span>
+      <span className="w-11 h-11 rounded-2xl bg-white/70 dark:bg-white/10 flex items-center justify-center text-xl shrink-0"><Emo e={x.e} className="w-6 h-6" /></span>
       <span className="flex-1 min-w-0"><span className="block font-semibold text-[15px]">{x.t}</span><span className="block text-[13px] text-muted">{x.d}</span></span>
       <button onClick={() => p.openPaywall(x.r)} className="press shrink-0 min-h-[44px] px-3 rounded-full text-[13px] font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">14 dní zdarma</button>
     </aside>

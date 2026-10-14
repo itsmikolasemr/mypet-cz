@@ -1,5 +1,6 @@
 'use client';
 import { SharedHandover } from './Handover';
+import { Emo } from './glyphs';
 // Caretaker page (#share/<token>): works without account or local data. Shows pets, today's tasks and marks doses.
 import { useCallback, useEffect, useState } from 'react';
 import { sharedLogDose, sharedView } from '@/lib/cloud';
@@ -35,7 +36,7 @@ export function SharedPage({ token }: { token: string }) {
           return (
             <Card key={p.id} className="p-4 space-y-3" >
               <p className="text-lg font-bold" data-pet={p.id}>{p.name}</p>
-              {!!al.length && <p className="text-[14px] rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 px-3 py-2">⚠️ Alergie: {al.map((a) => a.allergen).join(', ')}</p>}
+              {!!al.length && <p className="text-[14px] rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 px-3 py-2 flex items-center gap-1.5"><Emo e="⚠️" />Alergie: {al.map((a) => a.allergen).join(', ')}</p>}
               {[...ms.map((m) => ({ k: `m${m.id}`, title: `${m.name} · ${m.dose}`, sub: m.frequency, rem: null as string | null, med: m.id as string | null })),
                 ...rs.map((r) => ({ k: `r${r.id}`, title: r.title, sub: `termín ${new Date(r.dueDate).toLocaleDateString('cs-CZ')}`, rem: r.id as string | null, med: null as string | null }))].map((x) => {
                 const d = lastDose(p.id, x.rem ?? undefined, x.med ?? undefined);

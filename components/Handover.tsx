@@ -1,4 +1,5 @@
 'use client';
+import { Emo, GT } from './glyphs';
 // Předávací karta pro hlídače — feeding, meds, allergies, habits, walks, contacts, emergency; link / PDF / print / copy / export for sitter sites.
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -30,7 +31,7 @@ function CareForm({ pet, onDone }: { pet: Pet; onDone: () => void }) {
   const save = () => { savePet({ ...pet, care: { ...c, feeding: c.feeding.filter((f) => f.what.trim()), updated: new Date().toISOString() } }); toast('Předávací karta uložená'); onDone(); };
   return (
     <div className="space-y-4" data-care-form>
-      <p className="font-semibold">🍽️ Krmení</p>
+      <p className="font-semibold"><GT t="🍽️ Krmení" /></p>
       {c.feeding.map((f, i) => (
         <div key={f.id} className="rounded-2xl ring-1 ring-ink/10 dark:ring-white/10 p-3 space-y-2">
           <Field label="Co"><input name={`feedWhat${i}`} className={inputCls} value={f.what} onChange={(e) => setF(i, { what: e.target.value })} placeholder="Granule Brit Care Lamb" /></Field>
@@ -48,7 +49,7 @@ function CareForm({ pet, onDone }: { pet: Pet; onDone: () => void }) {
       <Field label="Zvyky a povaha"><textarea name="habits" rows={2} className={inputCls} value={c.habits ?? ''} onChange={(e) => set({ habits: e.target.value })} placeholder="Spí v pelechu v obýváku, po jídle chce na zahradu" /></Field>
       <Field label="Čeho se bojí / na co pozor"><input name="fears" className={inputCls} value={c.fears ?? ''} onChange={(e) => set({ fears: e.target.value })} placeholder="Ohňostroje, vysavač" /></Field>
       <Field label="Domácnost (klíče, kde je krmení, vodítko…)"><input name="house" className={inputCls} value={c.house ?? ''} onChange={(e) => set({ house: e.target.value })} /></Field>
-      <p className="font-semibold pt-2">📞 Kontakty</p>
+      <p className="font-semibold pt-2"><GT t="📞 Kontakty" /></p>
       {(['owner', 'backup', 'vet'] as const).map((k) => (
         <div key={k} className="grid grid-cols-2 gap-2">
           <Field label={{ owner: 'Majitel', backup: 'Záložní kontakt', vet: 'Veterinář' }[k]}><input name={`${k}Name`} className={inputCls} value={c[k]?.name ?? ''} onChange={(e) => ct(k, 'name', e.target.value)} /></Field>
@@ -88,19 +89,19 @@ export function HandoverCard({ pet }: { pet: Pet }) {
   };
   return (
     <Card className="p-4 space-y-3" >
-      <div data-handover><p className="font-semibold">🧳 Předávací karta pro hlídače</p>
+      <div data-handover><p className="font-semibold"><GT t="🧳 Předávací karta pro hlídače" /></p>
         <p className="text-[13px] text-muted">Krmení, léky, alergie, zvyky, venčení a kontakty na jednom místě – pro hlídače, babičku nebo hlídací web.</p></div>
-      {has ? <ul className="text-[14px] space-y-1">{sections.filter((s) => ['feeding', 'meds', 'allergies', 'walks'].includes(s.key)).map((s) => <li key={s.key} className={s.alert ? 'text-red-700 dark:text-red-300 font-semibold' : ''}><b>{s.h.replace('⚠ ', '⚠️ ')}:</b> {s.lines.join('; ')}</li>)}</ul>
+      {has ? <ul className="text-[14px] space-y-1">{sections.filter((s) => ['feeding', 'meds', 'allergies', 'walks'].includes(s.key)).map((s) => <li key={s.key} className={s.alert ? 'text-red-700 dark:text-red-300 font-semibold' : ''}><b>{s.h.startsWith('⚠') ? <><Emo e="⚠️" /> {s.h.replace(/^⚠\uFE0F? /, '')}</> : s.h}:</b> {s.lines.join('; ')}</li>)}</ul>
         : <p className="text-[14px]">Zatím nevyplněno. Léky a alergie se doplní samy z karty mazlíčka.</p>}
-      <button className={has ? soft + ' w-full' : 'press w-full min-h-[48px] rounded-2xl font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_10px_24px_-12px_rgba(127,179,232,.8)]'} onClick={() => setEdit(true)} data-edit-care>{has ? '✎ Upravit kartu' : '＋ Vyplnit kartu (2 minuty)'}</button>
+      <button className={has ? soft + ' w-full' : 'press w-full min-h-[48px] rounded-2xl font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_10px_24px_-12px_rgba(127,179,232,.8)]'} onClick={() => setEdit(true)} data-edit-care>{has ? <GT t="✎ Upravit kartu" /> : '＋ Vyplnit kartu (2 minuty)'}</button>
       <p className="text-[12px] font-bold uppercase tracking-wide text-muted pt-1">Poslat hlídači</p>
       <div className="grid grid-cols-2 gap-2">
-        <button className={soft} disabled={busy} onClick={link} data-h-link>🔗 {busy ? 'Vytvářím…' : 'Odkaz'}</button>
-        <button className={soft} onClick={pdf} data-h-pdf>📄 PDF</button>
-        <button className={soft} onClick={print} data-h-print>🖨️ Tisk</button>
-        <button className={soft} onClick={async () => { if (await copy(handoverText([pet], data))) toast('Text zkopírovaný'); }} data-h-copy>📋 Kopírovat text</button>
+        <button className={soft} disabled={busy} onClick={link} data-h-link><Emo e="🔗" /> {busy ? 'Vytvářím…' : 'Odkaz'}</button>
+        <button className={soft} onClick={pdf} data-h-pdf><GT t="📄 PDF" /></button>
+        <button className={soft} onClick={print} data-h-print><GT t="🖨️ Tisk" /></button>
+        <button className={soft} onClick={async () => { if (await copy(handoverText([pet], data))) toast('Text zkopírovaný'); }} data-h-copy><GT t="📋 Kopírovat text" /></button>
       </div>
-      <button className={soft + ' w-full'} onClick={site} data-h-site>🌐 Exportovat pro hlídací web</button>
+      <button className={soft + ' w-full'} onClick={site} data-h-site><GT t="🌐 Exportovat pro hlídací web" /></button>
       {url && <p className="text-[12px] break-all text-muted" data-h-url={url}>{url}</p>}
       <Sheet open={edit} onClose={() => setEdit(false)} title={`Předávací karta – ${pet.name}`}>{edit && <CareForm pet={pet} onDone={() => setEdit(false)} />}</Sheet>
       {printing && createPortal(

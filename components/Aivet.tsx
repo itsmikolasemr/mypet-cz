@@ -1,4 +1,5 @@
 'use client';
+import { Emo, GT } from './glyphs';
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { API_BASE } from '@/lib/api';
@@ -92,7 +93,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
       {/* sticky under the header so auto-scroll never hides it */}
       {emergency && (bannerOpen ? (
         <div role="alert" style={{ top: 'calc(env(safe-area-inset-top) + 72px)' }} className="sticky z-20 mb-4 rounded-[24px] p-4 text-white bg-gradient-to-br from-red-500 to-red-700 shadow-[0_14px_30px_-12px_rgba(220,38,38,.7)] animate-pop">
-          <div className="flex items-start gap-2"><p className="font-bold text-lg flex-1">🚨 Může jít o akutní stav</p>
+          <div className="flex items-start gap-2"><p className="font-bold text-lg flex-1"><GT t="🚨 Může jít o akutní stav" /></p>
             <button onClick={() => setBannerOpen(false)} aria-label="Sbalit varování" className="press -m-2 w-11 h-11 rounded-full flex items-center justify-center text-white/90 text-xl">⌃</button></div>
           <p className="text-sm text-white/90 mt-1">Nečekej na odpověď z chatu. Kontaktuj co nejdřív veterinární pohotovost.</p>
           <button onClick={openMap} className="press mt-3 w-full min-h-[44px] rounded-2xl bg-white text-red-700 font-bold py-3">Najít nonstop veterinu</button>
@@ -100,17 +101,17 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
       ) : (
         <div style={{ top: 'calc(env(safe-area-inset-top) + 72px)' }} className="sticky z-20 mb-4 flex justify-center">
           <span className="inline-flex rounded-full bg-red-600 text-white font-bold shadow-[0_8px_20px_-8px_rgba(220,38,38,.8)] overflow-hidden">
-            <button onClick={openMap} className="press min-h-[44px] pl-4 pr-3">🚨 Pohotovost</button>
+            <button onClick={openMap} className="press min-h-[44px] pl-4 pr-3"><GT t="🚨 Pohotovost" /></button>
             <button onClick={() => setBannerOpen(true)} aria-label="Rozbalit varování" className="press min-h-[44px] w-11 border-l border-white/30">⌄</button>
           </span>
         </div>
       ))}
       {status === 'off' ? (
         <Card className="p-6 text-center">
-          <div className="mx-auto w-20 h-20 rounded-[26px] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-4xl flex items-center justify-center shadow-float mb-4 animate-float">🩺</div>
+          <div className="mx-auto w-20 h-20 rounded-[26px] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-4xl flex items-center justify-center shadow-float mb-4 animate-float text-[#0F2540]"><Emo e="🩺" className="w-10 h-10" /></div>
           <h2 className="text-lg font-bold">Aivet se teprve chystá</h2>
           <p className="text-muted mt-1.5 text-[15px]">{status === 'off' ? 'Poradce zatím není zapnutý – brzy tu bude. Do té doby se při potížích obrať na svého veterináře.' : 'Poradce je teď nedostupný (offline nebo lokální verze). Zkus to později.'}</p>
-          <button onClick={openMap} className="press mt-5 w-full rounded-2xl py-3 font-semibold bg-primary/10 text-primary">🗺️ Veteriny v okolí</button>
+          <button onClick={openMap} className="press mt-5 w-full rounded-2xl py-3 font-semibold bg-primary/10 text-primary"><GT t="🗺️ Veteriny v okolí" /></button>
         </Card>
       ) : (
         <>
@@ -132,7 +133,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-screen`}>
                 <div className={`max-w-[85%] rounded-[22px] px-4 py-3 text-[15px] leading-relaxed space-y-0.5 ${m.role === 'user' ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] rounded-br-md shadow-[0_8px_20px_-10px_rgba(127,179,232,.7)]' : 'bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 rounded-bl-md'}`}>
                   {m.role === 'assistant' ? render(m.content) : m.content}
-                  {m.role === 'assistant' && m.emergency && <button onClick={openMap} className="press mt-2 w-full rounded-2xl bg-red-600 text-white font-bold py-2.5">🚨 Najít nonstop veterinu</button>}
+                  {m.role === 'assistant' && m.emergency && <button onClick={openMap} className="press mt-2 w-full rounded-2xl bg-red-600 text-white font-bold py-2.5"><GT t="🚨 Najít nonstop veterinu" /></button>}
                 </div>
               </div>
             ))}

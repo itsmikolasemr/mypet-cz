@@ -1,4 +1,5 @@
 'use client';
+import { Emo, GT } from './glyphs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Map as LMap, LayerGroup } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -8,6 +9,7 @@ import { useStore } from '@/lib/store';
 import type { CardStore } from '@/lib/types';
 
 type Vet = { id: string; lat: number; lon: number; name: string; tags: Record<string, string>; dist: number; nonstop: boolean; park?: boolean; shop?: boolean };
+const SVG = {"shop": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3.5 9.5 5 4.5h14l1.5 5M3.5 9.5a2.8 2.8 0 0 0 5.6 0 2.8 2.8 0 0 0 5.8 0 2.8 2.8 0 0 0 5.6 0M5 11.5V20h14v-8.5M10 20v-5h4v5\"/></svg>", "park": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3.5 17 11h-2.5l3.5 5H6l3.5-5H7ZM12 16v4.5\"/></svg>", "vet": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 3.5H5v5a4 4 0 0 0 8 0v-5h-1M9 12.5v2a5 5 0 0 0 10 0M17 14.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z\"/></svg>"} as const;
 const PRAHA = { lat: 50.0755, lon: 14.4378 };
 const ENDPOINTS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
 
@@ -192,7 +194,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
       const L = (await import('leaflet')).default;
       layer.current.clearLayers();
       shown.forEach((v) => {
-        L.marker([v.lat, v.lon], { icon: L.divIcon({ className: '', html: v.shop ? `<div class="shop-pin${v.tags.chain ? ' chain' : ''}"><span>🛍️</span></div>` : v.park ? '<div class="park-pin"><span>🐕</span></div>' : `<div class="vet-pin ${v.nonstop ? 'ns' : ''}"><span>${v.nonstop ? '24' : '🩺'}</span></div>`, iconSize: [44, 44], iconAnchor: [22, 44] }) })
+        L.marker([v.lat, v.lon], { icon: L.divIcon({ className: '', html: v.shop ? `<div class="shop-pin${v.tags.chain ? ' chain' : ''}">${SVG.shop}</div>` : v.park ? `<div class="park-pin">${SVG.park}</div>` : `<div class="vet-pin ${v.nonstop ? 'ns' : ''}">${v.nonstop ? '<span>24</span>' : SVG.vet}</div>`, iconSize: [44, 44], iconAnchor: [22, 44] }) })
           .on('click', () => setSel(v)).addTo(layer.current!);
       });
       if ((nonstop || parksOn || shopsOn) && shown.length && map.current && center) {
@@ -213,16 +215,13 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         <div className="absolute inset-x-2 top-2 z-[500] grid grid-cols-3 gap-1.5">
           <button onClick={() => setNonstop(!nonstop)} aria-pressed={nonstop}
             className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
-            🚨 Nonstop
-          </button>
+            <GT t="🚨 Nonstop" /></button>
           <button onClick={toggleParks} aria-pressed={parksOn} data-filter="parks"
             className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${parksOn ? 'bg-[#2F7D4A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
-            🐕 Výběhy
-          </button>
+            <GT t="🌳 Výběhy" /></button>
           <button onClick={toggleShops} aria-pressed={shopsOn} data-filter="shops"
-            className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${shopsOn ? 'bg-[#8A4B12] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
-            🛍️ Zverimexy
-          </button>
+            className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${shopsOn ? 'bg-[#3A4150] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            <GT t="🛍️ Zverimexy" /></button>
         </div>
         {state === 'loading' && <div className="absolute inset-x-0 bottom-3 z-[500] mx-auto w-max rounded-full bg-surface/90 dark:bg-surface-d/90 backdrop-blur px-4 py-2 text-sm shadow-card animate-fade"><PawLoader label="Hledám veteriny…" className="w-5 h-5" /></div>}
       </div>
@@ -238,7 +237,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         )}
         {shown.slice(0, 30).map((v) => (
           <Card key={v.id} onClick={() => focus(v)} className="p-4 flex items-center gap-3.5">
-            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.shop ? 'bg-[#8A4B12]/12 dark:bg-[#E0A060]/15' : v.park ? 'bg-[#2F7D4A]/12 dark:bg-[#5FBF7F]/15' : v.nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] font-bold text-sm' : 'bg-primary/10'}`}>{v.shop ? '🛍️' : v.park ? '🐕' : v.nonstop ? '24/7' : '🩺'}</div>
+            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.shop ? 'bg-[#3A4150]/12 dark:bg-[#C9D2DE]/15' : v.park ? 'bg-[#2F7D4A]/12 dark:bg-[#5FBF7F]/15' : v.nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] font-bold text-sm' : 'bg-primary/10'}`}>{v.shop ? <Emo e="🛍️" className="w-6 h-6" /> : v.park ? <Emo e="🌳" className="w-6 h-6" /> : v.nonstop ? '24/7' : <Emo e="🩺" className="w-6 h-6" />}</div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold truncate">{v.name}</p>
               {!v.park && (() => { const o = openNow(v.tags); return o == null ? null : <p data-open={o ? 'yes' : 'no'} className={`text-[12px] font-bold ${o ? 'text-[#1F7A43] dark:text-[#6FD39A]' : 'text-muted'}`}>{o ? (v.nonstop ? 'Otevřeno teď · nonstop' : 'Otevřeno teď') : 'Teď zavřeno'}</p>; })()}
@@ -252,9 +251,9 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         {sel && (
           <div className="space-y-3">
             {sel.shop && (() => { const card = data.cards.find((c) => c.store === (sel.tags.chain as CardStore)); return (<>
-              {sel.tags.chain && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold bg-[#8A4B12]/12 text-[#6B3A0E] dark:text-[#F0B880]">Řetězec {CHAIN_NAME[sel.tags.chain] ?? sel.tags.chain}</span>}
+              {sel.tags.chain && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold bg-[#3A4150]/12 text-[#6B3A0E] dark:text-[#F0B880]">Řetězec {CHAIN_NAME[sel.tags.chain] ?? sel.tags.chain}</span>}
               {card && <Card className="p-4 flex items-center gap-3">
-                <span className="text-2xl" data-shop-card>💳</span><span className="flex-1"><b className="block">Máš tu věrnostní kartu</b><span className="text-sm text-muted">{card.name} – ukaž ji u pokladny</span></span>
+                <span className="text-2xl" data-shop-card><Emo e="💳" className="w-6 h-6" /></span><span className="flex-1"><b className="block">Máš tu věrnostní kartu</b><span className="text-sm text-muted">{card.name} – ukaž ji u pokladny</span></span>
                 <button className="press rounded-2xl px-3.5 min-h-[44px] font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]" onClick={() => { sessionStorage.setItem('tlapka:openCard', card.id); history.pushState(null, '', '#cards'); dispatchEvent(new PopStateEvent('popstate')); }} data-open-card>Ukázat</button>
               </Card>}
             </>); })()}
@@ -270,7 +269,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
               <a className="press inline-flex items-center justify-center rounded-2xl px-4 py-3.5 font-semibold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]" target="_blank" rel="noreferrer" href={`https://mapy.cz/fnc/v1/route?end=${sel.lon},${sel.lat}&routeType=${sel.park ? 'foot_fast' : 'car_fast'}`}>Navigovat (Mapy.cz)</a>
               <a className="press inline-flex items-center justify-center rounded-2xl px-4 py-3.5 font-semibold ring-1 ring-ink/10 dark:ring-white/15" target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&destination=${sel.lat},${sel.lon}`}>Google Maps</a>
             </div>
-            {(t.phone || t['contact:phone']) && <a className="press flex items-center justify-center rounded-2xl px-4 py-3.5 font-semibold bg-primary/10 text-primary" href={`tel:${(t.phone || t['contact:phone']).split(';')[0].replace(/\s/g, '')}`}>📞 Zavolat</a>}
+            {(t.phone || t['contact:phone']) && <a className="press flex items-center justify-center rounded-2xl px-4 py-3.5 font-semibold bg-primary/10 text-primary" href={`tel:${(t.phone || t['contact:phone']).split(';')[0].replace(/\s/g, '')}`}><GT t="📞 Zavolat" /></a>}
             <a className="block text-center text-xs text-muted underline" target="_blank" rel="noreferrer" href={`https://www.openstreetmap.org/${sel.id}`}>Opravit údaje v OpenStreetMap</a>
           </div>
         )}

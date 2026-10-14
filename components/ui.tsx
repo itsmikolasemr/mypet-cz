@@ -106,7 +106,7 @@ export function Empty({ emoji, title, text, action }: { emoji: string; title: st
 
 const STATUS: Record<Status, [string, string]> = {
   overdue: ['Po termínu', 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400'],
-  soon: ['Brzy', 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300'],
+  soon: ['Brzy', 'bg-[#DCEBFA] text-[#1F4E7A] dark:bg-[#7FB3E8]/15 dark:text-[#A9CEF3]'],
   ok: ['Naplánováno', 'bg-primary/10 text-primary dark:text-primary-l'],
   done: ['Hotovo', 'bg-ink/5 text-muted dark:bg-white/10 dark:text-white/85'],
 };

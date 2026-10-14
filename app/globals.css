@@ -165,7 +165,7 @@ html.dark .text-red-600, html.dark .text-red-700 { color: #FCA5A5; }
 .leaflet-control-zoom a { width: 44px !important; height: 44px !important; line-height: 44px !important; font-size: 22px !important; }
 .leaflet-control-attribution a { padding: 6px 2px; }
 /* one-time swipe hints */
-@keyframes swipe-hint { 0%, 100% { transform: translateX(0); } 30%, 55% { transform: translateX(64px); } }
+@keyframes swipe-hint { 0%, 100% { transform: translateX(0); } 30%, 55% { transform: translateX(104px); } }
 .swipe-hint { animation: swipe-hint 1.6s cubic-bezier(.3,.9,.4,1) .6s 2; }
 @keyframes peek { 0%, 100% { transform: translateX(0); } 40% { transform: translateX(-28px); } }
 .peek-hint { animation: peek 1.2s ease-in-out .8s 1; }
@@ -177,7 +177,7 @@ html.dark .text-red-600, html.dark .text-red-700 { color: #FCA5A5; }
 
 /* swipe hint / swipe gestures must never widen the layout viewport (sideways wobble on phones) */
 /* Zverimexy: warm brown square-ish pin (distinct from round blue vets and green park drops); chains get a baby blue ring */
-.shop-pin { width: 32px; height: 32px; border-radius: 10px; background: #8A4B12; border: 2px solid #fff; box-shadow: 0 6px 14px -4px rgba(29,30,34,.45); display: flex; align-items: center; justify-content: center; font-size: 15px; margin: 6px; }
+.shop-pin { width: 32px; height: 32px; border-radius: 10px; background: #3A4150; border: 2px solid #fff; box-shadow: 0 6px 14px -4px rgba(29,30,34,.45); display: flex; align-items: center; justify-content: center; font-size: 15px; margin: 6px; }
 .shop-pin.chain { box-shadow: 0 0 0 3px #7FB3E8, 0 6px 14px -4px rgba(29,30,34,.45); }
 html.glass .swipe-track > .bg-surface, html.glass .swipe-track .bg-surface { background: linear-gradient(160deg, rgba(246,247,249,.95), rgba(232,234,238,.92)) !important; }
 
@@ -191,3 +191,8 @@ html.glass .swipe-track > .bg-surface, html.glass .swipe-track .bg-surface { bac
 .paw-anim.paw-loop .paw-toe { animation: paw-cycle 1.6s ease-in-out infinite both; }
 .paw-anim.paw-loop .paw-pad { animation: paw-cycle 1.6s ease-in-out .38s infinite both; }
 @media (prefers-reduced-motion: reduce) { .paw-anim .paw-toe, .paw-anim .paw-pad { animation: none !important; opacity: 1; transform: none; } }
+/* r5: custom glyph pins (no emoji) */
+.vet-pin > svg, .park-pin > svg, .shop-pin > svg { transform: rotate(45deg); width: 18px; height: 18px; }
+.vet-pin > svg { color: #2F6FAF; }
+.park-pin > svg, .shop-pin > svg { color: #fff; }
+.shop-pin > svg { transform: none; }

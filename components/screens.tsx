@@ -1,4 +1,5 @@
 'use client';
+import { Emo, GT } from './glyphs';
 import { createPortal } from 'react-dom';
 import { Account } from './Account';
 import { useCloud } from '@/lib/cloudsync';
@@ -48,8 +49,8 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
         <div className="space-y-8 stagger">
           <Companion data={data} pets={data.pets} onOpen={openPet} />
           <div className="flex gap-2 -mt-4">
-            <span className="flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">📅 {upcoming.length} {upcoming.length === 1 ? 'úkol' : upcoming.length >= 2 && upcoming.length <= 4 ? 'úkoly' : 'úkolů'} / 30 dní</span>
-            <span className={`flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold shadow-card dark:shadow-card-d ring-1 ${overdue.length ? 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:ring-red-500/20' : 'bg-surface dark:bg-surface-d ring-ink/5 dark:ring-white/10'}`}>{overdue.length ? `⚠️ ${overdue.length} po termínu` : '✨ Nic nemeškáš'}</span>
+            <span className="flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 inline-flex items-center gap-1.5"><Emo e="📅" /> {upcoming.length} {upcoming.length === 1 ? 'úkol' : upcoming.length >= 2 && upcoming.length <= 4 ? 'úkoly' : 'úkolů'} / 30 dní</span>
+            <span className={`flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold shadow-card dark:shadow-card-d ring-1 ${overdue.length ? 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:ring-red-500/20' : 'bg-surface dark:bg-surface-d ring-ink/5 dark:ring-white/10'}`}><span className="inline-flex items-center gap-1.5"><Emo e={overdue.length ? '⚠️' : '✨'} />{overdue.length ? `${overdue.length} po termínu` : 'Nic nemeškáš'}</span></span>
           </div>
           {overdue.length > 0 && (
             <section className="space-y-2.5"><h2 className="font-semibold text-lg text-red-700 dark:text-red-400">Po termínu</h2>{overdue.map((r, i) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} hint={i === 0} onEdit={() => setEdit(r)} />)}</section>
@@ -61,8 +62,8 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
           <section>
             <h2 className="font-semibold text-lg mb-2">Přidat</h2>
             <div className="grid grid-cols-3 gap-2.5">
-              <button onClick={() => setNewRem(true)} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg">🔔</span>Připomínku</button>
-              <button onClick={() => (data.pets.length > 1 ? setPickDoc(true) : openDocs(data.pets[0].id))} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg">📎</span>Dokument</button>
+              <button onClick={() => setNewRem(true)} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg"><Emo e="🔔" className="w-6 h-6" /></span>Připomínku</button>
+              <button onClick={() => (data.pets.length > 1 ? setPickDoc(true) : openDocs(data.pets[0].id))} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg"><Emo e="📎" className="w-6 h-6" /></span>Dokument</button>
               <ScanButton className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight" />
             </div>
           </section>
@@ -90,7 +91,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
               <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Druhý názor</span><span className="block text-[12px] text-muted leading-snug">Vysvětlí zprávu od vety</span></span>
             </Card>
             <Card onClick={() => { sessionStorage.setItem('tlapka:petTab', 'sdilet'); openPet(data.pets[0].id); }} className="p-3.5 flex items-center gap-3 min-h-[72px]">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">🧳</div>
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center"><Emo e="🧳" className="w-6 h-6" /></div>
               <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Pro hlídače</span><span className="block text-[12px] text-muted leading-snug">Karta: krmení, léky, kontakty</span></span>
             </Card>
             </div>
@@ -151,7 +152,7 @@ export function PetsList({ openPet }: { openPet: (id: string) => void }) {
             <Card key={p.id} onClick={() => openPet(p.id)} className="p-3.5 flex items-center gap-3.5">
               <Avatar pet={p} size="w-16 h-16" text="text-3xl" />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-lg leading-tight flex items-center gap-2">{p.name}{data.allergies.some((a) => a.petId === p.id) && <span className="text-[12px] font-bold rounded-full px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400">⚠️ Alergie</span>}</p>
+                <p className="font-semibold text-lg leading-tight flex items-center gap-2">{p.name}{data.allergies.some((a) => a.petId === p.id) && <span className="text-[12px] font-bold rounded-full px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400"><GT t="⚠️ Alergie" /></span>}</p>
                 <p className="text-[13px] text-muted truncate">{[p.breed || speciesOf(p.species).name, age(p.birthDate), w && `${w.kg.toLocaleString('cs-CZ')} kg`].filter(Boolean).join(' · ')}</p>
                 {next && <p className={`text-[13px] mt-0.5 font-medium ${status(next) === 'overdue' ? 'text-red-600 dark:text-red-400' : 'text-primary'}`}>{next.title} · {fmtDate(next.dueDate)}</p>}
               </div>
@@ -196,11 +197,11 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
         <div className="min-w-0">
           <h1 className="text-[28px] font-bold leading-tight break-words">{pet.name}</h1>
           <p className="text-muted">{[pet.breed || speciesOf(pet.species).name, age(pet.birthDate)].filter(Boolean).join(' · ')}</p>
-          {allergies.length > 0 && <button onClick={() => setTab('zdravi')} className="mt-1.5 min-h-[44px] text-[13px] font-bold rounded-full px-3.5 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400">⚠️ Alergie: {allergies.map((a) => a.allergen).join(', ')}</button>}
+          {allergies.length > 0 && <button onClick={() => setTab('zdravi')} className="mt-1.5 min-h-[44px] text-[13px] font-bold rounded-full px-3.5 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400 inline-flex items-center gap-1.5"><Emo e="⚠️" />Alergie: {allergies.map((a) => a.allergen).join(', ')}</button>}
         </div>
       </div>
       {ask && <button onClick={ask} className="press w-full mb-3 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_14px_30px_-14px_rgba(127,179,232,.7)]">
-        <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">🩺</span>
+        <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl"><Emo e="🩺" className="w-6 h-6" /></span>
         <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-[#0F2540]/75">Zná profil, léky i alergie – {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
       </button>}
       <div className="sticky z-20 -mx-1 px-1 py-1 mb-1 bg-bg/80 dark:bg-bg-d/80 backdrop-blur-xl rounded-full" style={{ top: 'calc(env(safe-area-inset-top) + 72px)' }}>
@@ -227,7 +228,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
         </>)}
         {tab === 'zdravi' && (<>
           <Card className="p-4">
-            <div className="flex items-center justify-between mb-2"><p className="font-semibold">⚠️ Alergie</p><button className="text-sm font-semibold text-primary min-h-[44px] min-w-[44px] justify-center px-2 -mr-2 inline-flex items-center min-h-[44px] px-2 -mr-2 inline-flex items-center" onClick={() => setAlg('new')}>+ Přidat</button></div>
+            <div className="flex items-center justify-between mb-2"><p className="font-semibold"><GT t="⚠️ Alergie" /></p><button className="text-sm font-semibold text-primary min-h-[44px] min-w-[44px] justify-center px-2 -mr-2 inline-flex items-center min-h-[44px] px-2 -mr-2 inline-flex items-center" onClick={() => setAlg('new')}>+ Přidat</button></div>
             {!allergies.length ? <p className="text-sm text-muted">Žádné známé alergie.</p> : (
               <div className="space-y-2">{allergies.map((a) => (
                 <button key={a.id} onClick={() => setAlg(a)} className="press w-full flex items-center gap-3 text-left rounded-2xl bg-ink/[0.03] dark:bg-white/[0.04] px-3 py-2.5">
@@ -238,7 +239,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
             )}
           </Card>
           <Card className="p-4">
-            <div className="flex items-center justify-between mb-2"><p className="font-semibold">💊 Léky</p><button className="text-sm font-semibold text-primary min-h-[44px] min-w-[44px] justify-center px-2 -mr-2 inline-flex items-center min-h-[44px] px-2 -mr-2 inline-flex items-center" onClick={() => setMed('new')}>+ Přidat</button></div>
+            <div className="flex items-center justify-between mb-2"><p className="font-semibold"><GT t="💊 Léky" /></p><button className="text-sm font-semibold text-primary min-h-[44px] min-w-[44px] justify-center px-2 -mr-2 inline-flex items-center min-h-[44px] px-2 -mr-2 inline-flex items-center" onClick={() => setMed('new')}>+ Přidat</button></div>
             {!meds.length ? <p className="text-sm text-muted">Žádné léky.</p> : (
               <div className="space-y-2">{meds.map((m) => {
                 const ended = !!m.end && m.end < today();
@@ -246,7 +247,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
                   <div key={m.id} className="rounded-2xl bg-ink/[0.03] dark:bg-white/[0.04]">
                   <button onClick={() => setMed(m)} className={`press w-full flex items-center gap-3 text-left rounded-2xl bg-ink/[0.03] dark:bg-white/[0.04] px-3 py-2.5 ${ended ? 'opacity-55' : ''}`}>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold">{m.name}{m.reminderId && <span className="ml-1.5 text-xs">🔔</span>}</p>
+                      <p className="font-semibold">{m.name}{m.reminderId && <span className="ml-1.5 inline-block align-middle text-primary"><Emo e="🔔" className="w-4 h-4" /></span>}</p>
                       <p className="text-[13px] text-muted">{[m.dose, m.frequency].filter(Boolean).join(' · ')}</p>
                       <p className="text-[12px] text-muted">{ended ? `Ukončeno ${fmtDate(m.end)}` : `Od ${fmtDate(m.start)}${m.end ? ` do ${fmtDate(m.end)}` : ''}`}</p>
                     </div>
@@ -366,7 +367,7 @@ export function CalendarScreen() {
     <div>
       <PageHeader title="Kalendář" fab={data.pets.length ? <Fab label="Nová návštěva" onClick={() => setEdit('new')} /> : undefined} />
       <Segmented value={mode} onChange={setMode} options={[{ v: 'mesic', l: 'Kalendář' }, { v: 'seznam', l: 'Historie návštěv' }]} />
-      {(data.reminders.length > 0 || data.visits.length > 0) && <button data-ics onClick={async () => { const { exportIcs } = await import('@/lib/ics'); const r = await exportIcs(data, data.settings.notifyHour); toast(r === 'shared' ? 'Kalendář odeslán' : 'Soubor tlapka-kalendar.ics stažen – otevři ho a přidej do kalendáře'); }} className="press mt-2 w-full min-h-[44px] rounded-2xl text-[14px] font-semibold text-primary bg-primary/10">📅 Přidat do kalendáře v telefonu (Apple, Google)</button>}
+      {(data.reminders.length > 0 || data.visits.length > 0) && <button data-ics onClick={async () => { const { exportIcs } = await import('@/lib/ics'); const r = await exportIcs(data, data.settings.notifyHour); toast(r === 'shared' ? 'Kalendář odeslán' : 'Soubor tlapka-kalendar.ics stažen – otevři ho a přidej do kalendáře'); }} className="press mt-2 w-full min-h-[44px] rounded-2xl text-[14px] font-semibold text-primary bg-primary/10"><GT t="📅 Přidat do kalendáře v telefonu (Apple, Google)" /></button>}
       {mode === 'mesic' ? (
         <div className="animate-screen">
           <Card className="p-3 mt-4">
@@ -446,7 +447,7 @@ export function Settings() {
   };
   const Row = ({ icon, title, sub, right, onClick }: { icon: string; title: string; sub?: string; right?: React.ReactNode; onClick?: () => void }) => (
     <button onClick={onClick} className="press w-full flex items-center gap-3 px-4 py-3.5 text-left">
-      <span className="text-xl w-7 text-center">{icon}</span>
+      <span className="text-xl w-7 text-center"><Emo e={icon} className="w-6 h-6 mx-auto" /></span>
       <span className="flex-1 min-w-0"><span className="block font-medium">{title}</span>{sub && <span className="block text-[13px] text-muted">{sub}</span>}</span>
       {right}
     </button>
@@ -455,8 +456,8 @@ export function Settings() {
     <div>
       <PageHeader title="Nastavení" />
       <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-4 -mt-1">
-        {([['vzhled-h', '🎨 Vzhled'], ['predplatne-h', '✦ Premium'], ['upozorneni-h', '🔔 Upozornění'], ['data-h', '📦 Data'], ['about-h', 'ℹ️ O aplikaci']] as const).map(([id, l]) => (
-          <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="press shrink-0 rounded-full px-3.5 min-h-[40px] text-[13px] font-semibold bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">{l}</button>
+        {([['vzhled-h', '🎨 Vzhled'], ['predplatne-h', '⭐ Premium'], ['upozorneni-h', '🔔 Upozornění'], ['data-h', '📦 Data'], ['about-h', 'ℹ️ O aplikaci']] as const).map(([id, l]) => (
+          <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="press shrink-0 rounded-full px-3.5 min-h-[44px] text-[13px] font-semibold bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10"><GT t={l} /></button>
         ))}
       </div>
       <div className="space-y-7 stagger">
@@ -501,7 +502,7 @@ export function Settings() {
             <Row icon="🔔" title="Připomínat termíny" sub={notifySupported() ? `V den termínu v ${data.settings.notifyHour}:00` : /iP(hone|ad|od)/.test(navigator.userAgent) ? 'Na iPhonu: Sdílet → Přidat na plochu, pak upozornění zapneš (iOS 16.4+)' : 'Tento prohlížeč upozornění nepodporuje'} onClick={toggleNotify}
               right={<span className={`w-12 h-7 rounded-full p-0.5 transition ${data.settings.notify ? 'bg-primary' : 'bg-ink/15 dark:bg-white/20'}`}><span className={`block w-6 h-6 rounded-full bg-white shadow transition ${data.settings.notify ? 'translate-x-5' : ''}`} /></span>} />
             {data.settings.notify && (<>
-              <div className="flex items-center gap-3 px-4 py-3"><span className="text-xl w-7 text-center">⏰</span><span className="flex-1 font-medium">Čas upozornění</span>
+              <div className="flex items-center gap-3 px-4 py-3"><span className="text-xl w-7 text-center"><Emo e="⏰" className="w-6 h-6" /></span><span className="flex-1 font-medium">Čas upozornění</span>
                 <select className="bg-transparent font-semibold text-primary" value={data.settings.notifyHour} onChange={(e) => setNotify(true, Number(e.target.value))}>{Array.from({ length: 16 }, (_, i) => i + 6).map((h) => <option key={h} value={h}>{h}:00</option>)}</select></div>
               {([['dayBefore', '📆', 'Připomenout i den předem', 'Ať máš čas koupit přípravek'], ['weekly', '🗓️', 'Týdenní souhrn', 'V neděli v 18:00: co tě čeká tento týden']] as const).map(([k, ic, t, sub]) => { const on = data.settings[k] !== false; return <Row key={k} icon={ic} title={t} sub={sub} onClick={() => setNotifyOpts({ [k]: !on })} right={<span role="switch" aria-checked={on} aria-label={t} className={`w-12 h-7 rounded-full p-0.5 transition ${on ? 'bg-primary' : 'bg-ink/15 dark:bg-white/20'}`}><span className={`block w-6 h-6 rounded-full bg-white shadow transition ${on ? 'translate-x-5' : ''}`} /></span>} />; })}
               <Row icon="🧪" title="Poslat zkušební upozornění" onClick={() => showNow('🐾 Tlapka', 'Takhle ti připomenu odčervení a očkování.')} />
@@ -551,7 +552,7 @@ function PassButton({ pet }: { pet: Pet }) {
   };
   return (
     <button onClick={run} disabled={busy} className="press w-full mb-3 flex items-center gap-3 rounded-[22px] p-3.5 text-left bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 disabled:opacity-60">
-      <span className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-xl">📄</span>
+      <span className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-xl"><Emo e="📄" className="w-6 h-6" /></span>
       <span className="flex-1"><b className="flex items-center gap-2">Zdravotní pas (PDF + QR) {!prem.isPremium && <PremiumBadge small />}</b><span className="text-sm text-muted">{busy ? 'Připravuji…' : 'Očkování, léky a alergie pro veterináře'}</span></span>
       <Icon name="chev" className="w-4 h-4" />
     </button>

@@ -1,4 +1,5 @@
 'use client';
+import { Emo, GT } from './glyphs';
 import { ask, notice, toast } from './feedback';
 import { useEffect, useRef, useState } from 'react';
 import type { DocMeta, Pet, Reminder, Visit } from '@/lib/types';
@@ -71,7 +72,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true, hint = false }: { 
         onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
         <Card className={`p-4 flex items-center gap-3.5 ${s === 'done' ? 'opacity-60' : ''}`}>
           <button onClick={() => { if (!suppressClick.current) onEdit(); }} className="flex items-center gap-3 flex-1 min-w-0 text-left">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${s === 'overdue' ? 'bg-red-100 dark:bg-red-500/15' : s === 'soon' ? 'bg-amber-100 dark:bg-amber-500/15' : 'bg-primary/10'}`}>{t.emoji}</div>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${s === 'overdue' ? 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400' : s === 'soon' ? 'bg-[#DCEBFA] text-[#2F6FAF] dark:bg-[#7FB3E8]/15 dark:text-[#A9CEF3]' : 'bg-primary/10 text-primary-d dark:text-primary'}`}><Emo e={t.emoji} className="w-6 h-6" /></div>
             <div className="min-w-0 flex-1">
               <div className="flex items-start gap-2 min-w-0"><p className="font-semibold line-clamp-2 break-words">{r.title}</p><span className="shrink-0"><StatusPill s={s} /></span></div>
               <p className="text-[13px] text-muted truncate">
@@ -157,7 +158,7 @@ function Thumb({ d }: { d: DocMeta }) {
     return () => { if (u) URL.revokeObjectURL(u); };
   }, [d.id, d.mime]);
   // eslint-disable-next-line @next/next/no-img-element
-  return url ? <img src={url} alt={`Náhled: ${d.name}`} className="w-12 h-12 rounded-xl object-cover" /> : <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center text-2xl">{d.mime === 'application/pdf' ? '📄' : KINDS.find((k) => k.id === d.kind)?.e}</div>;
+  return url ? <img src={url} alt={`Náhled: ${d.name}`} className="w-12 h-12 rounded-xl object-cover" /> : <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center text-primary-d dark:text-primary"><Emo e={d.mime === 'application/pdf' ? '📄' : KINDS.find((k) => k.id === d.kind)?.e ?? '📄'} className="w-6 h-6" /></div>;
 }
 
 export function Documents({ pet }: { pet: Pet }) {
@@ -201,7 +202,7 @@ export function Documents({ pet }: { pet: Pet }) {
           } catch (e) { console.error(e); notice('Uložení se nezdařilo', e instanceof DOMException && e.name === 'QuotaExceededError' ? 'V zařízení není dost místa pro tento soubor.' : 'Soubor se nepodařilo uložit. V anonymním režimu prohlížeče může být ukládání souborů omezené – zkus běžné okno nebo aplikaci.'); } finally { setBusy(false); }
         }}>
           <Field label="Název"><input className={inputCls} value={meta.name} onChange={(e) => setMeta({ ...meta, name: e.target.value })} /></Field>
-          <div className="flex flex-wrap gap-2">{KINDS.map((k) => <button type="button" key={k.id} onClick={() => setMeta({ ...meta, kind: k.id })} className={`press rounded-full px-3 py-1.5 text-sm border ${meta.kind === k.id ? 'border-primary bg-primary/10 font-semibold' : 'border-ink/10 dark:border-white/10'}`}>{k.e} {k.n}</button>)}</div>
+          <div className="flex flex-wrap gap-2">{KINDS.map((k) => <button type="button" key={k.id} onClick={() => setMeta({ ...meta, kind: k.id })} className={`press rounded-full px-3 py-1.5 text-sm border ${meta.kind === k.id ? 'border-primary bg-primary/10 font-semibold' : 'border-ink/10 dark:border-white/10'}`}><GT t={`${k.e} ${k.n}`} /></button>)}</div>
           <Field label="Datum"><DateInput value={meta.date} onChange={(v) => setMeta({ ...meta, date: v })} /></Field>
           <Button type="submit" className="w-full" disabled={busy}>{busy ? 'Ukládám…' : 'Uložit'}</Button>
         </form>
@@ -229,7 +230,7 @@ export function Documents({ pet }: { pet: Pet }) {
 export function PetChip({ pet, active, onClick }: { pet?: Pet; active: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick} className={`press shrink-0 flex items-center gap-1.5 rounded-full pl-1.5 pr-3.5 min-h-[44px] border text-sm font-medium transition ${active ? 'border-primary bg-primary/10 text-primary dark:text-primary-l' : 'border-ink/10 dark:border-white/10'}`}>
-      {pet ? <Avatar pet={pet} size="w-6 h-6" text="text-sm" /> : <span className="w-6 h-6 flex items-center justify-center">🐾</span>}
+      {pet ? <Avatar pet={pet} size="w-6 h-6" text="text-sm" /> : <span className="w-6 h-6 flex items-center justify-center"><Emo e="🐾" className="w-6 h-6" /></span>}
       {pet ? pet.name : 'Všichni'}
     </button>
   );

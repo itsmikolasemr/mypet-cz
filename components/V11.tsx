@@ -1,4 +1,5 @@
 'use client';
+import { Emo, GT } from './glyphs';
 // Tlapka v1.1 features: export ZIP, trash, battery guide, Druhý názor, AI scan, pass link + QR, travel checklist.
 import { useEffect, useRef, useState } from 'react';
 import { useStore, TRASH_DAYS } from '@/lib/store';
@@ -29,7 +30,7 @@ async function aiCall(headers: Record<string, string>, body: unknown) {
 export function ExportAll() {
   const { data } = useStore(); const [busy, setBusy] = useState(false);
   return <button disabled={busy} className={soft} onClick={async () => { setBusy(true); try { const b = await exportZip(data); await saveOrShare(b, `tlapka-export-${today()}.zip`); toast('Export hotový – vše v jednom ZIPu'); } catch { notice('Export se nepovedl'); } finally { setBusy(false); } }}>
-    {busy ? 'Připravuji…' : '📦 Exportovat vše (ZIP: PDF, CSV, soubory)'}</button>;
+    {busy ? 'Připravuji…' : <GT t="📦 Exportovat vše (ZIP: PDF, CSV, soubory)" />}</button>;
 }
 
 // ---------- Trash (Premium restore) ----------
@@ -40,7 +41,7 @@ export function TrashSection() {
   const left = (at: string) => Math.max(0, Math.ceil((Date.parse(at) + TRASH_DAYS * 864e5 - Date.now()) / 864e5));
   return (
     <Card className="p-4 space-y-2" >
-      <div className="flex items-center gap-2"><p className="font-semibold flex-1">🗑️ Koš ({groups.length})</p>{!prem.isPremium && <PremiumBadge />}</div>
+      <div className="flex items-center gap-2"><p className="font-semibold flex-1 inline-flex items-center gap-1.5"><Emo e="🗑️" />Koš ({groups.length})</p>{!prem.isPremium && <PremiumBadge />}</div>
       <p className="text-[13px] text-muted">Smazané položky tu zůstávají {TRASH_DAYS} dní.</p>
       {!groups.length && <p className="text-[14px] text-muted">Koš je prázdný.</p>}
       {groups.slice(0, 20).map((g) => (
@@ -72,7 +73,7 @@ export function BatteryGuide() {
   const list = brand.length ? brand : GUIDE.filter((g) => !/iPhone/.test(g.b));
   return (
     <Card className="p-4 space-y-2">
-      <p className="font-semibold">🔔 Spolehlivé připomínky</p>
+      <p className="font-semibold"><GT t="🔔 Spolehlivé připomínky" /></p>
       <p className="text-[13px] text-muted">Některé telefony kvůli úspoře baterie oznámení zahazují. Vyzkoušej test a případně nastav výjimku.</p>
       <button className={soft} onClick={async () => { if (!(await requestPermission())) return notice('Oznámení nejsou povolena', 'Povol je v nastavení telefonu.'); await showNow('Tlapka – test připomínky', 'Funguje to! 🐾'); toast('Testovací oznámení odesláno'); }}>Poslat testovací oznámení</button>
       {list.map((g) => (
@@ -108,7 +109,7 @@ export function SecondOpinion() {
         {data.pets.length > 1 && <Field label="Mazlíček"><select className={inputCls} value={pet} onChange={(e) => setPet(e.target.value)}>{data.pets.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></Field>}
         <Field label="Text zprávy nebo výsledků"><textarea className={`${inputCls} min-h-[140px]`} value={text} onChange={(e) => setText(e.target.value)} placeholder="Vlož text zprávy, např. „ALT 180 U/l, mírně zvýšené…“" /></Field>
         <input ref={ref} type="file" accept="image/*" capture="environment" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) setImg(await imageToDataUrl(f)); }} />
-        <button className={soft} onClick={() => ref.current?.click()}>{img ? '✅ Fotka přiložena – změnit' : '📷 Vyfotit nebo nahrát zprávu'}</button>
+        <button className={soft} onClick={() => ref.current?.click()}>{img ? <GT t="✅ Fotka přiložena – změnit" /> : <GT t="📷 Vyfotit nebo nahrát zprávu" />}</button>
         {img && <img src={img} alt="Náhled zprávy" className="rounded-2xl max-h-48 mx-auto" />}
         <button disabled={busy || (!text.trim() && !img)} className={primary} onClick={go}>{busy ? 'Aivet čte zprávu…' : 'Vysvětlit zprávu'}</button>
         {reply && <Card className="p-4"><div className="whitespace-pre-wrap text-[15px] leading-relaxed" data-second-reply>{reply.replace(/\*\*/g, '')}</div></Card>}
@@ -156,7 +157,7 @@ export function ScanButton({ petId, className }: { petId?: string; className?: s
   return (
     <>
       <input ref={ref} type="file" accept="image/*" capture="environment" hidden data-scan-input onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) scan(await imageToDataUrl(f)); }} />
-      <button onClick={pick} className={className ?? soft}>✨ AI sken dokladu {!prem.isPremium && <PremiumBadge />}</button>
+      <button onClick={pick} className={className ?? soft}><Emo e="✨" /> AI sken dokladu {!prem.isPremium && <PremiumBadge />}</button>
       <Sheet open={busy || !!r} onClose={() => { setR(null); setImg(null); setBusy(false); }} title={busy ? 'Aivet čte doklad…' : 'Zkontroluj, co jsem našel'}>
         {busy && <div className="py-8 text-center text-muted" role="status">Čtu fotku, chvilku…</div>}
         {r && (
@@ -205,7 +206,7 @@ export function PassShare({ pet }: { pet: Pet }) {
   };
   return (
     <Card className="p-4 space-y-3">
-      <p className="font-semibold">🔗 Pas přes odkaz / QR</p>
+      <p className="font-semibold"><GT t="🔗 Pas přes odkaz / QR" /></p>
       <p className="text-[13px] text-muted">Pro veterinu, hotel nebo hlídače – bez instalace appky. {prem.isPremium ? 'Premium: neomezeně odkazů, až 30 dní.' : 'Zdarma: 1 aktivní odkaz na 7 dní.'}</p>
       {prem.isPremium && <Field label="Platnost"><select className={inputCls} value={days} onChange={(e) => setDays(Number(e.target.value))}>{[1, 3, 7, 14, 30].map((d) => <option key={d} value={d}>{d} {d === 1 ? 'den' : d < 5 ? 'dny' : 'dní'}</option>)}</select></Field>}
       <button disabled={busy} className={soft} onClick={make}>{busy ? 'Vytvářím…' : 'Vytvořit odkaz a QR'}</button>
@@ -232,17 +233,17 @@ export function TravelChecklist({ pet }: { pet: Pet }) {
   if (dest === 'third') items.push({ ok: null, t: 'Test titru protilátek proti vzteklině', d: 'Krev min. 30 dní po očkování; při návratu do EU čekací lhůta 3 měsíce od odběru. Plánuj s předstihem!' }, { ok: null, t: 'Podmínky cílové země', d: 'Ověř na webu velvyslanectví a SVS.' });
   items.push({ ok: null, t: 'Max. 5 zvířat při nekomerčním převozu' }, { ok: null, t: 'Kopie dokladů v telefonu', d: 'Pas PDF z Tlapky + fotka EU pasu.' });
   if (!prem.isPremium) return (
-    <Card className="p-4 flex items-center gap-3"><span className="text-2xl" aria-hidden>✈️</span><div className="flex-1"><p className="font-semibold">Cestovní checklist</p><p className="text-[13px] text-muted">Co potřebuje {pet.name} na cestu – lhůty, pas, vzteklina.</p></div><button className="press min-h-[44px] px-3 rounded-xl font-semibold bg-ink/5 dark:bg-white/10" onClick={() => prem.openPaywall('cestovni-checklist')}>Otevřít <PremiumBadge /></button></Card>
+    <Card className="p-4 flex items-center gap-3"><span className="text-2xl" aria-hidden><Emo e="✈️" className="w-6 h-6" /></span><div className="flex-1"><p className="font-semibold">Cestovní checklist</p><p className="text-[13px] text-muted">Co potřebuje {pet.name} na cestu – lhůty, pas, vzteklina.</p></div><button className="press min-h-[44px] px-3 rounded-xl font-semibold bg-ink/5 dark:bg-white/10" onClick={() => prem.openPaywall('cestovni-checklist')}>Otevřít <PremiumBadge /></button></Card>
   );
   return (
     <Card className="p-4 space-y-3" >
-      <p className="font-semibold">✈️ Cestovní checklist</p>
+      <p className="font-semibold"><GT t="✈️ Cestovní checklist" /></p>
       <div className="grid grid-cols-2 gap-2">
         <Field label="Kam"><select className={inputCls} value={dest} onChange={(e) => setDest(e.target.value as Dest)}><option value="eu">EU (běžně)</option><option value="special">FI, IE, MT, NO</option><option value="uk">Velká Británie</option><option value="third">Mimo EU</option></select></Field>
         <Field label="Odjezd"><DateInput value={date} onChange={(v) => setDate(v)} /></Field>
       </div>
       <ul className="space-y-2" data-travel>{items.map((i) => (
-        <li key={i.t} className="flex gap-3"><span aria-hidden className="text-lg">{i.ok === true ? '✅' : i.ok === false ? '⚠️' : '☐'}</span><div><p className="font-medium">{i.t}<span className="sr-only">{i.ok === true ? ' – splněno' : i.ok === false ? ' – chybí' : ''}</span></p>{i.d && <p className="text-[13px] text-muted">{i.d}</p>}</div></li>))}</ul>
+        <li key={i.t} className="flex gap-3"><span aria-hidden className={i.ok === true ? 'text-green-600 dark:text-green-400' : i.ok === false ? 'text-red-600 dark:text-red-400' : 'text-muted'}><Emo e={i.ok === true ? '✅' : i.ok === false ? '⚠️' : '☐'} className="w-6 h-6" /></span><div><p className="font-medium">{i.t}<span className="sr-only">{i.ok === true ? ' – splněno' : i.ok === false ? ' – chybí' : ''}</span></p>{i.d && <p className="text-[13px] text-muted">{i.d}</p>}</div></li>))}</ul>
       <p className="text-[12px] text-muted">Orientační přehled pravidel EU. Před cestou vždy ověř aktuální podmínky na svscr.cz.</p>
     </Card>
   );

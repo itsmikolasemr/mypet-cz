@@ -15,8 +15,8 @@ await nav(A, 'Nastavení');
 const [dl] = await Promise.all([A.waitForEvent('download'), A.getByText('Exportovat vše').click()]);
 const zp = '/workspace/pwtest/export.zip'; await dl.saveAs(zp); const z = unzipSync(new Uint8Array(fs.readFileSync(zp)));
 R.zip = Object.keys(z); R.zipJsonPets = JSON.parse(new TextDecoder().decode(z['tlapka-zaloha.json'])).pets.length;
-await A.getByText('Poslat testovací oznámení').click(); await A.waitForTimeout(800); R.testNotif = (await A.getByText('Testovací oznámení odesláno').count()) ? 'sent' : (await A.locator('[role=alertdialog]').count()) ? 'permission-guidance' : 'none'; if (await A.locator('[role=alertdialog]').count()) await A.getByRole('button', { name: 'Rozumím' }).click();
-await A.getByRole('button', { name: 'Xiaomi / Redmi / POCO' }).click(); R.guide = await A.getByText('Automatické spuštění').count();
+if (!(await A.getByText(/Poslat (testovací|zkušební) (oznámení|upozornění)/).count())) { R.testNotif = 'hidden (iOS/notify off – BatteryGuide jen na Androidu)'; } else { await A.getByText(/Poslat (testovací|zkušební) (oznámení|upozornění)/).first().click(); await A.waitForTimeout(800); R.testNotif = (await A.getByText('Testovací oznámení odesláno').count()) ? 'sent' : (await A.locator('[role=alertdialog]').count()) ? 'permission-guidance' : 'none'; if (await A.locator('[role=alertdialog]').count()) await A.getByRole('button', { name: 'Rozumím' }).click(); }
+if (await A.getByRole('button', { name: 'Xiaomi / Redmi / POCO' }).count()) { await A.getByRole('button', { name: 'Xiaomi / Redmi / POCO' }).click(); R.guide = await A.getByText('Automatické spuštění').count(); } else R.guide = 'android-only';
 // late dose
 await nav(A, 'Připomínky'); const before = (await data(A)).reminders.find((r) => r.intervalDays > 0 && !r.completedAt);
 await A.locator('[aria-label^="Označit"]').first().click(); await A.waitForTimeout(700);

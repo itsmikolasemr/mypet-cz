@@ -2,7 +2,7 @@
  * Tlapka glyph set – custom duotone line icons (24×24) replacing emoji in onboarding, empty states,
  * tiles and paywall. Stroke = currentColor, accent fill = currentColor @ 18 %. Decorative by default (aria-hidden).
  */
-export type GlyphName = 'paw' | 'bell' | 'journal' | 'dog' | 'cat' | 'rabbit' | 'guinea' | 'ferret' | 'bird' | 'reptile' | 'other' | 'stetho' | 'map' | 'card' | 'coins' | 'doc' | 'nodads' | 'pets' | 'cloud' | 'family' | 'think' | 'pill' | 'syringe' | 'tick' | 'calendar' | 'shield';
+export type GlyphName = 'paw' | 'bell' | 'journal' | 'dog' | 'cat' | 'rabbit' | 'guinea' | 'ferret' | 'bird' | 'reptile' | 'other' | 'stetho' | 'map' | 'card' | 'coins' | 'doc' | 'nodads' | 'pets' | 'cloud' | 'family' | 'think' | 'pill' | 'syringe' | 'tick' | 'calendar' | 'shield' | 'warn' | 'scissors' | 'drop' | 'pin' | 'clip' | 'suitcase' | 'palette' | 'box' | 'info' | 'user' | 'upload' | 'download' | 'trash' | 'lock' | 'scroll' | 'camera' | 'image' | 'siren' | 'shop' | 'bone' | 'can' | 'fish' | 'link' | 'printer' | 'globe' | 'food' | 'phone' | 'key' | 'sparkle' | 'plane' | 'check' | 'box0' | 'clock' | 'flask' | 'receipt' | 'xray' | 'book' | 'heart' | 'hand' | 'park' | 'star' | 'pen';
 type G = { f?: string; s: string };
 const D: Record<GlyphName, G> = {
   paw: { f: 'M12 13c-3 0-5.5 2.6-5.5 4.6 0 1.6 1.4 2.4 2.8 2.1 1-.2 1.7-.6 2.7-.6s1.7.4 2.7.6c1.4.3 2.8-.5 2.8-2.1 0-2-2.5-4.6-5.5-4.6Z', s: 'M12 13c-3 0-5.5 2.6-5.5 4.6 0 1.6 1.4 2.4 2.8 2.1 1-.2 1.7-.6 2.7-.6s1.7.4 2.7.6c1.4.3 2.8-.5 2.8-2.1 0-2-2.5-4.6-5.5-4.6ZM8.5 9.5a1.8 2.3 0 1 1 0-.01M15.5 9.5a1.8 2.3 0 1 1 0-.01M4.8 13a1.6 2 0 1 1 0-.01M19.2 13a1.6 2 0 1 1 0-.01' },
@@ -26,11 +26,53 @@ const D: Record<GlyphName, G> = {
   cloud: { f: 'M7 18.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6-1.3A4.5 4.5 0 0 1 17.5 18.5Z', s: 'M7 18.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6-1.3A4.5 4.5 0 0 1 17.5 18.5ZM12 16v-5M9.8 13 12 10.8l2.2 2.2' },
   family: { f: 'M8 11a3 3 0 1 1 0-.01ZM16.5 12a2.5 2.5 0 1 1 0-.01Z', s: 'M8 11a3 3 0 1 1 0-.01ZM16.5 12a2.5 2.5 0 1 1 0-.01ZM2.5 20c.5-3 2.7-5 5.5-5s5 2 5.5 5M13.5 17c.7-1.3 1.8-2 3-2 2.2 0 3.7 1.8 4 5' },
   think: { f: 'M12 4a8 8 0 1 1 0 16 8 8 0 0 1 0-16Z', s: 'M12 4a8 8 0 1 1 0 16 8 8 0 0 1 0-16ZM9 10v.01M15 10v.01M9.5 15.5c1.5-1 3.5-1 5 0' },
-  pill: { f: 'M4.6 13.4l8.8-8.8a4.2 4.2 0 0 1 6 6l-4.4 4.4Z', s: 'M4.6 19.4a4.2 4.2 0 0 1 0-6l8.8-8.8a4.2 4.2 0 0 1 6 6l-8.8 8.8a4.2 4.2 0 0 1-6 0ZM9 9l6 6' },
+  pill: { f: 'M8 7.5h4v9H8a4.5 4.5 0 0 1 0-9Z', s: 'M8 7.5h8a4.5 4.5 0 0 1 0 9H8a4.5 4.5 0 0 1 0-9ZM12 7.5v9' },
   syringe: { f: 'M14 6l4 4-8 8H6v-4Z', s: 'M14 6l4 4-8 8H6v-4ZM12 4l8 8M17 3l4 4M6 18l-2.5 2.5M9 11l2 2M11 9l2 2' },
   tick: { f: 'M12 5c3 0 5 2.5 5 6v2c0 3.5-2.2 6-5 6s-5-2.5-5-6v-2c0-3.5 2-6 5-6Z', s: 'M12 5c3 0 5 2.5 5 6v2c0 3.5-2.2 6-5 6s-5-2.5-5-6v-2c0-3.5 2-6 5-6ZM10 5 9 3M14 5l1-2M7 10H4M7 14H3.5M17 10h3M17 14h3.5M12 9v8' },
   calendar: { f: 'M4 8.5h16v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5Z', s: 'M5.5 5h13A1.5 1.5 0 0 1 20 6.5v12a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-12A1.5 1.5 0 0 1 5.5 5ZM4 9.5h16M8 3v4M16 3v4M8.5 14l2 2 4-4' },
   shield: { f: 'M12 3.5 19 6v5.5c0 4.2-3 7.6-7 9-4-1.4-7-4.8-7-9V6Z', s: 'M12 3.5 19 6v5.5c0 4.2-3 7.6-7 9-4-1.4-7-4.8-7-9V6ZM9 12l2 2 4-4' },
+  warn: { f: 'M12 4 21 19.5H3Z', s: 'M12 4 21 19.5H3ZM12 10v4.5M12 17v.01' },
+  scissors: { s: 'M8.5 7a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM8.5 17a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM8 8.5 20 17M8 15.5 20 7' },
+  drop: { f: 'M12 3.5c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0c0-3.3 3-6.5 6-10.5Z', s: 'M12 3.5c3 4 6 7.2 6 10.5a6 6 0 0 1-12 0c0-3.3 3-6.5 6-10.5ZM9.5 14.5a2.5 2.5 0 0 0 2.5 2.5' },
+  pin: { f: 'M12 3a6 6 0 0 1 6 6c0 4.5-6 11.5-6 11.5S6 13.5 6 9a6 6 0 0 1 6-6Z', s: 'M12 3a6 6 0 0 1 6 6c0 4.5-6 11.5-6 11.5S6 13.5 6 9a6 6 0 0 1 6-6ZM12 7a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z' },
+  clip: { s: 'M16.5 7.5 9 15a2 2 0 0 0 2.8 2.8l7.4-7.4a4 4 0 0 0-5.6-5.6L6 12.4a6 6 0 0 0 8.5 8.5L20 15.5' },
+  suitcase: { f: 'M4 8h16v11H4Z', s: 'M5.5 8h13A1.5 1.5 0 0 1 20 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5v-8A1.5 1.5 0 0 1 5.5 8ZM9 8V5.5h6V8M9 8v11M15 8v11' },
+  palette: { f: 'M12 3.5a8.5 8.5 0 0 0 0 17c1.4 0 2-.8 2-1.8 0-1.3-1-1.7-1-2.7 0-.8.7-1.5 1.7-1.5h2.3a3.5 3.5 0 0 0 3.5-3.5c0-4.2-3.8-7.5-8.5-7.5Z', s: 'M12 3.5a8.5 8.5 0 0 0 0 17c1.4 0 2-.8 2-1.8 0-1.3-1-1.7-1-2.7 0-.8.7-1.5 1.7-1.5h2.3a3.5 3.5 0 0 0 3.5-3.5c0-4.2-3.8-7.5-8.5-7.5ZM7.5 11.5v.01M9.5 7.5v.01M14 7v.01M17 10v.01' },
+  box: { f: 'M4 7.5 12 4l8 3.5v9L12 20l-8-3.5Z', s: 'M4 7.5 12 4l8 3.5v9L12 20l-8-3.5ZM4 7.5 12 11l8-3.5M12 11v9' },
+  info: { f: 'M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Z', s: 'M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17ZM12 11v5.5M12 7.8v.01' },
+  user: { f: 'M12 4a3.8 3.8 0 1 1 0 7.6A3.8 3.8 0 0 1 12 4Z', s: 'M12 4a3.8 3.8 0 1 1 0 7.6A3.8 3.8 0 0 1 12 4ZM4.5 20c.8-3.6 3.8-6 7.5-6s6.7 2.4 7.5 6' },
+  upload: { s: 'M12 15V4M7.5 8.5 12 4l4.5 4.5M4.5 14v4a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-4' },
+  download: { s: 'M12 4v11M7.5 10.5 12 15l4.5-4.5M4.5 14v4a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-4' },
+  trash: { f: 'M6 7h12l-1 13H7Z', s: 'M4 7h16M9.5 7V4.5h5V7M6 7l1 13h10l1-13M10 11v5M14 11v5' },
+  lock: { f: 'M5.5 10.5h13v9.5h-13Z', s: 'M6.5 10.5h11a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-7.5a1 1 0 0 1 1-1ZM8 10.5V8a4 4 0 0 1 8 0v2.5M12 14.5v2' },
+  scroll: { f: 'M7 4h11v14a2 2 0 0 1-2 2H6Z', s: 'M7 4h11v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2h10v2a2 2 0 0 0 2 2M7 4a2 2 0 0 0-2 2v10M10 8h5M10 11.5h5' },
+  camera: { f: 'M3.5 8h17v11h-17Z', s: 'M5 7.5h2.5L9 5h6l1.5 2.5H19a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18V9A1.5 1.5 0 0 1 5 7.5ZM12 9.8a3.6 3.6 0 1 1 0 7.2 3.6 3.6 0 0 1 0-7.2Z' },
+  image: { f: 'M3.5 5h17v14h-17Z', s: 'M5 5h14a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 5 5ZM3.5 16l5-5 4 4 2.5-2.5 5.5 5M15.5 9v.01' },
+  siren: { f: 'M7 17v-5a5 5 0 0 1 10 0v5Z', s: 'M7 17v-5a5 5 0 0 1 10 0v5ZM5 17h14v3H5ZM12 3v2M4.2 6.2l1.4 1.4M19.8 6.2l-1.4 1.4M10 11.5a2 2 0 0 1 2-2' },
+  shop: { f: 'M4.5 10h15v10h-15Z', s: 'M3.5 9.5 5 4.5h14l1.5 5M3.5 9.5a2.8 2.8 0 0 0 5.6 0 2.8 2.8 0 0 0 5.8 0 2.8 2.8 0 0 0 5.6 0M5 11.5V20h14v-8.5M10 20v-5h4v5' },
+  bone: { f: 'M8 9.5 14.5 16', s: 'M7 4.5a2.3 2.3 0 0 1 2.2 3l5.6 5.6a2.3 2.3 0 1 1 2.6 3.6 2.3 2.3 0 1 1-3.6 2.6L8.2 13.7a2.3 2.3 0 1 1-2.6-3.6 2.3 2.3 0 1 1 1.4-5.6Z' },
+  can: { f: 'M5.5 7h13v12.5h-13Z', s: 'M5.5 6.5c0-1.1 2.9-2 6.5-2s6.5.9 6.5 2-2.9 2-6.5 2-6.5-.9-6.5-2ZM5.5 6.5v12c0 1.1 2.9 2 6.5 2s6.5-.9 6.5-2v-12M5.5 11c1.6.7 4 1 6.5 1s4.9-.3 6.5-1' },
+  fish: { f: 'M3.5 12c2.5-3.5 6-5 9.5-5 3.5 0 6 2.5 7.5 5-1.5 2.5-4 5-7.5 5-3.5 0-7-1.5-9.5-5Z', s: 'M3.5 12c2.5-3.5 6-5 9.5-5 3.5 0 6 2.5 7.5 5-1.5 2.5-4 5-7.5 5-3.5 0-7-1.5-9.5-5ZM3.5 12 1.5 8.5M3.5 12l-2 3.5M16 11v.01' },
+  link: { s: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1' },
+  printer: { f: 'M6 13h12v7H6Z', s: 'M7 8V4h10v4M6.5 17H4.5A1 1 0 0 1 3.5 16v-6.5A1.5 1.5 0 0 1 5 8h14a1.5 1.5 0 0 1 1.5 1.5V16a1 1 0 0 1-1 1h-2M7 13h10v7H7Z' },
+  globe: { f: 'M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Z', s: 'M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17ZM3.5 12h17M12 3.5c2.3 2.4 3.4 5.2 3.4 8.5s-1.1 6.1-3.4 8.5c-2.3-2.4-3.4-5.2-3.4-8.5S9.7 5.9 12 3.5Z' },
+  food: { f: 'M4 12h16a8 8 0 0 1-16 0Z', s: 'M4 12h16a8 8 0 0 1-16 0ZM9 9c0-1.5 1-2 1-3.5M13 9c0-1.5 1-2 1-3.5' },
+  phone: { f: 'M5 4h4l1.5 4.5-2.3 1.4a11 11 0 0 0 5.9 5.9l1.4-2.3L20 15v4a1.5 1.5 0 0 1-1.6 1.5C10.7 20 4 13.3 3.5 5.6A1.5 1.5 0 0 1 5 4Z', s: 'M5 4h4l1.5 4.5-2.3 1.4a11 11 0 0 0 5.9 5.9l1.4-2.3L20 15v4a1.5 1.5 0 0 1-1.6 1.5C10.7 20 4 13.3 3.5 5.6A1.5 1.5 0 0 1 5 4Z' },
+  key: { f: 'M8 10.5a4 4 0 1 1 0 .01Z', s: 'M8 6.5a4 4 0 1 1 0 8 4 4 0 0 1 0-8ZM11.5 12.5 20 12.5M17 12.5v3M20 12.5v2.5M7 10.5v.01' },
+  sparkle: { f: 'M12 3.5 14 10l6.5 2-6.5 2-2 6.5-2-6.5-6.5-2L10 10Z', s: 'M12 3.5 14 10l6.5 2-6.5 2-2 6.5-2-6.5-6.5-2L10 10ZM19 3.5v3M17.5 5h3' },
+  plane: { f: 'M10.5 4.5c0-1 .7-1.5 1.5-1.5s1.5.5 1.5 1.5V9l7 4v2l-7-2v4l2 1.5V20L12 19l-3.5 1v-1.5l2-1.5v-4l-7 2v-2l7-4Z', s: 'M10.5 4.5c0-1 .7-1.5 1.5-1.5s1.5.5 1.5 1.5V9l7 4v2l-7-2v4l2 1.5V20L12 19l-3.5 1v-1.5l2-1.5v-4l-7 2v-2l7-4Z' },
+  check: { f: 'M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Z', s: 'M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17ZM8 12.3l2.7 2.7L16 9.7' },
+  box0: { s: 'M5.5 4.5h13a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-13a1 1 0 0 1 1-1Z' },
+  clock: { f: 'M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Z', s: 'M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17ZM12 7.5V12l3 2' },
+  flask: { f: 'M6.5 17 10 11V4h4v7l3.5 6Z', s: 'M9 4h6M10 4v7l-4.6 7.6A1 1 0 0 0 6.3 20h11.4a1 1 0 0 0 .9-1.4L14 11V4M7.5 15.5h9' },
+  receipt: { f: 'M6 3.5h12v17l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5Z', s: 'M6 3.5h12v17l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5ZM9 8h6M9 11.5h6M9 15h3' },
+  xray: { f: 'M4 4h16v16H4Z', s: 'M5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-13A1.5 1.5 0 0 1 5.5 4ZM12 7v10M9 9h6M8.5 12h7M9 15h6' },
+  book: { f: 'M5 4.5h12.5V18H6.5A1.5 1.5 0 0 0 5 19.5Z', s: 'M5 19.5v-14a1 1 0 0 1 1-1h12.5V18H6.5A1.5 1.5 0 0 0 5 19.5 1.5 1.5 0 0 0 6.5 21h12M12 8v5M9.5 10.5h5' },
+  heart: { f: 'M12 19.5S4 15 4 9.5A4 4 0 0 1 12 7.8a4 4 0 0 1 8 1.7c0 5.5-8 10-8 10Z', s: 'M12 19.5S4 15 4 9.5A4 4 0 0 1 12 7.8a4 4 0 0 1 8 1.7c0 5.5-8 10-8 10Z' },
+  hand: { s: 'M9 11V5.5a1.5 1.5 0 0 1 3 0V11M12 10V9a1.5 1.5 0 0 1 3 0v2M15 10.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-.5a6 6 0 0 1-4.6-2.2L4.3 15.6a1.5 1.5 0 0 1 2.2-2L9 15.5' },
+  park: { f: 'M12 3.5 17 11h-2.5l3.5 5H6l3.5-5H7Z', s: 'M12 3.5 17 11h-2.5l3.5 5H6l3.5-5H7ZM12 16v4.5M4 20.5h16' },
+  pen: { f: 'M15.5 4.5l4 4L9 19H5v-4Z', s: 'M15.5 4.5l4 4L9 19H5v-4ZM13 7l4 4' },
+  star: { f: 'M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9Z', s: 'M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9Z' },
 };
 export function Glyph({ name, className = 'w-6 h-6', label }: { name: GlyphName; className?: string; label?: string }) {
   const g = D[name] ?? D.paw;
@@ -42,5 +84,17 @@ export function Glyph({ name, className = 'w-6 h-6', label }: { name: GlyphName;
   );
 }
 /** emoji → glyph, so legacy call sites (Empty emoji="…", PERKS e: '…') pick up the icon set automatically */
-export const EMOJI_GLYPH: Record<string, GlyphName> = { '🐾': 'paw', '🔔': 'bell', '📋': 'journal', '🐶': 'dog', '🐕': 'dog', '🐈': 'cat', '🐱': 'cat', '🐇': 'rabbit', '🐹': 'guinea', '🦦': 'ferret', '🦜': 'bird', '🦎': 'reptile', '🩺': 'stetho', '🗺️': 'map', '💳': 'card', '💰': 'coins', '📄': 'doc', '🚫': 'nodads', '☁️': 'cloud', '👨‍👩‍👧': 'family', '🤔': 'think', '💊': 'pill', '💉': 'syringe', '🛡️': 'shield', '📅': 'calendar' };
+export const EMOJI_GLYPH: Record<string, GlyphName> = { '🐾': 'paw', '🔔': 'bell', '📋': 'journal', '🐶': 'dog', '🐕': 'dog', '🐈': 'cat', '🐱': 'cat', '🐇': 'rabbit', '🐹': 'guinea', '🦦': 'ferret', '🦜': 'bird', '🦎': 'reptile', '🩺': 'stetho', '🗺️': 'map', '💳': 'card', '💰': 'coins', '📄': 'doc', '🚫': 'nodads', '☁️': 'cloud', '👨‍👩‍👧': 'family', '🤔': 'think', '💊': 'pill', '💉': 'syringe', '🛡️': 'shield', '📅': 'calendar', '⚠️': 'warn', '⚠': 'warn', '✂️': 'scissors', '💧': 'drop', '📌': 'pin', '📎': 'clip', '🧳': 'suitcase', '🎨': 'palette', '📦': 'box', 'ℹ️': 'info', '👤': 'user', '📤': 'upload', '📥': 'download', '🗑️': 'trash', '🔒': 'lock', '📜': 'scroll', '📷': 'camera', '🖼️': 'image', '🚨': 'siren', '🛍️': 'shop', '🦴': 'bone', '🥫': 'can', '🐠': 'fish', '🔗': 'link', '🖨️': 'printer', '🌐': 'globe', '🍽️': 'food', '📞': 'phone', '🔑': 'key', '✨': 'sparkle', '✈️': 'plane', '✅': 'check', '☐': 'box0', '⏰': 'clock', '🧪': 'flask', '🧾': 'receipt', '🩻': 'xray', '📘': 'book', '💛': 'heart', '👆': 'hand', '📆': 'calendar', '🗓️': 'calendar', '🌳': 'park', '⭐': 'star', '✎': 'pen', '🚧': 'warn', '🥺': 'heart', '💪': 'heart' };
 export const SPECIES_GLYPH: Record<string, GlyphName> = { pes: 'dog', kocka: 'cat', kralik: 'rabbit', morce: 'guinea', fretka: 'ferret', ptak: 'bird', plaz: 'reptile', jine: 'other' };
+
+/** Emoji token → custom glyph (falls back to the raw char only for unmapped tokens). */
+export function Emo({ e, className = 'w-[1.15em] h-[1.15em] inline-block align-[-0.2em]' }: { e: string; className?: string }) {
+  const n = EMOJI_GLYPH[e] ?? EMOJI_GLYPH[e.replace(/\uFE0F/g, '')];
+  return n ? <Glyph name={n} className={className} /> : <span aria-hidden>{e}</span>;
+}
+/** "🔔 Text" → [glyph] Text. Leading emoji only. */
+export function GT({ t, className }: { t: string; className?: string }) {
+  const m = t.match(/^(\p{Extended_Pictographic}\uFE0F?(?:\u200D\p{Extended_Pictographic}\uFE0F?)*)\s*/u);
+  if (!m) return <>{t}</>;
+  return <span className="inline-flex items-center gap-1.5"><Emo e={m[1]} className={className ?? 'w-[1.15em] h-[1.15em] shrink-0'} /><span>{t.slice(m[0].length)}</span></span>;
+}
