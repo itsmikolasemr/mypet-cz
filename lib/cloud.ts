@@ -192,4 +192,4 @@ export async function recentDoses(hh: string, petId?: string) {
   if (petId) q = q.eq('pet_id', petId);
   return (await q).data ?? [];
 }
-export function resetSyncState() { [SNAP, CURSOR, UP, 'tlapka:hh', 'tlapka:sync:at'].forEach((k) => localStorage.removeItem(k)); }
+export function resetSyncState() { [SNAP, CURSOR, UP, 'tlapka:hh', 'tlapka:sync:at', 'tlapka:hhPremium'].forEach((k) => localStorage.removeItem(k)); }

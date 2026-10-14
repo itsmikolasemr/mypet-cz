@@ -127,7 +127,9 @@ export async function feed(): Promise<FeedItem[]> {
 export async function react(eventId: number, kind: 'paw' | 'dot' | null) {
   try { const c = cloud(); const me = (await c.auth.getUser()).data.user?.id; if (!me) return false;
     if (!kind) return !(await c.from('tl_feed_reactions').delete().eq('event_id', eventId).eq('user_id', me)).error;
-    return !(await c.from('tl_feed_reactions').upsert({ event_id: eventId, user_id: me, kind })).error; } catch { return false; }
+    // no UPDATE policy on reactions (by design): switching paw <-> dot = remove + insert
+    await c.from('tl_feed_reactions').delete().eq('event_id', eventId).eq('user_id', me);
+    return !(await c.from('tl_feed_reactions').insert({ event_id: eventId, user_id: me, kind })).error; } catch { return false; }
 }
 export const feedBadge = (id: string) => rpc<null>('tl_feed_badge', { p_badge: id });
 export interface Shelter { id: string; name: string; city: string; region: string; web?: string | null; donate_url?: string | null; contact_email?: string | null; contact_phone?: string | null }

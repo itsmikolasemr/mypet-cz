@@ -36,7 +36,7 @@ export function ExportAll() {
 
 // ---------- Trash (Premium restore) ----------
 export function TrashSection() {
-  const { data, restoreTrash, emptyTrash } = useStore(); const prem = usePremium();
+  const { data, restoreTrash, emptyTrash } = useStore(); const prem = usePremium(); const cloudP = useCloud().premium;
   const groups = Object.values((data.trash ?? []).reduce<Record<string, NonNullable<typeof data.trash>>>((a, t) => ((a[t.group] ||= []).push(t), a), {}));
   const label = (g: NonNullable<typeof data.trash>) => { const m = g.find((t) => t.coll === 'pets') ?? g[0]; const it = m.item as Record<string, string>; const kind = { pets: 'Mazlíček', reminders: 'Připomínka', visits: 'Návštěva', docs: 'Dokument', meds: 'Lék', allergies: 'Alergie', cards: 'Věrnostní karta' }[m.coll]; return `${kind}: ${it.name || it.title || it.allergen || it.reason || it.clinic || '—'}${g.length > 1 ? ` (+${g.length - 1})` : ''}`; };
   const left = (at: string) => Math.max(0, Math.ceil((Date.parse(at) + TRASH_DAYS * 864e5 - Date.now()) / 864e5));
@@ -48,7 +48,7 @@ export function TrashSection() {
       {groups.slice(0, 20).map((g) => (
         <div key={g[0].group} className="flex items-center gap-2" data-trash>
           <p className="flex-1 min-w-0 text-[13px] break-words">{label(g)}<span className="block text-[12px] text-muted">ještě {left(g[0].at)} dní</span></p>
-          <button className="press min-h-[44px] px-3 rounded-xl font-semibold bg-ink/5 dark:bg-white/10" onClick={() => { if (!prem.isPremium) return prem.openPaywall('kos'); restoreTrash(g[0].group); toast('Obnoveno'); }}>Obnovit</button>
+          <button className="press min-h-[44px] px-3 rounded-xl font-semibold bg-ink/5 dark:bg-white/10" onClick={() => { if (!prem.isPremium && !cloudP) return prem.openPaywall('kos'); restoreTrash(g[0].group); toast('Obnoveno'); }}>Obnovit</button>
         </div>
       ))}
       {!!groups.length && <button className="press min-h-[44px] text-[13px] font-semibold text-red-600" onClick={() => { emptyTrash(); toast('Koš vysypán'); }}>Vysypat koš</button>}
@@ -218,7 +218,7 @@ export function PassShare({ pet }: { pet: Pet }) {
 
 type Dest = 'eu' | 'special' | 'uk' | 'third';
 export function TravelChecklist({ pet }: { pet: Pet }) {
-  const { data, setFlag } = useStore(); const prem = usePremium();
+  const { data, setFlag } = useStore(); const prem = usePremium(); const cloudP = useCloud().premium;
   const [dest, setDest] = useState<Dest>('eu'); const [date, setDate] = useState(addDays(today(), 30));
   const rabies = data.reminders.filter((r) => r.petId === pet.id && r.type === 'ockovani' && /vztekl|rabi|rabis/i.test(`${r.title} ${r.product}`));
   const lastRabies = rabies.flatMap((r) => r.history).sort().at(-1);
@@ -233,7 +233,7 @@ export function TravelChecklist({ pet }: { pet: Pet }) {
   if (dest === 'uk') items.push({ ok: null, t: 'Animal Health Certificate', d: 'Vydá úřední veterinář max. 10 dní před cestou (pas z EU nestačí).' }, { ok: null, t: 'Odčervení proti tasemnici (psi)', d: '1–5 dní před příjezdem do Velké Británie.' });
   if (dest === 'third') items.push({ ok: null, t: 'Test titru protilátek proti vzteklině', d: 'Krev min. 30 dní po očkování; při návratu do EU čekací lhůta 3 měsíce od odběru. Plánuj s předstihem!' }, { ok: null, t: 'Podmínky cílové země', d: 'Ověř na webu velvyslanectví a SVS.' });
   items.push({ ok: null, t: 'Max. 5 zvířat při nekomerčním převozu' }, { ok: null, t: 'Kopie dokladů v telefonu', d: 'Pas PDF z Tlapky + fotka EU pasu.' });
-  if (!prem.isPremium) return (
+  if (!prem.isPremium && !cloudP) return (
     <Card className="p-4 flex items-center gap-3"><span className="text-2xl" aria-hidden><Emo e="✈️" className="w-6 h-6" /></span><div className="flex-1 min-w-0"><p className="font-semibold leading-snug">Cestovní checklist <PremiumBadge small /></p><p className="text-[13px] leading-snug text-muted">Co potřebuje {pet.name} na cestu – lhůty, pas, vzteklina.</p></div><button className="press shrink-0 min-h-[44px] px-3 rounded-xl font-semibold bg-ink/5 dark:bg-white/10" onClick={() => prem.openPaywall('cestovni-checklist')}>Otevřít</button></Card>
   );
   return (

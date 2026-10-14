@@ -174,11 +174,12 @@ export function BadgeToggle() {
 
 /* ───────── Promo + referral (Settings › Předplatné, Tlapkaři) ───────── */
 export function PromoRow() {
+  const cloud = useCloud();
   const [code, setCode] = useState(''); const [busy, setBusy] = useState(false);
   const go = async (e: React.FormEvent) => { e.preventDefault(); setBusy(true); const r = await redeemPromo(code); setBusy(false);
     if (!r.ok) return notice('Promo kód', needAuth(r.error));
-    if (!r.data.ok) return notice('Promo kód', r.data.reason === 'used' ? 'Kód už jsi jednou uplatnil/a.' : r.data.reason === 'exhausted' ? 'Kód už je vyčerpaný.' : 'Tenhle kód neznáme nebo už neplatí.');
-    setCode(''); notice('Hotovo', `Premium prodlouženo o ${r.data.days} dní.`); };
+    if (!r.data.ok) return notice('Promo kód', r.data.reason === 'already' || r.data.reason === 'used' ? 'Kód už jsi jednou uplatnil/a.' : r.data.reason === 'exhausted' ? 'Kód už je vyčerpaný.' : 'Tenhle kód neznáme nebo už neplatí.');
+    setCode(''); cloud.refreshPremium(); notice('Hotovo', `Premium prodlouženo o ${r.data.days} dní.`); };
   return (
     <form onSubmit={go} className="flex gap-2 px-4 py-3" data-promo>
       <input aria-label="Promo kód" className={inp + ' uppercase'} value={code} onChange={(e) => setCode(e.target.value)} placeholder="Promo kód" maxLength={24} />
@@ -209,15 +210,16 @@ export function ChallengesCard() {
   const load = () => myChallenges().then(setList);
   useEffect(() => { if (cloud.session) load(); }, [cloud.session]); // eslint-disable-line react-hooks/exhaustive-deps
   const walks = walksThisWeek(data);
+  const nm = () => { const n = myName(); return n === 'Já' ? (data.pets.find((p) => !p.memorial)?.name ?? n) : n; };
   useEffect(() => { list.forEach((c) => { const mine = c.members.find((m) => m.user_id === cloud.session?.user.id); if (mine && mine.count < walks) reportChallenge(c.id, walks); }); }, [list, walks]); // eslint-disable-line react-hooks/exhaustive-deps
-  const create = async () => { const r = await createChallenge('Týden procházek', 14, myName()); if (!r.ok) return notice('Výzva', needAuth(r.error)); load(); notice('Výzva založena', `Kód pro kamarády: ${r.data.code}`); };
-  const join = async () => { const r = await joinChallenge(code, myName()); if (!r.ok) return notice('Výzva', needAuth(r.error)); setCode(''); load(); };
+  const create = async () => { const r = await createChallenge('Týden procházek', 14, nm()); if (!r.ok) return notice('Výzva', needAuth(r.error)); load(); notice('Výzva založena', `Kód pro kamarády: ${r.data.code.toUpperCase()}`); };
+  const join = async () => { const r = await joinChallenge(code, nm()); if (!r.ok) return notice('Výzva', needAuth(r.error)); setCode(''); load(); };
   return (
     <Card className="p-4 space-y-3">
       <div data-challenges><H e="🏁" t="Výzvy s kamarády" sub="Společný cíl na týden: procházky se počítají z Tlapka Dne. Žádné žebříčky, jen parta." /></div>
       {list.map((c) => { const sum = c.members.reduce((a, m) => a + m.count, 0); return (
         <div key={c.id} className="rounded-2xl bg-ink/[0.03] dark:bg-white/[0.05] p-3">
-          <div className="flex justify-between text-[13px]"><b>{c.title}</b><span className="text-muted">{`${tr('kód')} ${c.code}`}</span></div>
+          <div className="flex justify-between text-[13px]"><b>{c.title}</b><span className="text-muted">{`${tr('kód')} ${c.code.toUpperCase()}`}</span></div>
           <div className="h-2 rounded-full bg-ink/5 dark:bg-white/10 my-1.5"><div className="h-2 rounded-full bg-primary" style={{ width: `${Math.min(100, (sum / c.goal) * 100)}%` }} /></div>
           <p className="text-[12px] text-muted tabular-nums">{sum}/{c.goal} · {c.members.map((m) => `${m.display_name || '?'} ${m.count}`).join(' · ')}</p>
           <button className="text-[12px] text-muted underline min-h-[44px]" onClick={async () => { if (await ask({ title: 'Opustit výzvu?', ok: 'Opustit' })) { await leaveChallenge(c.id); load(); } }}>Opustit</button>

@@ -555,10 +555,10 @@ export function Settings() {
 
 function PassButton({ pet }: { pet: Pet }) {
   const { data } = useStore();
-  const prem = usePremium();
+  const prem = usePremium(); const cloud = useCloud();
   const [busy, setBusy] = useState(false);
   const run = async (lang?: 'en' | 'de') => {
-    if (!prem.isPremium) return prem.openPaywall('pdf');
+    if (!prem.isPremium && !cloud.premium) return prem.openPaywall('pdf');
     setBusy(true);
     try { const { healthPassPdf, saveOrShare } = await import('@/lib/pdf'); const b = await healthPassPdf(data, pet, lang); const where = await saveOrShare(b, `${lang === 'en' ? 'health-passport-' : lang === 'de' ? 'gesundheitspass-' : 'zdravotni-pas-'}${pet.name.normalize('NFD').replace(/[^\w-]/g, '').toLowerCase() || 'mazlicek'}.pdf`); toast(where.startsWith('file:') ? 'Zdravotní pas uložen do Dokumentů ✓' : 'Zdravotní pas stažen ✓'); }
     catch (e) { console.error(e); notice('PDF se nepodařilo vytvořit', 'Zkus to prosím znovu.'); } finally { setBusy(false); }

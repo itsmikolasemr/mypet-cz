@@ -11,10 +11,10 @@ import { notice, toast } from '@/components/feedback';
 function useCloudImpl() {
   const { data, applyRemote } = useStore();
   const prem = usePremium();
-  const [hhPremium, setHhPremium] = useState(false);
+  const [hhPremium, setHhPremium] = useState(() => { try { return localStorage.getItem('tlapka:hhPremium') === '1'; } catch { return false; } });
   const [deviceBlocked, setDeviceBlocked] = useState(false);
   const [ready, setReady] = useState(false);
-  const refreshPremium = useCallback(async (h: string) => { const r = await cloud().rpc('tl_household_premium', { hh: h }); setHhPremium(!!r.data); return !!r.data; }, []);
+  const refreshPremium = useCallback(async (h: string) => { const r = await cloud().rpc('tl_household_premium', { hh: h }); setHhPremium(!!r.data); try { localStorage.setItem('tlapka:hhPremium', r.data ? '1' : '0'); } catch {} return !!r.data; }, []);
   const [s, setS] = useState<Session | null>(null);
   const [hh, setHh] = useState<string | null>(null);
   const [doses, setDoses] = useState<Awaited<ReturnType<typeof recentDoses>>>([]);
@@ -62,7 +62,7 @@ function useCloudImpl() {
   };
   /** Premium features: own device entitlement OR shared Premium household (family plan). */
   const premium = prem.isPremium || hhPremium;
-  return { premium, hhPremium, deviceBlocked, claimDevice, deleteAccount, session: s, hh, setHh, busy, setBusy, last, doses, sync, name };
+  return { premium, hhPremium, refreshPremium: () => (hh ? refreshPremium(hh) : Promise.resolve(false)), deviceBlocked, claimDevice, deleteAccount, session: s, hh, setHh, busy, setBusy, last, doses, sync, name };
 }
 type C = ReturnType<typeof useCloudImpl>;
 const Ctx = createContext<C | null>(null);
