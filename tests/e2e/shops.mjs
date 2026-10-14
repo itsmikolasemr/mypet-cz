@@ -4,7 +4,7 @@ const BR = process.env.BROWSER === 'webkit' ? 'webkit' : 'chromium'; const BASE 
 const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch();
 const c = await b.newContext({ ...devices['iPhone 14'], geolocation: { latitude: 50.0755, longitude: 14.4378 }, permissions: ['geolocation'] });
 const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message));
-await p.goto(BASE); await p.getByText('Přeskočit').click(); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(500);
+await p.goto(BASE); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(500);
 await p.evaluate(() => { const d = JSON.parse(localStorage.getItem('tlapka:data:v1')); d.cards = [{ id: 'pc', store: 'petcenter', name: 'Pet Center', code: '8591234567893', format: 'EAN13', notes: '', uses: 0, created: new Date().toISOString() }]; localStorage.setItem('tlapka:data:v1', JSON.stringify(d)); history.replaceState(null, '', '#map'); });
 await p.reload(); await p.waitForTimeout(2000);
 const chips = await p.locator('[data-testid=map] ~ div button').evaluateAll((bs) => bs.map((x) => { const r = x.getBoundingClientRect(); return [x.innerText, Math.round(r.left), Math.round(r.right), x.scrollWidth <= x.clientWidth + 1]; }));

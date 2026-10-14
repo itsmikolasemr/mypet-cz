@@ -4,8 +4,9 @@ import { createPortal } from 'react-dom';
 import type { Pet } from '@/lib/types';
 import { speciesOf, type Status } from '@/lib/utils';
 
-type IconName = 'home' | 'paw' | 'bell' | 'heart' | 'cog' | 'plus' | 'check' | 'x' | 'chev' | 'back' | 'edit' | 'trash' | 'camera' | 'scale' | 'repeat' | 'download' | 'upload' | 'moon';
+type IconName = 'home' | 'paw' | 'bell' | 'heart' | 'cog' | 'plus' | 'check' | 'x' | 'chev' | 'back' | 'edit' | 'trash' | 'camera' | 'scale' | 'repeat' | 'download' | 'upload' | 'moon' | 'phone';
 const P: Record<IconName, string> = {
+  phone: 'M5 4h3.5l1.8 4.5-2.3 1.4a11 11 0 0 0 6.1 6.1l1.4-2.3L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5C10.5 20 4 13.5 3.5 5.6A1.5 1.5 0 0 1 5 4Z',
   home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
   paw: 'M8.5 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm7 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM5 15a1.8 1.8 0 1 0 0-3.6A1.8 1.8 0 0 0 5 15Zm14 0a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Zm-7-1c-2.5 0-5 3-5 5 0 1.4 1.2 2 2.5 2 1 0 1.6-.5 2.5-.5s1.5.5 2.5.5c1.3 0 2.5-.6 2.5-2 0-2-2.5-5-5-5Z',
   bell: 'M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8Zm4.5 12a1.8 1.8 0 0 0 3 0',
@@ -38,7 +39,7 @@ export function Avatar({ pet, size = 'w-12 h-12', text = 'text-2xl' }: { pet: Pe
     // eslint-disable-next-line @next/next/no-img-element
     <img src={pet.photo} alt={pet.name} className={`${size} rounded-2xl object-cover shrink-0`} />
   ) : (
-    <div className={`${size} ${text} rounded-2xl bg-secondary/25 dark:bg-secondary/15 flex items-center justify-center shrink-0`}>{speciesOf(pet.species).emoji}</div>
+    <div className={`${size} ${text} rounded-2xl bg-secondary/25 dark:bg-secondary/15 flex items-center justify-center shrink-0 text-[#1A4F86] dark:text-primary`} role="img" aria-label={pet.name}><Glyph name={SPECIES_GLYPH[pet.species] ?? 'paw'} className="w-[58%] h-[58%]" /></div>
   );
 }
 
@@ -91,10 +92,11 @@ export function Card({ children, className = '', onClick }: { children: React.Re
   return <C onClick={onClick} className={`block w-full text-left rounded-[22px] bg-surface dark:bg-surface-d ring-1 ring-ink/[0.04] dark:ring-white/[0.06] shadow-card dark:shadow-card-d transition-[transform,box-shadow] duration-200 ${onClick ? 'lift' : ''} ${className}`}>{children}</C>;
 }
 
+import { EMOJI_GLYPH, Glyph, SPECIES_GLYPH } from './glyphs';
 export function Empty({ emoji, title, text, action }: { emoji: string; title: string; text: string; action?: React.ReactNode }) {
   return (
     <div className="text-center py-12 px-6 animate-fade">
-      <div className="mx-auto w-24 h-24 rounded-[30px] bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d flex items-center justify-center text-5xl mb-5 animate-float">{emoji}</div>
+      <div className="mx-auto w-24 h-24 rounded-[30px] bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d flex items-center justify-center text-5xl text-primary-d dark:text-primary mb-5 animate-float">{EMOJI_GLYPH[emoji] ? <Glyph name={EMOJI_GLYPH[emoji]} className="w-12 h-12" /> : <span aria-hidden>{emoji}</span>}</div>
       <h3 className="font-semibold text-lg">{title}</h3>
       <p className="text-muted mt-1 text-[15px]">{text}</p>
       {action && <div className="mt-5">{action}</div>}

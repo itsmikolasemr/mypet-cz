@@ -125,6 +125,7 @@ function useStoreImpl() {
     saveVisit: (v: Visit) => upd((d) => ({ ...d, visits: d.visits.some((x) => x.id === v.id) ? d.visits.map((x) => (x.id === v.id ? v : x)) : [...d.visits, v] })),
     deleteVisit: (id: string) => upd((d) => ({ ...d, visits: d.visits.filter((v) => v.id !== id) })),
     setTheme: (theme: AppData['settings']['theme']) => upd((d) => ({ ...d, settings: { ...d.settings, theme } })),
+    finishSetup: (pet: Pet, reminders: Reminder[], notify: boolean) => upd((d) => ({ version: 1 as const, pets: [pet], reminders, visits: [], docs: [], meds: [], allergies: [], cards: d.cards, settings: { ...d.settings, notify, onboarded: true } })),
     finishOnboarding: (withSample: boolean) => upd((d) => ({ ...(withSample ? sampleData() : { version: 1 as const, pets: [], reminders: [], visits: [], docs: [], meds: [], allergies: [], cards: d.cards }), settings: { ...d.settings, onboarded: true } })),
     importData: async (x: AppData) => {
       // backups carry no files: keep only document records whose file still exists on this device

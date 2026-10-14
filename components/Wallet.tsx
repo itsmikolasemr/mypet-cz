@@ -137,7 +137,9 @@ export function Wallet() {
     <div>
       <PageHeader title="Věrnostní karty" sub={cards.length ? `${cards.length} ${cards.length === 1 ? 'karta' : cards.length < 5 ? 'karty' : 'karet'} · sdílené s domácností` : 'Všechny zverimexy v kapse'} fab={<Fab label="Přidat kartu" onClick={() => setEdit(blank())} />} />
       {!cards.length ? (
-        <Empty emoji="💳" title="Zatím žádná karta" text="Naskenuj věrnostní kartu ze Super zoo, Zoo Bonus, Pet Center, Fressnapf / Maxi Zoo nebo Krmiv Hulín. U pokladny ji pak jen ukážeš." action={<Button onClick={() => setEdit(blank())}>＋ Přidat kartu</Button>} />
+        <Empty emoji="💳" title="Zatím žádná karta" text="Vyber obchod a naskenuj kartu. U pokladny ji pak jen ukážeš." action={<div data-quick-brands className="grid grid-cols-2 gap-2 text-left">
+          {ORDER.map((k) => { const st = STORES[k]; return <button key={k} data-brand={k} onClick={() => setEdit({ ...blank(), store: k })} className="press min-h-[56px] rounded-2xl px-3 py-2 flex items-center gap-2 font-semibold text-[14px] shadow-card" style={{ background: `linear-gradient(135deg, ${st.from}, ${st.to})`, color: st.ink }}><span aria-hidden className="text-lg">{st.emoji}</span><span className="leading-tight">{k === 'custom' ? 'Jiná karta' : st.name}</span></button>; })}
+        </div>} />
       ) : (<>
         <p className="text-[13px] text-muted px-1 -mt-1 mb-3">👆 Klepni na kartu – u pokladny se ukáže velký kód a zesvětlí se displej.</p>
         <ul className="pb-4" aria-label="Karty">

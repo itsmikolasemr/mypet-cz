@@ -9,7 +9,7 @@ const hash = async (p, h) => { await p.evaluate((h) => { history.pushState(null,
 const dlg = async (p) => { const l = p.locator('[role=alertdialog]'); await l.waitFor({ timeout: 15000 }); const t = await l.innerText(); await p.getByRole('button', { name: 'Rozumím' }).click(); return t; };
 const paywallOpen = async (p) => { const n = await p.getByText('79 Kč').count(); await p.keyboard.press('Escape'); await p.evaluate(() => dispatchEvent(new PopStateEvent('popstate'))); await p.waitForTimeout(300); return n > 0; };
 const data = async (p) => JSON.parse(await p.evaluate(() => localStorage.getItem('tlapka:data:v1')));
-const A = await mk(); await A.goto(BASE); await A.getByText('Přeskočit').click(); await A.getByText('Vyzkoušet s ukázkovými daty').click(); await A.waitForTimeout(600);
+const A = await mk(); await A.goto(BASE); await A.getByText('Vyzkoušet s ukázkovými daty').click(); await A.waitForTimeout(600);
 // ---- FREE ----
 await nav(A, 'Nastavení');
 const [dl] = await Promise.all([A.waitForEvent('download'), A.getByText('Exportovat vše').click()]);

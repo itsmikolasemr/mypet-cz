@@ -17,8 +17,8 @@ Stav k 14. 10. 2026 (větev v1.1). Tohle se nedá dokončit bez skutečných kl�
 ## Smazání účtu (Apple 5.1.1(v), Google Play)
 Tok: Nastavení → Účet a záloha → Smazat účet → potvrzení „SMAZAT“ → `POST /api/account/delete`. Maže households, kde je uživatel vlastník (cascade), soubory v `tl-docs/<household>/` a Auth uživatele.
 Zkontrolováno v kódu. Na živé DB to bez service-role klíče a testovacího hesla otestovat nešlo.
-**Riziko:** `storage list` s `prefix: hh` vrací jen první úroveň. Pokud jsou soubory ve vnořených složkách (`hh/pet/…`), zůstanou v úložišti. Ověřit na stagingu, případně procházet rekurzivně.
-Pro Google Play je potřeba i webová URL pro žádost o smazání (např. stránka s e-mailem z `COMPANY`).
+Storage se prochází rekurzivně (opraveno 14. 10.).
+Webová stránka pro Google Play: `/smazat-ucet` (app/smazat-ucet/page.tsx). Doplnit e-mail a provozovatele (`[DOPLNIT`). Mazání souborů ve vnořených složkách opraveno (rekurzivní procházení, test v server.test.mjs).
 
 ## Zařízení (nutné otestovat ručně)
 - Lokální notifikace: den předem, týdenní souhrn (neděle 18:00), Android (výrobci Xiaomi/Samsung/Huawei: BatteryGuide se ukáže jen na Androidu).

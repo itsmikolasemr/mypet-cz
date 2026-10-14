@@ -4,7 +4,7 @@ for (const [name, eng] of [['chromium', chromium], ['webkit', webkit]]) {
   const b = await (name === 'chromium' ? eng.launch({ channel: 'chrome' }) : eng.launch());
   const ctx = await b.newContext({ ...devices['iPhone 14'] }); const p = await ctx.newPage(); const errs = [];
   p.on('pageerror', (e) => errs.push(e.message));
-  await p.goto(BASE); await p.getByText('Přeskočit').click(); await p.getByText('Vyzkoušet s ukázkovými daty').click();
+  await p.goto(BASE); await p.getByText('Vyzkoušet s ukázkovými daty').click();
   await p.waitForTimeout(600);
   const ad = async () => (await p.locator('#ad-banner').count()) ? await p.locator('#ad-banner').boundingBox() : null;
   const navBox = async () => p.locator('nav[aria-label="Hlavní navigace"]').boundingBox();

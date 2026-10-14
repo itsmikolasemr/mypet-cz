@@ -4,7 +4,7 @@ const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch({ chan
 const c = await b.newContext({ ...devices['iPhone 14'], acceptDownloads: true, geolocation: { latitude: 50.0755, longitude: 14.4378 }, permissions: ['geolocation'] });
 await c.addInitScript(() => { window.__copied = []; Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t) => { window.__copied.push(t); } }, configurable: true }); window.print = () => { window.__printed = document.getElementById('print-area')?.innerText || 'EMPTY'; }; });
 const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message));
-await p.goto(BASE); await p.getByText('Přeskočit').click(); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(600);
+await p.goto(BASE); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(600);
 await p.evaluate(() => { history.pushState(null, '', '#pets/max'); dispatchEvent(new PopStateEvent('popstate')); }); await p.waitForTimeout(700);
 await p.getByRole('button', { name: 'Sdílet', exact: true }).click(); await p.locator('[data-handover]').scrollIntoViewIfNeeded();
 await p.locator('[data-edit-care]').click();

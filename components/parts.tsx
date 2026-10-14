@@ -157,7 +157,7 @@ function Thumb({ d }: { d: DocMeta }) {
     return () => { if (u) URL.revokeObjectURL(u); };
   }, [d.id, d.mime]);
   // eslint-disable-next-line @next/next/no-img-element
-  return url ? <img src={url} alt="" className="w-12 h-12 rounded-xl object-cover" /> : <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center text-2xl">{d.mime === 'application/pdf' ? '📄' : KINDS.find((k) => k.id === d.kind)?.e}</div>;
+  return url ? <img src={url} alt={`Náhled: ${d.name}`} className="w-12 h-12 rounded-xl object-cover" /> : <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center text-2xl">{d.mime === 'application/pdf' ? '📄' : KINDS.find((k) => k.id === d.kind)?.e}</div>;
 }
 
 export function Documents({ pet }: { pet: Pet }) {

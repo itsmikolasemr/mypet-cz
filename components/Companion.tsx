@@ -21,14 +21,14 @@ export function careOf(data: AppData, petId: string) {
 }
 
 function line(pet: Pet, c: ReturnType<typeof careOf>) {
-  const he = pet.sex === 'samice' ? 'a' : '';
+  // keep it short: max ~40 chars, never wraps over 2 lines in the bubble
   if (c.overdue.length) {
-    const r = c.overdue[0];
-    return `${r.product || r.title} mělo být ${diffDays(today(), r.dueDate) === 1 ? 'včera' : `před ${diffDays(today(), r.dueDate)} dny`}… nezapomeň na mě 🥺`;
+    const r = c.overdue[0]; const d = diffDays(today(), r.dueDate);
+    return `${r.product || r.title}: ${d === 1 ? 'včera' : `${d} ${d < 5 ? 'dny' : 'dní'}`} po termínu 🥺`;
   }
-  if (c.dueToday.length) return `Dneska nás čeká: ${low(c.dueToday[0].title)}. Zvládneme to! 💪`;
-  if (c.recent.length) return `Díky za ${c.recent[0].r.product || low(c.recent[0].r.title)}! Cítím se skvěle 💛`;
-  return `Jsem v pohodě a spokojen${he || 'ý'}. Pojď si hrát! 🐾`;
+  if (c.dueToday.length) return `Dnes: ${low(c.dueToday[0].title)} 💪`;
+  if (c.recent.length) return `Díky za ${c.recent[0].r.product || low(c.recent[0].r.title)}! 💛`;
+  return `${pet.sex === 'samice' ? 'Spokojená' : 'Spokojený'}. Pojď si hrát! 🐾`;
 }
 
 export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; onOpen: (id: string) => void }) {

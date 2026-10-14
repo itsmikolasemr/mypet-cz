@@ -6,6 +6,7 @@ import { fmtDate, plural } from '@/lib/utils';
 import { Card, PageHeader, Sheet } from './ui';
 import { Avatar } from './ui';
 
+import { EMOJI_GLYPH, Glyph } from './glyphs';
 export const PERKS: { e: string; t: string; d: string; soon?: boolean }[] = [
   { e: '🩺', t: 'Aivet bez omezení', d: 'AI poradce zná profil, léky i alergie tvého mazlíčka' },
   { e: '🚫', t: 'Bez reklam', d: 'Čistá appka bez jediné reklamy' },
@@ -47,7 +48,7 @@ export function Paywall() {
       </div>
       <ul className="space-y-2.5 mb-5">
         {PERKS.map((x) => (
-          <li key={x.t} className="flex gap-3 items-start"><span className="text-xl w-7 text-center">{x.e}</span>
+          <li key={x.t} className="flex gap-3 items-start"><span className="w-7 flex justify-center text-primary-d dark:text-primary">{EMOJI_GLYPH[x.e] ? <Glyph name={EMOJI_GLYPH[x.e]} /> : <span aria-hidden>{x.e}</span>}</span>
             <span className="flex-1"><b className="text-[15px]">{x.t}</b>{x.soon && <span className="ml-1.5 align-middle text-[12px] font-bold uppercase rounded-full px-1.5 py-0.5 bg-ink/10 dark:bg-white/15">brzy</span>}<span className="block text-[13px] text-muted">{x.d}</span></span></li>
         ))}
       </ul>
@@ -175,7 +176,7 @@ export function Expenses() {
       </div>
       {!p.isPremium && (
         <div className="fixed inset-x-0 top-[48%] flex justify-center px-6 z-30">
-          <Card className="p-5 text-center max-w-sm"><p className="text-3xl mb-1">💰</p><p className="font-bold text-lg">Přehled výdajů</p><p className="text-sm text-muted mt-1 mb-4">Grafy po měsících a po mazlíčcích. Roční součet máš zdarma výše.</p>
+          <Card className="p-5 text-center max-w-sm"><p className="mb-1 flex justify-center text-primary-d dark:text-primary"><Glyph name="coins" className="w-9 h-9" /></p><p className="font-bold text-lg">Přehled výdajů</p><p className="text-sm text-muted mt-1 mb-4">Grafy po měsících a po mazlíčcích. Roční součet máš zdarma výše.</p>
             <button onClick={() => p.openPaywall('expenses')} className="press w-full rounded-2xl py-3 font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">Odemknout s Premium</button></Card>
         </div>
       )}

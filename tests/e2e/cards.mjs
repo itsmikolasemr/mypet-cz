@@ -5,7 +5,7 @@ const c = await b.newContext({ ...devices['iPhone 14'] }); const p = await c.new
 const ean = (s) => { const d = [...s].map(Number); const sum = d.reduce((a, x, i) => a + x * (i % 2 ? 3 : 1), 0); return s + ((10 - (sum % 10)) % 10); };
 const E = ean('859123456789');
 const data = async () => JSON.parse(await p.evaluate(() => localStorage.getItem('tlapka:data:v1')));
-await p.goto(BASE); await p.getByText('Přeskočit').click(); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(600);
+await p.goto(BASE); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(600);
 await p.getByText('Věrnostní karty').first().click(); await p.waitForTimeout(400);
 R.empty = await p.getByText('Zatím žádná karta').count();
 await p.screenshot({ path: S + `cards-empty-${BR}.png` });

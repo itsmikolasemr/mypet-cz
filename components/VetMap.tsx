@@ -20,6 +20,36 @@ const is247 = (t: Record<string, string>) => {
   const oh = (t.opening_hours ?? '').replace(/\s+/g, ' ').trim();
   return /^24 ?\/ ?7$/.test(oh) || /^(Mo-Su )?00:00-(24:00|23:59)$/.test(oh);
 };
+/** Grooming salons are often mis-tagged as amenity=veterinary in OSM – keep them out of the vet list. */
+export const isGroomer = (t: Record<string, string>) => /(salon|stříh|střih|grooming|groomer|kadeřn|psí kosmetik|trimování)/i.test(`${t.name ?? ''} ${t.description ?? ''} ${t.shop ?? ''}`) && !/(vet|klinik|ordinac|nemocnic|MVDr)/i.test(`${t.name ?? ''} ${t.operator ?? ''}`);
+const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+/** Simple OSM opening_hours evaluator (24/7, "Mo-Fr 08:00-18:00; Sa 09:00-12:00", "PH off" ignored). null = unknown. */
+export function openNow(t: Record<string, string>, now = new Date()): boolean | null {
+  if (is247(t)) return true;
+  const oh = (t.opening_hours ?? '').trim(); if (!oh) return null;
+  const d = now.getDay(), mins = now.getHours() * 60 + now.getMinutes(); let known = false, open = false;
+  for (const part of oh.split(';').map((x) => x.trim()).filter((x) => x && !/^PH/.test(x))) {
+    const m = part.match(/^((?:Mo|Tu|We|Th|Fr|Sa|Su)(?:-(?:Mo|Tu|We|Th|Fr|Sa|Su))?(?:,(?:Mo|Tu|We|Th|Fr|Sa|Su)(?:-(?:Mo|Tu|We|Th|Fr|Sa|Su))?)*)\s+(.+)$/);
+    if (!m) return null;
+    const hit = m[1].split(',').some((g) => { const [a, b] = g.split('-').map((x) => DAYS.indexOf(x)); return b == null ? a === d : a <= b ? d >= a && d <= b : d >= a || d <= b; });
+    if (!hit) continue; known = true;
+    if (/^off|closed$/.test(m[2])) { open = false; continue; }
+    for (const rg of m[2].split(',')) { const q = rg.trim().match(/^(\d\d):(\d\d)-(\d\d):(\d\d)$/); if (!q) return null; const a = +q[1] * 60 + +q[2], b = +q[3] * 60 + +q[4]; if (mins >= a && mins < b) open = true; }
+  }
+  return known ? open : false;
+}
+/** Offline CZ city list for search without location (Nominatim fallback for anything else). */
+export const CITIES: [string, number, number][] = [['Praha', 50.0755, 14.4378], ['Brno', 49.1951, 16.6068], ['Ostrava', 49.8209, 18.2625], ['Plzeň', 49.7384, 13.3736], ['Liberec', 50.7663, 15.0543], ['Olomouc', 49.5938, 17.2509], ['České Budějovice', 48.9745, 14.4743], ['Hradec Králové', 50.2104, 15.8252], ['Ústí nad Labem', 50.6611, 14.0531], ['Pardubice', 50.0343, 15.7812], ['Zlín', 49.2265, 17.6707], ['Havířov', 49.7798, 18.4369], ['Kladno', 50.1473, 14.1029], ['Most', 50.503, 13.6362], ['Opava', 49.9387, 17.9026], ['Frýdek-Místek', 49.6882, 18.3533], ['Jihlava', 49.3961, 15.5912], ['Karviná', 49.854, 18.5417], ['Teplice', 50.6404, 13.8245], ['Děčín', 50.7822, 14.2148], ['Karlovy Vary', 50.2319, 12.8713], ['Chomutov', 50.4605, 13.4178], ['Jablonec nad Nisou', 50.7243, 15.1711], ['Mladá Boleslav', 50.4113, 14.9032], ['Prostějov', 49.4719, 17.1118], ['Přerov', 49.4551, 17.4509], ['Česká Lípa', 50.6856, 14.5377], ['Třebíč', 49.2149, 15.8817], ['Třinec', 49.6776, 18.6708], ['Tábor', 49.4144, 14.6578], ['Znojmo', 48.8555, 16.0488], ['Kolín', 50.0281, 15.2006], ['Příbram', 49.6899, 14.0104], ['Cheb', 50.0796, 12.3739], ['Písek', 49.3088, 14.1475], ['Trutnov', 50.561, 15.9127], ['Kroměříž', 49.2979, 17.3931], ['Šumperk', 49.9653, 16.9706], ['Vsetín', 49.3388, 17.9962], ['Uherské Hradiště', 49.0698, 17.4597], ['Břeclav', 48.759, 16.882], ['Hodonín', 48.8489, 17.1324], ['Český Krumlov', 48.8127, 14.3175], ['Beroun', 49.9638, 14.072], ['Benešov', 49.7816, 14.687], ['Mělník', 50.3505, 14.4741], ['Litoměřice', 50.5335, 14.1318], ['Havlíčkův Brod', 49.6079, 15.5807], ['Vyškov', 49.2775, 16.999], ['Blansko', 49.3631, 16.6445]];
+const fold = (x: string) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+export async function searchCity(q: string): Promise<{ name: string; lat: number; lon: number }[]> {
+  const f = fold(q.trim()); if (f.length < 2) return [];
+  const local = CITIES.filter(([n]) => fold(n).startsWith(f) || fold(n).includes(' ' + f)).slice(0, 6).map(([name, lat, lon]) => ({ name, lat, lon }));
+  if (local.length) return local;
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=cz&limit=5&accept-language=cs&q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(6000) });
+    return ((await r.json()) as { display_name: string; lat: string; lon: string }[]).map((x) => ({ name: x.display_name.split(',').slice(0, 2).join(','), lat: +x.lat, lon: +x.lon }));
+  } catch { return []; }
+}
 const address = (t: Record<string, string>) =>
   [[t['addr:street'] ?? t['addr:place'], t['addr:housenumber'] ?? t['addr:conscriptionnumber']].filter(Boolean).join(' '), [t['addr:postcode'], t['addr:city']].filter(Boolean).join(' ')].filter(Boolean).join(', ');
 
@@ -31,7 +61,7 @@ let bundledP: Promise<[number, number, Record<string, string>, string][]> | null
 export async function bundledVets(c: { lat: number; lon: number }): Promise<Vet[]> {
   bundledP ??= fetch('/vets-cz.json').then((r) => r.json());
   const all = await bundledP;
-  return all.map(([lat, lon, tags, id]) => toVet(c, id, lat, lon, tags)).sort((a, b) => a.dist - b.dist);
+  return all.filter(([, , tags]) => !isGroomer(tags)).map(([lat, lon, tags, id]) => toVet(c, id, lat, lon, tags)).sort((a, b) => a.dist - b.dist);
 }
 
 let parksP: Promise<[number, number, Record<string, string>, string][]> | null = null;
@@ -68,7 +98,7 @@ async function liveVets(c: { lat: number; lon: number }, radius: number): Promis
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const j = (await r.json()) as Raw;
       if (!Array.isArray(j.elements)) throw new Error('bad');
-      return j.elements.flatMap((e) => { const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon; return lat == null || lon == null ? [] : [toVet(c, `${e.type}/${e.id}`, lat, lon, e.tags ?? {})]; });
+      return j.elements.flatMap((e) => { const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon; return lat == null || lon == null || isGroomer(e.tags ?? {}) ? [] : [toVet(c, `${e.type}/${e.id}`, lat, lon, e.tags ?? {})]; });
     } catch (e) { lastErr = e; }
   }
   throw lastErr;
@@ -148,6 +178,8 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         L.marker([center.lat, center.lon], { icon: L.divIcon({ className: '', html: '<div class="me-dot"></div>', iconSize: [18, 18] }) }).addTo(map.current);
       }
     })();
+    if (map.current) map.current.setView([center.lat, center.lon], 13);
+    setShops([]); setParks([]);
     load(center);
     return () => { cancelled = true; };
   }, [center, load]);
@@ -175,6 +207,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   return (
     <div>
       <PageHeader title={shopsOn ? 'Zverimexy v okolí' : parksOn ? 'Výběhy pro psy' : nonstop ? 'Nonstop pohotovost' : 'Veteriny v okolí'} sub={locNote || 'Podle tvé polohy'} />
+      <CitySearch onPick={(c) => { setLocNote(`Zobrazuji ${c.name}`); setSel(null); setCenter({ lat: c.lat, lon: c.lon }); }} />
       <div className="relative rounded-[26px] overflow-hidden shadow-float dark:shadow-float-d ring-1 ring-ink/5 dark:ring-white/10">
         <div ref={el} className="h-[46dvh] w-full bg-ink/5" data-testid="map" />
         <div className="absolute inset-x-2 top-2 z-[500] grid grid-cols-3 gap-1.5">
@@ -208,9 +241,10 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
             <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.shop ? 'bg-[#8A4B12]/12 dark:bg-[#E0A060]/15' : v.park ? 'bg-[#2F7D4A]/12 dark:bg-[#5FBF7F]/15' : v.nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] font-bold text-sm' : 'bg-primary/10'}`}>{v.shop ? '🛍️' : v.park ? '🐕' : v.nonstop ? '24/7' : '🩺'}</div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold truncate">{v.name}</p>
+              {!v.park && (() => { const o = openNow(v.tags); return o == null ? null : <p data-open={o ? 'yes' : 'no'} className={`text-[12px] font-bold ${o ? 'text-[#1F7A43] dark:text-[#6FD39A]' : 'text-muted'}`}>{o ? (v.nonstop ? 'Otevřeno teď · nonstop' : 'Otevřeno teď') : 'Teď zavřeno'}</p>; })()}
               <p className="text-[13px] text-muted truncate">{[v.dist < 1 ? `${Math.round(v.dist * 1000)} m` : `${v.dist.toFixed(1).replace('.', ',')} km`, v.park ? parkFacts(v.tags).join(', ') : address(v.tags), v.shop && data.cards.some((c) => c.store === v.tags.chain) ? '💳 máš kartu' : ''].filter(Boolean).join(' · ')}</p>
             </div>
-            <Icon name="chev" className="w-4 h-4 text-muted" />
+            {(() => { const ph = (v.tags.phone || v.tags['contact:phone'] || '').split(';')[0].replace(/\s+/g, ''); return ph && !v.park ? <a href={`tel:${ph}`} data-call onClick={(e) => e.stopPropagation()} aria-label={`Zavolat ${v.name}`} className="press shrink-0 min-h-[44px] px-3.5 rounded-full flex items-center gap-1.5 text-[13px] font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]"><Icon name="phone" className="w-4 h-4" />Zavolat</a> : <Icon name="chev" className="w-4 h-4 text-muted" />; })()}
           </Card>
         ))}
       </div>
@@ -241,6 +275,24 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
           </div>
         )}
       </Sheet>
+    </div>
+  );
+}
+
+function CitySearch({ onPick }: { onPick: (c: { name: string; lat: number; lon: number }) => void }) {
+  const [q, setQ] = useState('');
+  const [res, setRes] = useState<{ name: string; lat: number; lon: number }[]>([]);
+  useEffect(() => { const h = setTimeout(() => { searchCity(q).then(setRes); }, 250); return () => clearTimeout(h); }, [q]);
+  return (
+    <div className="relative mb-3" data-city-search>
+      <label htmlFor="city-q" className="sr-only">Hledat město</label>
+      <input id="city-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Hledat město, např. Olomouc" autoComplete="off" enterKeyHint="search"
+        className="w-full rounded-full px-4 min-h-[46px] text-[15px] bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 outline-none focus:ring-2 focus:ring-primary" />
+      {res.length > 0 && q && (
+        <ul role="listbox" aria-label="Nalezená místa" className="absolute z-[600] inset-x-0 top-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d ring-1 ring-ink/10 dark:ring-white/10 overflow-hidden">
+          {res.map((c) => <li key={c.name + c.lat}><button role="option" aria-selected={false} onClick={() => { onPick(c); setQ(''); setRes([]); }} className="press w-full text-left px-4 min-h-[44px] text-[15px] border-b last:border-0 border-ink/5 dark:border-white/5">{c.name}</button></li>)}
+        </ul>
+      )}
     </div>
   );
 }

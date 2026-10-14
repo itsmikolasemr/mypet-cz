@@ -2,15 +2,16 @@
 import { createPortal } from 'react-dom';
 import { Account } from './Account';
 import { useCloud } from '@/lib/cloudsync';
+import { Glyph, SPECIES_GLYPH, type GlyphName } from './glyphs';
 import { HandoverCard } from './Handover';
 import { BatteryGuide, DoseRow, ExportAll, PassShare, PrnRow, ScanButton, TrashSection, TravelChecklist } from './V11';
 import { ask as askDialog, notice, toast } from './feedback';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Pet, Reminder, Visit } from '@/lib/types';
 import { useStore, validate } from '@/lib/store';
-import { age, diffDays, fmtDate, parse, plural, speciesOf, status, toISO, today } from '@/lib/utils';
+import { addDays, age, diffDays, fmtDate, parse, plural, SPECIES, speciesOf, status, toISO, today, uid } from '@/lib/utils';
 import { notifySupported, requestPermission, showNow } from '@/lib/notify';
-import { Avatar, Button, Card, Empty, Fab, Icon, Logo, PageHeader, Segmented, Sheet } from './ui';
+import { Avatar, Button, Card, DateInput, Empty, Fab, Icon, Logo, PageHeader, Segmented, Sheet } from './ui';
 import { AllergyForm, MedForm, PetForm, ReminderForm, SEVERITY, VisitForm, WeightForm } from './forms';
 import type { Allergy, Medication } from '@/lib/types';
 import { Documents, PetChip, ReminderRow, VisitRow, WeightChart } from './parts';
@@ -58,7 +59,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             {upcoming.length ? upcoming.slice(0, 5).map((r, i) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} hint={!overdue.length && i === 0} onEdit={() => setEdit(r)} />) : <Card className="p-4 text-sm text-muted text-center">Příštích 30 dní nic. 🎉</Card>}
           </section>
           <section>
-            <h2 className="font-semibold text-lg mb-2">Rychle přidat</h2>
+            <h2 className="font-semibold text-lg mb-2">Přidat</h2>
             <div className="grid grid-cols-3 gap-2.5">
               <button onClick={() => setNewRem(true)} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg">🔔</span>Připomínku</button>
               <button onClick={() => (data.pets.length > 1 ? setPickDoc(true) : openDocs(data.pets[0].id))} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg">📎</span>Dokument</button>
@@ -69,23 +70,23 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             <h2 className="font-semibold text-lg mb-2">Pomocníci</h2>
             <div className="grid grid-cols-2 gap-2.5">
             <Card onClick={() => go('ai')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">🩺</div>
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="stetho" /></div>
               <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Aivet</span><span className="block text-[12px] text-muted leading-snug">Poradí, co dělat</span></span>
             </Card>
             <Card onClick={() => go('map')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">🗺️</div>
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="map" /></div>
               <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Mapa</span><span className="block text-[12px] text-muted leading-snug">Veteriny, výběhy, zverimexy</span></span>
             </Card>
             <Card onClick={() => go('cards')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">💳</div>
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="card" /></div>
               <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Věrnostní karty</span><span className="block text-[12px] text-muted leading-snug">{data.cards.length ? `${data.cards.length} v kapse` : 'Zverimexy v kapse'}</span></span>
             </Card>
             <Card onClick={() => go('expenses')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">💰</div>
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="coins" /></div>
               <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Výdaje</span><span className="block text-[12px] text-muted leading-snug">Kolik stojí péče{!prem.isPremium && ' · ✦ Premium'}</span></span>
             </Card>
             <Card onClick={() => go('second')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
-              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">🩻</div>
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="doc" /></div>
               <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Druhý názor</span><span className="block text-[12px] text-muted leading-snug">Vysvětlí zprávu od vety</span></span>
             </Card>
             <Card onClick={() => { sessionStorage.setItem('tlapka:petTab', 'sdilet'); openPet(data.pets[0].id); }} className="p-3.5 flex items-center gap-3 min-h-[72px]">
@@ -558,29 +559,63 @@ function PassButton({ pet }: { pet: Pet }) {
 }
 
 /* ---------------- Onboarding ---------------- */
+/** Suggested first reminders per species (interval days, offset from today). */
+const SUGGEST: Record<string, { type: Reminder['type']; title: string; days: number; first: number }[]> = {
+  pes: [{ type: 'antiparazitika', title: 'Klíšťata a blechy', days: 84, first: 7 }, { type: 'odcerveni', title: 'Odčervení', days: 90, first: 14 }, { type: 'ockovani', title: 'Očkování (kombinované + vzteklina)', days: 365, first: 30 }],
+  kocka: [{ type: 'odcerveni', title: 'Odčervení', days: 90, first: 14 }, { type: 'ockovani', title: 'Očkování (kočičí rýma, panleukopenie)', days: 365, first: 30 }, { type: 'antiparazitika', title: 'Blechy (venkovní kočka)', days: 30, first: 7 }],
+  kralik: [{ type: 'ockovani', title: 'Očkování (myxomatóza, RHD)', days: 365, first: 30 }, { type: 'pece', title: 'Kontrola zubů a drápků', days: 60, first: 14 }],
+  fretka: [{ type: 'ockovani', title: 'Očkování (psinka, vzteklina)', days: 365, first: 30 }, { type: 'odcerveni', title: 'Odčervení', days: 90, first: 14 }],
+};
+const SUGGEST_DEFAULT = [{ type: 'veterina' as const, title: 'Preventivní prohlídka', days: 365, first: 30 }, { type: 'pece' as const, title: 'Kontrola drápků', days: 60, first: 14 }];
+
 export function Onboarding() {
-  const { finishOnboarding } = useStore();
+  const { finishOnboarding, finishSetup } = useStore();
   const [step, setStep] = useState(0);
-  const slides = [
-    { e: '🐾', t: 'Vítej v Tlapce', d: 'Jednoduchý pomocník pro zdraví tvých mazlíčků. Všechno na jednom místě.' },
-    { e: '🔔', t: 'Nic nezmeškáš', d: 'Odčervení, klíšťata, očkování i léky. Tlapka ti včas připomene.' },
-    { e: '📋', t: 'Zdravotní deník', d: 'Návštěvy veterináře, váha, faktury a RTG snímky pěkně pohromadě.' },
-  ];
-  const s = slides[step];
+  const [name, setName] = useState('');
+  const [species, setSpecies] = useState<Pet['species']>('pes');
+  const [birth, setBirth] = useState('');
+  const sugg = SUGGEST[species] ?? SUGGEST_DEFAULT;
+  const [picked, setPicked] = useState<Record<string, boolean>>({});
+  const on = (t: string) => picked[t] !== false;
+  const done = async (notify: boolean) => {
+    let granted = false;
+    if (notify) { try { granted = await requestPermission(); } catch {} }
+    const pet: Pet = { id: uid(), name: name.trim() || 'Můj mazlíček', species, breed: '', sex: 'nezname', birthDate: birth, color: '', microchip: '', notes: '', weights: [], createdAt: new Date().toISOString() };
+    const rems: Reminder[] = sugg.filter((x) => on(x.title)).map((x) => ({ id: uid(), petId: pet.id, type: x.type, title: x.title, product: '', dueDate: addDays(today(), x.first), intervalDays: x.days, notes: '', history: [] }));
+    finishSetup(pet, rems, granted);
+  };
+  const steps = 4;
+  const glyphBox = (g: GlyphName) => <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] flex items-center justify-center shadow-xl shadow-primary/30 mb-7"><Glyph name={g} className="w-14 h-14" /></div>;
   return (
-    <div style={{ paddingBottom: "calc(max(env(safe-area-inset-bottom), 16px) + var(--badge, 0px))" }} className="min-h-[100dvh] flex flex-col px-6 pt-safe bg-gradient-to-b from-[#DCEBFA] to-bg dark:from-[#1E2733] dark:to-bg-d">
-      <div className="pt-10"><Logo className="h-10 text-ink dark:text-white" /></div>
-      <div className="flex-1 flex flex-col justify-center animate-screen" key={step}>
-        <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-6xl flex items-center justify-center shadow-xl shadow-primary/30 mb-8">{s.e}</div>
-        <h1 className="text-[34px] leading-tight font-bold tracking-tight">{s.t}</h1>
-        <p className="text-lg text-muted mt-3">{s.d}</p>
+    <div data-onboarding={step} style={{ paddingBottom: "calc(max(env(safe-area-inset-bottom), 16px) + var(--badge, 0px))" }} className="min-h-[100dvh] flex flex-col px-6 pt-safe bg-gradient-to-b from-[#DCEBFA] to-bg dark:from-[#1E2733] dark:to-bg-d">
+      <div className="pt-10 flex items-center justify-between"><Logo className="h-10 text-ink dark:text-white" /><span className="text-sm text-muted" aria-live="polite">{step + 1} / {steps}</span></div>
+      <div className="flex-1 flex flex-col justify-center animate-screen py-6" key={step}>
+        {step === 0 && <>{glyphBox('paw')}<h1 className="text-[34px] leading-tight font-bold tracking-tight">Vítej v Tlapce</h1><p className="text-lg text-muted mt-3">Odčervení, klíšťata, očkování i léky – Tlapka ti včas připomene. Nastavíme to spolu za minutu.</p></>}
+        {step === 1 && <>
+          <h1 className="text-[28px] leading-tight font-bold tracking-tight mb-5">Kdo je tvůj mazlíček?</h1>
+          <label className="block text-sm font-semibold mb-1.5" htmlFor="ob-name">Jméno</label>
+          <input id="ob-name" name="obName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Např. Max" autoComplete="off" className="w-full rounded-2xl px-4 py-3.5 text-[17px] bg-surface dark:bg-surface-d ring-1 ring-ink/10 dark:ring-white/10 outline-none focus:ring-2 focus:ring-primary mb-5" />
+          <p className="text-sm font-semibold mb-1.5" id="ob-sp">Druh</p>
+          <div role="radiogroup" aria-labelledby="ob-sp" className="grid grid-cols-4 gap-2 mb-5">
+            {SPECIES.map((x) => <button key={x.id} role="radio" aria-checked={species === x.id} data-species={x.id} onClick={() => { setSpecies(x.id); setPicked({}); }} className={`press rounded-2xl py-2.5 flex flex-col items-center gap-1 text-[12px] font-semibold ring-2 ${species === x.id ? 'ring-primary bg-primary/15 text-[#1A4F86] dark:text-primary' : 'ring-transparent bg-surface dark:bg-surface-d'}`}><Glyph name={SPECIES_GLYPH[x.id]} className="w-7 h-7" />{x.name}</button>)}
+          </div>
+          <p className="text-sm font-semibold mb-1.5">Datum narození <span className="font-normal text-muted">(stačí přibližně)</span></p>
+          <DateInput value={birth} onChange={setBirth} max={today()} label="Datum narození" />
+        </>}
+        {step === 2 && <>
+          <h1 className="text-[28px] leading-tight font-bold tracking-tight">Co ti mám hlídat?</h1>
+          <p className="text-muted mt-2 mb-5">Doporučení pro {speciesOf(species).name.toLowerCase()}. Termíny si pak upravíš podle veterináře.</p>
+          <div className="space-y-2.5">{sugg.map((x) => <button key={x.title} role="checkbox" aria-checked={on(x.title)} data-suggest onClick={() => setPicked({ ...picked, [x.title]: !on(x.title) })} className={`press w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left ring-2 ${on(x.title) ? 'ring-primary bg-primary/10' : 'ring-ink/10 dark:ring-white/10 bg-surface dark:bg-surface-d'}`}>
+            <span className={`w-6 h-6 rounded-lg flex items-center justify-center ${on(x.title) ? 'bg-primary text-[#0F2540]' : 'ring-2 ring-ink/25 dark:ring-white/30'}`}>{on(x.title) && <Icon name="check" className="w-4 h-4" />}</span>
+            <span className="flex-1"><b className="block">{x.title}</b><span className="text-[13px] text-muted">{x.days >= 365 ? 'jednou ročně' : x.days >= 84 ? `každé ${Math.round(x.days / 28)} měsíce` : x.days >= 60 ? 'každé 2 měsíce' : 'každý měsíc'} · první {new Date(addDays(today(), x.first)).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' })}</span></span></button>)}</div>
+        </>}
+        {step === 3 && <>{glyphBox('bell')}<h1 className="text-[30px] leading-tight font-bold tracking-tight">Mám ti dát vědět?</h1><p className="text-lg text-muted mt-3">Upozorním tě den předem a v den termínu v 9:00. V neděli večer pošlu krátký přehled týdne. Nic jiného.</p></>}
       </div>
-      <div className="flex gap-1.5 mb-6">{slides.map((_, i) => <span key={i} className={`h-1.5 rounded-full transition-all ${i === step ? 'w-6 bg-primary' : 'w-1.5 bg-ink/15 dark:bg-white/20'}`} />)}</div>
-      {step < slides.length - 1 ? (
-        <div className="flex gap-3"><Button variant="ghost" className="flex-1" onClick={() => setStep(slides.length - 1)}>Přeskočit</Button><Button className="flex-1" onClick={() => setStep(step + 1)}>Další</Button></div>
-      ) : (
-        <div className="space-y-3"><Button className="w-full py-4" onClick={() => { sessionStorage.setItem('tlapka:openAddPet', '1'); finishOnboarding(false); }}>Začít s vlastním mazlíčkem</Button><Button variant="ghost" className="w-full" onClick={() => finishOnboarding(true)}>Vyzkoušet s ukázkovými daty</Button></div>
-      )}
+      <div className="flex gap-1.5 mb-6" aria-hidden>{Array.from({ length: steps }, (_, i) => <span key={i} className={`h-1.5 rounded-full transition-all ${i === step ? 'w-6 bg-primary' : 'w-1.5 bg-ink/15 dark:bg-white/20'}`} />)}</div>
+      {step === 0 && <div className="space-y-3"><Button className="w-full py-4" onClick={() => setStep(1)}>Začít</Button><Button variant="ghost" className="w-full" onClick={() => finishOnboarding(true)}>Vyzkoušet s ukázkovými daty</Button></div>}
+      {step === 1 && <div className="flex gap-3"><Button variant="ghost" className="flex-1" onClick={() => setStep(0)}>Zpět</Button><Button className="flex-1" disabled={!name.trim()} onClick={() => setStep(2)}>Další</Button></div>}
+      {step === 2 && <div className="flex gap-3"><Button variant="ghost" className="flex-1" onClick={() => setStep(1)}>Zpět</Button><Button className="flex-1" onClick={() => setStep(3)}>Další</Button></div>}
+      {step === 3 && <div className="space-y-3"><Button className="w-full py-4" data-allow-notify onClick={() => done(true)}>Povolit upozornění</Button><Button variant="ghost" className="w-full" onClick={() => done(false)}>Teď ne</Button></div>}
     </div>
   );
 }

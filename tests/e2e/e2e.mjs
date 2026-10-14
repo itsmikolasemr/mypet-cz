@@ -14,7 +14,7 @@ const dlg = async (p) => { const t = await p.locator('[role=alertdialog]').inner
 const ls = (p, k) => p.evaluate((k) => localStorage.getItem(k), k);
 const data = async (p) => JSON.parse(await ls(p, 'tlapka:data:v1'));
 // A: sample data + one document
-const A = await mk(); await A.goto(BASE); await A.getByText('Přeskočit').click(); await A.getByText('Vyzkoušet s ukázkovými daty').click(); await A.waitForTimeout(500);
+const A = await mk(); await A.goto(BASE); await A.getByText('Vyzkoušet s ukázkovými daty').click(); await A.waitForTimeout(500);
 await A.locator('main button', { hasText: 'Dokument' }).first().click(); await A.locator('[data-doc-picker] button').first().click(); await A.waitForTimeout(500);
 await A.locator('input[type=file][accept*="pdf"]').setInputFiles('/workspace/pwtest/faktura.pdf'); await A.waitForTimeout(400);
 await A.getByRole('button', { name: 'Uložit', exact: true }).click(); await A.waitForTimeout(600);
@@ -62,9 +62,9 @@ const D = await mk(); await D.goto(BASE + '#share/deadbeef'); await D.waitForTim
 await A.getByText('Smazat data v cloudu').click(); await A.getByRole('button', { name: 'Smazat z cloudu' }).click();
 R.gdprToast = await A.getByText('Data v cloudu smazána').waitFor({ timeout: 15000 }).then(() => true, () => false);
 // free one-device backup: C on two devices
-const C1 = await mk(); await C1.goto(BASE); await C1.getByText('Přeskočit').click(); await C1.getByText('Vyzkoušet s ukázkovými daty').click();
+const C1 = await mk(); await C1.goto(BASE); await C1.getByText('Vyzkoušet s ukázkovými daty').click();
 await login(C1, 'tlapka-e2e-c@example.com'); await C1.waitForTimeout(3000);
-const C2 = await mk(); await C2.goto(BASE); await C2.getByText('Přeskočit').click(); await C2.getByText('Vyzkoušet s ukázkovými daty').click();
+const C2 = await mk(); await C2.goto(BASE); await C2.getByText('Vyzkoušet s ukázkovými daty').click();
 await login(C2, 'tlapka-e2e-c@example.com');
 R.deviceBanner = await C2.locator('[data-device-blocked]').waitFor({ timeout: 15000 }).then(() => true, () => false);
 await C2.screenshot({ path: S + BR + '-96-e2e-device-limit.png' });
