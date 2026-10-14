@@ -24,7 +24,7 @@
 - [ ] Interaktivní mapa (Leaflet/Mapbox)
 - [ ] Aktuální pohotovostní čísla (reálná data)
 - [ ] Affiliate: Granulebardog, SuperKotlik, Happypet
-- [x] SEO obsah: průvodci (sample odčervení hotový)
+- [x] SEO obsah: průvodci (sample odčervení + očkování hotové)
 
 ## Fáze 3 — Integrace
 - [ ] CEP (Centrální evidence psů) integrace
