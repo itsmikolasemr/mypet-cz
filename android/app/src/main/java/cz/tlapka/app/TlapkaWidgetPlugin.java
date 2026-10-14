@@ -19,6 +19,15 @@ public class TlapkaWidgetPlugin extends Plugin {
         call.resolve();
     }
 
+    /** Android 8+: system dialog „Přidat na plochu“ (launcher must support pinning). */
+    @PluginMethod
+    public void pinWidget(PluginCall call) {
+        android.appwidget.AppWidgetManager m = android.appwidget.AppWidgetManager.getInstance(getContext());
+        boolean ok = android.os.Build.VERSION.SDK_INT >= 26 && m.isRequestPinAppWidgetSupported()
+            && m.requestPinAppWidget(new android.content.ComponentName(getContext(), TlapkaDenWidget.class), null, null);
+        JSObject r = new JSObject(); r.put("pinned", ok); call.resolve(r);
+    }
+
     @PluginMethod
     public void consumeTicks(PluginCall call) {
         JSONArray q = TlapkaDenWidget.takeTicks(getContext());

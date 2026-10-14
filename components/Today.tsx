@@ -73,6 +73,7 @@ export function TodayScreen() {
         <div className="flex-1"><p className="font-bold text-lg leading-tight">{done === tasks.length && tasks.length ? 'Den splněn' : `${done} z ${tasks.length} hotovo`}</p>
           <p className="text-[13px] text-muted">Odškrtávat jde i z widgetu na ploše – iPhone i Android.</p></div>
       </Card>
+      <WidgetHelp />
       {!tasks.length && <Card className="p-5 text-center text-muted text-[14px]">Žádné denní úkoly. Přidej krmení a venčení v Předávací kartě (Mazlíček → Sdílet) nebo lék s dávkováním.</Card>}
       {byPet.map(({ p, list }) => (
         <section key={p.id} className="space-y-2">
@@ -82,4 +83,15 @@ export function TodayScreen() {
       ))}
     </div>
   );
+}
+
+function WidgetHelp() {
+  const add = async () => {
+    const w = await import('@/lib/widget');
+    if (await w.pinWidget()) return;
+    const ios = w.platform() === 'ios' || w.platform() === 'ios-web';
+    const { notice } = await import('./feedback');
+    notice('Widget na plochu', ios ? 'Podrž prst na ploše → ＋ vlevo nahoře → najdi Tlapka → vyber velikost (malý, střední nebo na zamčenou obrazovku) → Přidat widget.' : 'Podrž prst na ploše → Widgety → Tlapka → přetáhni „Tlapka Den“ na plochu.');
+  };
+  return <button onClick={add} data-add-widget className="press w-full min-h-[48px] rounded-2xl font-semibold text-primary bg-primary/10 flex items-center justify-center gap-2"><Glyph name="sparkle" className="w-5 h-5" />Přidat widget na plochu</button>;
 }

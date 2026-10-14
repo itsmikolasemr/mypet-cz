@@ -10,7 +10,7 @@ import type { AppData } from './types';
 import { weeklySummary } from './notify';
 import { widgetToday } from './today';
 
-interface WidgetPlugin { setData(o: { json: string }): Promise<void>; consumeTicks(): Promise<{ ticks: { id: string; at: string }[] }> }
+interface WidgetPlugin { setData(o: { json: string }): Promise<void>; pinWidget(): Promise<{ pinned: boolean }>; consumeTicks(): Promise<{ ticks: { id: string; at: string }[] }> }
 const Native = registerPlugin<WidgetPlugin>('TlapkaWidget');
 const native = () => Capacitor.isNativePlatform();
 
@@ -29,3 +29,10 @@ export async function pullWidgetTicks(): Promise<{ id: string; at: string }[]> {
   }
   return (await Native.consumeTicks().catch(() => ({ ticks: [] }))).ticks ?? [];
 }
+
+/** „Přidat widget na plochu“: Android → system pin dialog; iOS/web → false (UI shows the manual steps). */
+export async function pinWidget(): Promise<boolean> {
+  if (!native() || Capacitor.getPlatform() !== 'android') return false;
+  return (await Native.pinWidget().catch(() => ({ pinned: false }))).pinned;
+}
+export const platform = () => (native() ? Capacitor.getPlatform() : /iP(hone|ad|od)/.test(globalThis.navigator?.userAgent ?? '') ? 'ios-web' : 'web');
