@@ -1,4 +1,5 @@
 'use client';
+import { ask, notice, toast } from './feedback';
 import { useEffect, useRef, useState } from 'react';
 import type { Allergy, Medication, Pet, Reminder, ReminderType, Severity, Sex, Species, Visit } from '@/lib/types';
 import { useStore } from '@/lib/store';
@@ -17,6 +18,7 @@ export function PetForm({ open, onClose, pet }: { open: boolean; onClose: () => 
     e.preventDefault();
     if (!f.name.trim()) return;
     savePet({ ...f, name: f.name.trim() });
+    toast(pet ? 'Změny uloženy ✓' : `${f.name.trim()} přidán${f.sex === 'samice' ? 'a' : ''} ✓`);
     const w = num(kg);
     if (!pet && w > 0 && w < 2000) addWeight(f.id, w, today());
     onClose();
@@ -30,7 +32,7 @@ export function PetForm({ open, onClose, pet }: { open: boolean; onClose: () => 
             {f.photo ? <img src={f.photo} alt="" className="w-full h-full object-cover" /> : SPECIES.find((s) => s.id === f.species)?.emoji}
             <span className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center shadow"><Icon name="camera" className="w-4 h-4" /></span>
           </button>
-          <input ref={fileRef} type="file" accept="image/*" hidden onChange={async (e) => { const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try { set('photo', await resizeImage(file)); } catch { alert('Tento formát fotky se nepodařilo načíst. Zkus JPG nebo PNG.'); } }} />
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={async (e) => { const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try { set('photo', await resizeImage(file)); } catch { notice('Fotku se nepodařilo načíst', 'Zkus formát JPG nebo PNG.'); } }} />
         </div>
         {f.photo && <button type="button" className="block mx-auto text-sm text-muted -mt-2" onClick={() => set('photo', undefined)}>Odebrat fotku</button>}
         <Field label="Jméno"><input className={inputCls} value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="např. Rex" required autoFocus={!pet} /></Field>
@@ -39,7 +41,7 @@ export function PetForm({ open, onClose, pet }: { open: boolean; onClose: () => 
           <div className="grid grid-cols-4 gap-2">
             {SPECIES.map((s) => (
               <button type="button" key={s.id} onClick={() => set('species', s.id as Species)} className={`press rounded-xl py-2 text-center border transition ${f.species === s.id ? 'border-primary bg-primary/10' : 'border-ink/10 dark:border-white/10'}`}>
-                <div className="text-xl">{s.emoji}</div><div className="text-[11px] font-medium mt-0.5">{s.name}</div>
+                <div className="text-xl">{s.emoji}</div><div className="text-[12px] font-medium mt-0.5">{s.name}</div>
               </button>
             ))}
           </div>
@@ -81,7 +83,7 @@ export function ReminderForm({ open, onClose, reminder, petId }: { open: boolean
   if (!data.pets.length) return <Sheet open={open} onClose={onClose} title="Nová připomínka"><p className="text-muted py-6 text-center">Nejdřív přidej mazlíčka.</p></Sheet>;
   return (
     <Sheet open={open} onClose={onClose} title={reminder ? 'Upravit připomínku' : 'Nová připomínka'}>
-      <form onSubmit={(e) => { e.preventDefault(); saveReminder({ ...f, title: f.title.trim() || typeOf(f.type).name }); onClose(); }} className="space-y-4">
+      <form onSubmit={(e) => { e.preventDefault(); saveReminder({ ...f, title: f.title.trim() || typeOf(f.type).name }); toast(reminder ? 'Připomínka uložena ✓' : 'Připomínka přidána ✓'); onClose(); }} className="space-y-4">
         <Field label="Mazlíček">
           <select className={inputCls} value={f.petId} onChange={(e) => set('petId', e.target.value)}>
             {data.pets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -100,7 +102,7 @@ export function ReminderForm({ open, onClose, reminder, petId }: { open: boolean
           <input className={inputCls} list="products" value={f.product} onChange={(e) => set('product', e.target.value)} placeholder="např. Milbemax" />
           <datalist id="products">{(PRODUCTS[f.type] ?? []).map((b) => <option key={b} value={b} />)}</datalist>
         </Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-4">
           <Field label="Termín"><input type="date" required className={inputCls} value={f.dueDate} onChange={(e) => set('dueDate', e.target.value)} /></Field>
           <Field label="Opakování">
             <select className={inputCls} value={f.intervalDays} onChange={(e) => set('intervalDays', Number(e.target.value))}>
@@ -110,7 +112,7 @@ export function ReminderForm({ open, onClose, reminder, petId }: { open: boolean
         </div>
         <Field label="Poznámka"><textarea rows={2} className={inputCls} value={f.notes} onChange={(e) => set('notes', e.target.value)} /></Field>
         <Button type="submit" className="w-full">Uložit</Button>
-        {reminder && <Button type="button" variant="danger" className="w-full" onClick={() => { if (confirm('Smazat připomínku?')) { deleteReminder(reminder.id); onClose(); } }}><Icon name="trash" /> Smazat</Button>}
+        {reminder && <Button type="button" variant="danger" className="w-full" onClick={async () => { if (await ask({ title: 'Smazat připomínku?', text: reminder.title, ok: 'Smazat', danger: true })) { const prev = reminder; deleteReminder(reminder.id); onClose(); toast('Připomínka smazána', () => saveReminder(prev)); } }}><Icon name="trash" /> Smazat</Button>}
       </form>
     </Sheet>
   );
@@ -126,7 +128,7 @@ export function VisitForm({ open, onClose, visit, petId, date }: { open: boolean
   if (!data.pets.length) return <Sheet open={open} onClose={onClose} title="Návštěva"><p className="text-muted py-6 text-center">Nejdřív přidej mazlíčka.</p></Sheet>;
   return (
     <Sheet open={open} onClose={onClose} title={visit ? 'Upravit návštěvu' : 'Návštěva veterináře'}>
-      <form onSubmit={(e) => { e.preventDefault(); const c = num(cost); saveVisit({ ...f, cost: c >= 0 ? c : undefined }); onClose(); }} className="space-y-4">
+      <form onSubmit={(e) => { e.preventDefault(); const c = num(cost); saveVisit({ ...f, cost: c >= 0 ? c : undefined }); toast(visit ? 'Návštěva uložena ✓' : 'Návštěva přidána ✓'); onClose(); }} className="space-y-4">
         <Field label="Mazlíček">
           <select className={inputCls} value={f.petId} onChange={(e) => set('petId', e.target.value)}>
             {data.pets.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -140,7 +142,7 @@ export function VisitForm({ open, onClose, visit, petId, date }: { open: boolean
         <Field label="Klinika"><input className={inputCls} value={f.clinic} onChange={(e) => set('clinic', e.target.value)} /></Field>
         <Field label="Poznámky / diagnóza"><textarea rows={3} className={inputCls} value={f.notes} onChange={(e) => set('notes', e.target.value)} /></Field>
         <Button type="submit" className="w-full">Uložit</Button>
-        {visit && <Button type="button" variant="danger" className="w-full" onClick={() => { if (confirm('Smazat záznam?')) { deleteVisit(visit.id); onClose(); } }}><Icon name="trash" /> Smazat</Button>}
+        {visit && <Button type="button" variant="danger" className="w-full" onClick={async () => { if (await ask({ title: 'Smazat návštěvu?', ok: 'Smazat', danger: true })) { const prev = visit; deleteVisit(visit.id); onClose(); toast('Návštěva smazána', () => saveVisit(prev)); } }}><Icon name="trash" /> Smazat</Button>}
       </form>
     </Sheet>
   );
@@ -186,6 +188,7 @@ export function MedForm({ open, onClose, med, petId }: { open: boolean; onClose:
       saveReminder({ id: reminderId, petId, type: 'leky', title: f.name.trim(), product: [f.dose, f.frequency].filter(Boolean).join(' · '), dueDate: due, intervalDays: interval, notes: f.notes, history: [] });
     } else if (reminderId) { deleteReminder(reminderId); reminderId = undefined; }
     saveMed({ ...f, name: f.name.trim(), reminderId });
+    toast(med ? 'Lék uložen ✓' : 'Lék přidán ✓');
     onClose();
   };
   return (
@@ -208,7 +211,7 @@ export function MedForm({ open, onClose, med, petId }: { open: boolean; onClose:
           <span className="text-sm"><b>Vytvořit připomínku</b><br /><span className="text-muted">{interval ? `Opakovat každých ${interval} ${interval === 1 ? 'den' : 'dní'}` : 'Jednorázově'}</span></span>
         </label>
         <Button type="submit" className="w-full">Uložit</Button>
-        {med && <Button type="button" variant="danger" className="w-full" onClick={() => { if (confirm('Smazat lék?')) { if (med.reminderId) deleteReminder(med.reminderId); deleteMed(med.id); onClose(); } }}><Icon name="trash" /> Smazat</Button>}
+        {med && <Button type="button" variant="danger" className="w-full" onClick={async () => { if (await ask({ title: 'Smazat lék?', text: med.name, ok: 'Smazat', danger: true })) { const prev = med; if (med.reminderId) deleteReminder(med.reminderId); deleteMed(med.id); toast('Lék smazán', () => saveMed({ ...prev, reminderId: undefined })); onClose(); } }}><Icon name="trash" /> Smazat</Button>}
       </form>
     </Sheet>
   );
@@ -227,7 +230,7 @@ export function AllergyForm({ open, onClose, allergy, petId }: { open: boolean; 
   useEffect(() => { if (open) setF(allergy ?? mk()); }, [open, allergy]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Sheet open={open} onClose={onClose} title={allergy ? 'Upravit alergii' : 'Nová alergie'}>
-      <form onSubmit={(e) => { e.preventDefault(); if (!f.allergen.trim()) return; saveAllergy({ ...f, allergen: f.allergen.trim() }); onClose(); }} className="space-y-4">
+      <form onSubmit={(e) => { e.preventDefault(); if (!f.allergen.trim()) return; saveAllergy({ ...f, allergen: f.allergen.trim() }); toast('Alergie uložena ✓'); onClose(); }} className="space-y-4">
         <Field label="Alergen"><input required autoFocus={!allergy} className={inputCls} list="allergens" value={f.allergen} onChange={(e) => setF({ ...f, allergen: e.target.value })} placeholder="např. Kuřecí maso, penicilin" />
           <datalist id="allergens">{['Kuřecí maso', 'Hovězí maso', 'Pšenice', 'Sója', 'Mléčné výrobky', 'Blechy (sliny)', 'Pyl', 'Roztoči', 'Penicilin', 'Vakcína'].map((a) => <option key={a} value={a} />)}</datalist>
         </Field>
@@ -237,7 +240,7 @@ export function AllergyForm({ open, onClose, allergy, petId }: { open: boolean; 
           <div className="grid grid-cols-3 gap-2">{SEVERITY.map((x) => <button type="button" key={x.id} onClick={() => setF({ ...f, severity: x.id })} className={`press rounded-2xl py-2.5 text-sm font-semibold ring-2 transition ${f.severity === x.id ? `${x.cls} ring-current` : 'ring-ink/10 dark:ring-white/10'}`}>{x.n}</button>)}</div>
         </div>
         <Button type="submit" className="w-full">Uložit</Button>
-        {allergy && <Button type="button" variant="danger" className="w-full" onClick={() => { if (confirm('Smazat alergii?')) { deleteAllergy(allergy.id); onClose(); } }}><Icon name="trash" /> Smazat</Button>}
+        {allergy && <Button type="button" variant="danger" className="w-full" onClick={async () => { if (await ask({ title: 'Smazat alergii?', text: allergy.allergen, ok: 'Smazat', danger: true })) { const prev = allergy; deleteAllergy(allergy.id); onClose(); toast('Alergie smazána', () => saveAllergy(prev)); } }}><Icon name="trash" /> Smazat</Button>}
       </form>
     </Sheet>
   );

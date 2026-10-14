@@ -112,3 +112,14 @@ html.glass .leaflet-container { background: #E4E6EA; }
 @media (prefers-reduced-transparency: reduce) {
   html.glass :is(.bg-surface, .bg-surface\/70, .bg-surface\/80, .bg-surface\/85, .bg-surface\/90, .bg-surface\/95) { background: #F7F7F9 !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
+.vet-pin { width: 40px; height: 40px; margin: 2px; }
+.leaflet-control-zoom a { width: 44px !important; height: 44px !important; line-height: 44px !important; font-size: 22px !important; }
+.leaflet-control-attribution a { padding: 6px 2px; }
+/* Sklo: more opaque panes so text never overlaps */
+html.glass :is(.bg-surface, .bg-surface\/70, .bg-surface\/80, .bg-surface\/85, .bg-surface\/90, .bg-surface\/95) { background: linear-gradient(180deg, rgba(255,255,255,.86), rgba(250,250,252,.78)) !important; }
+html.glass nav[aria-label="Hlavní navigace"] > div { background: rgba(248,248,250,.93) !important; -webkit-backdrop-filter: blur(34px) saturate(160%); backdrop-filter: blur(34px) saturate(160%); }
+/* one-time swipe hints */
+@keyframes swipe-hint { 0%, 100% { transform: translateX(0); } 30%, 55% { transform: translateX(64px); } }
+.swipe-hint { animation: swipe-hint 1.6s cubic-bezier(.3,.9,.4,1) .6s 2; }
+@keyframes peek { 0%, 100% { transform: translateX(0); } 40% { transform: translateX(-28px); } }
+.peek-hint { animation: peek 1.2s ease-in-out .8s 1; }

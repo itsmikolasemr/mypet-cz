@@ -30,8 +30,8 @@ const corsFor = (req) => ({ ...CORS, ...(req.headers.get('origin') && originOk(r
 
 // ---- per-IP rate limit (Netlify Blobs, with in-memory fallback) ----
 const LIMITS = [
-  { win: 10 * 60 * 1000, max: Number(env('AIVET_LIMIT_10MIN')) || 15, label: '10 minut' },
-  { win: 24 * 60 * 60 * 1000, max: Number(env('AIVET_LIMIT_DAY')) || 60, label: 'den' },
+  { win: 10 * 60 * 1000, max: Number(env('AIVET_LIMIT_10MIN')) || 40, label: '10 minut' },
+  { win: 24 * 60 * 60 * 1000, max: Number(env('AIVET_LIMIT_DAY')) || 300, label: 'den' },
 ];
 const mem = new Map();
 async function hashIp(ip) {
@@ -120,18 +120,19 @@ export default async (req, context) => {
   const ent = await verify(req.headers.get('x-tlapka-entitlement'), deviceId);
   const FREE = Number(env('AIVET_FREE_QUESTIONS')) || 3;
   let trialLeft = null;
+  const last = messages[messages.length - 1].content;
+  // Emergencies: answer instantly with the prepared guidance – no model call, never counted, never paywalled.
+  if (EMERG.test(last) && !ent) return json({ reply: EMERG_REPLY, emergency: true, canned: true }, 200, cors);
+  const IP_DAY = Number(env('AIVET_FREE_IP_DAY')) || 50; // soft cap: shared mobile IPs (CGNAT) stay usable
+  const ipKey = new Date().toISOString().slice(0, 10) + ':' + ip;
   if (!ent) {
     if (!/^[a-z0-9-]{16,64}$/i.test(deviceId)) return json({ error: 'no_device' }, 400, cors);
     const used = await trialUse('dev', deviceId, FREE, false);
-    const ipUsed = await trialUse('ip', ip, FREE * 3, false); // stops trivial device-id resets
-    if (used >= FREE || ipUsed >= FREE * 3) {
-      const last = messages[messages.length - 1].content;
-      if (EMERG.test(last)) return json({ reply: EMERG_REPLY, emergency: true, trialLeft: 0, canned: true }, 200, cors);
-      return json({ error: 'premium_required', trialLeft: 0 }, 402, cors);
-    }
-    await trialUse('dev', deviceId, FREE, true); await trialUse('ip', ip, FREE * 3, true);
-    trialLeft = FREE - used - 1;
+    const ipUsed = await trialUse('ipday', ipKey, IP_DAY, false);
+    if (used >= FREE || ipUsed >= IP_DAY) return json({ error: 'premium_required', trialLeft: 0 }, 402, cors);
+    trialLeft = FREE - used - 1; // consumed only after a successful answer (below)
   }
+
 
   const base = (env('AIVET_BASE_URL') || DEFAULT_BASE).replace(/\/+$/, '') + '/';
   const primary = env('AIVET_MODEL') || DEFAULT_MODEL;
@@ -161,6 +162,7 @@ export default async (req, context) => {
       const emergency = text.startsWith('[POHOTOVOST]');
       text = text.replace(/\[POHOTOVOST\][^\n]*?(neplatí|není)[^\n]*\n?/gi, '').replace(/\[POHOTOVOST\]\s*/g, '').trim();
       if (!text) { lastStatus = 502; continue; }
+      if (!ent) { await trialUse('dev', deviceId, FREE, true); await trialUse('ipday', ipKey, IP_DAY, true); }
       return json({ reply: text, emergency, trialLeft, premium: !!ent }, 200, { ...cors, 'X-RateLimit-Remaining': String(rl.remaining) });
     } catch (e) {
       console.error('AIVET fetch failed', model, e?.message);

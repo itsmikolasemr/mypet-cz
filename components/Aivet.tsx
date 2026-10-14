@@ -11,6 +11,7 @@ import { usePremium, FREE } from '@/lib/premium';
 type Msg = { role: 'user' | 'assistant'; content: string; emergency?: boolean };
 const ENDPOINT = `${API_BASE}/api/aivet`;
 const RED_FLAGS = /(nedých|dusí|duš|bezvědom|křeč|záchvat|krvác|otráv|otrav|jed |požral|spolkl|snědl.*(čokol|hrozn|xylit|lék|jed)|nafouk|nadmut|nemůže močit|nemoč|úraz|srazil|auto|úpal|přehřát|ochrnu|nechodí|otok (hlavy|tlamy|krku)|zvrací krev|krev ve|modr(é|á) (dásně|jazyk)|kolaps)/i;
+const EMERG_REPLY = '**Může jít o akutní stav – nečekej.**\n- Hned zavolej nebo jeď na nejbližší veterinární pohotovost (tlačítko níže, mapa je vždy zdarma).\n- Pokud zvíře nedýchá, je v bezvědomí, má křeče nebo silně krvácí, jednej okamžitě.\n- Při podezření na otravu vezmi s sebou obal od látky, kterou snědlo.\n- Nevyvolávej zvracení a nedávej žádné léky bez pokynu veterináře.\nTato rada nenahrazuje vyšetření veterinářem.';
 const SUGGEST = ['Pes zvrací od rána, co mám sledovat?', 'Kočka málo pije, je to problém?', 'Jak často odčervovat?', 'Co dát do lékárničky pro psa?'];
 
 function render(text: string) {
@@ -32,6 +33,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [bannerOpen, setBannerOpen] = useState(true);
   const end = useRef<HTMLDivElement>(null);
   const pet = data.pets.find((p) => p.id === petId);
 
@@ -53,7 +55,12 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
     if (!q || busy) return;
     const local = RED_FLAGS.test(q);
     const next: Msg[] = [...msgs, { role: 'user', content: q, emergency: local }];
-    setMsgs(next); setInput(''); setBusy(true); setErr('');
+    setMsgs(next); setInput(''); setErr('');
+    if (local) { // emergency: instant prepared guidance, no network, never counted
+      setMsgs([...next, { role: 'assistant', content: EMERG_REPLY, emergency: true }]); setBannerOpen(true);
+      return;
+    }
+    setBusy(true);
     try {
       const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', ...prem.headers() }, body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })), pet: profile() }) });
       const j = await r.json().catch(() => ({}));
@@ -72,7 +79,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
     <div>
       <PageHeader title="Aivet" sub="Aivet ti radí" />
       {!prem.isPremium && (
-        <button onClick={() => prem.openPaywall('aivet')} className="press w-full mb-4 flex items-center justify-between gap-2 rounded-full px-4 py-2.5 text-sm bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">
+        <button onClick={() => prem.openPaywall('aivet')} className="press w-full mb-4 flex items-center justify-between gap-2 rounded-full px-4 min-h-[48px] text-sm bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">
           <span>{prem.trialLeft > 0 ? <>{prem.trialLeft === 1 ? 'Zbývá' : 'Zbývají'} <b>{prem.trialLeft}</b> z {FREE.aivet} zkušebních dotazů</> : 'Zkušební dotazy vyčerpány'}</span>
           <span className="font-semibold text-primary">Premium ›</span>
         </button>
@@ -83,14 +90,22 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
         </div>
       )}
       {/* sticky under the header so auto-scroll never hides it */}
-      {emergency && (
+      {emergency && (bannerOpen ? (
         <div role="alert" style={{ top: 'calc(env(safe-area-inset-top) + 72px)' }} className="sticky z-20 mb-4 rounded-[24px] p-4 text-white bg-gradient-to-br from-red-500 to-red-700 shadow-[0_14px_30px_-12px_rgba(220,38,38,.7)] animate-pop">
-          <p className="font-bold text-lg">🚨 Může jít o akutní stav</p>
+          <div className="flex items-start gap-2"><p className="font-bold text-lg flex-1">🚨 Může jít o akutní stav</p>
+            <button onClick={() => setBannerOpen(false)} aria-label="Sbalit varování" className="press -m-2 w-11 h-11 rounded-full flex items-center justify-center text-white/90 text-xl">⌃</button></div>
           <p className="text-sm text-white/90 mt-1">Nečekej na odpověď z chatu. Kontaktuj co nejdřív veterinární pohotovost.</p>
-          <button onClick={openMap} className="press mt-3 w-full rounded-2xl bg-white text-red-700 font-bold py-3">Najít nonstop veterinu</button>
+          <button onClick={openMap} className="press mt-3 w-full min-h-[44px] rounded-2xl bg-white text-red-700 font-bold py-3">Najít nonstop veterinu</button>
         </div>
-      )}
-      {status === 'off' || status === 'unreachable' ? (
+      ) : (
+        <div style={{ top: 'calc(env(safe-area-inset-top) + 72px)' }} className="sticky z-20 mb-4 flex justify-center">
+          <span className="inline-flex rounded-full bg-red-600 text-white font-bold shadow-[0_8px_20px_-8px_rgba(220,38,38,.8)] overflow-hidden">
+            <button onClick={openMap} className="press min-h-[44px] pl-4 pr-3">🚨 Pohotovost</button>
+            <button onClick={() => setBannerOpen(true)} aria-label="Rozbalit varování" className="press min-h-[44px] w-11 border-l border-white/30">⌄</button>
+          </span>
+        </div>
+      ))}
+      {status === 'off' ? (
         <Card className="p-6 text-center">
           <div className="mx-auto w-20 h-20 rounded-[26px] bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-4xl flex items-center justify-center shadow-float mb-4 animate-float">🩺</div>
           <h2 className="text-lg font-bold">Aivet se teprve chystá</h2>
@@ -101,10 +116,11 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
         <>
           {pet && (
             <Card className="p-3.5 mb-4 text-[13px] text-muted">
-              Radím s ohledem na profil <b className="text-ink dark:text-white">{pet.name}</b> ({[speciesOf(pet.species).name, age(pet.birthDate), pet.weights.length ? `${pet.weights[pet.weights.length - 1].kg.toLocaleString('cs-CZ')} kg` : ''].filter(Boolean).join(', ')})
+              Radím podle profilu – <b className="text-ink dark:text-white">{pet.name}</b> ({[speciesOf(pet.species).name, age(pet.birthDate), pet.weights.length ? `${pet.weights[pet.weights.length - 1].kg.toLocaleString('cs-CZ')} kg` : ''].filter(Boolean).join(', ')})
               {allergies.length > 0 && <> · <span className="text-red-600 dark:text-red-400 font-semibold">alergie: {allergies.map((a) => a.allergen).join(', ')}</span></>}
             </Card>
           )}
+          {status === 'unreachable' && <p className="text-[13px] text-muted text-center mb-3">Aivet je teď offline. Nouzové rady (otrava, úraz, dušení…) ti ale ukážu i bez připojení.</p>}
           <div className="space-y-3 min-h-[30dvh]" aria-live="polite">
             {!msgs.length && (
               <div className="animate-fade">
@@ -124,14 +140,14 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
             {err && <p className="text-center text-sm text-red-600 dark:text-red-400">{err}</p>}
             <div ref={end} className="scroll-mb-48" />
           </div>
-          <p className="text-[11px] text-muted text-center mt-4">Aivet je AI a může se mýlit. Nenahrazuje vyšetření veterinářem.</p>
+          <p className="text-[13px] text-muted text-center mt-4">Aivet je AI a může se mýlit. Nenahrazuje vyšetření veterinářem.</p>
           <form onSubmit={(e) => { e.preventDefault(); send(input); }}
             className="fixed z-40 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[420px] flex items-end gap-2 p-1.5 rounded-[26px] bg-surface/80 dark:bg-[#2a201b]/80 backdrop-blur-2xl ring-1 ring-ink/[0.06] dark:ring-white/10 shadow-float dark:shadow-float-d"
             style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + 86px)' }}>
             <textarea rows={1} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input); } }}
-              placeholder={status === 'checking' ? 'Připojuji…' : 'Napiš Aivetovi…'} disabled={status !== 'ready'} aria-label="Dotaz pro Aiveta"
+              placeholder={status === 'checking' ? 'Připojuji…' : 'Napiš Aivetovi…'} disabled={status === 'checking'} aria-label="Dotaz pro Aiveta"
               className="flex-1 resize-none bg-transparent px-3 py-2.5 outline-none max-h-32 text-base" />
-            <button type="submit" aria-label="Odeslat" disabled={!input.trim() || busy || status !== 'ready'} className="press w-11 h-11 shrink-0 rounded-full text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] disabled:opacity-40 flex items-center justify-center"><Icon name="upload" className="w-5 h-5" /></button>
+            <button type="submit" aria-label="Odeslat" disabled={!input.trim() || busy || status === 'checking'} className="press w-11 h-11 shrink-0 rounded-full text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] disabled:opacity-40 flex items-center justify-center"><Icon name="upload" className="w-5 h-5" /></button>
           </form>
           <div className="h-28" />
         </>

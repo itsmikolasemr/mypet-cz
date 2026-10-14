@@ -1,4 +1,5 @@
 'use client';
+import { ask, notice, toast } from './feedback';
 import { useEffect, useRef, useState } from 'react';
 import type { DocMeta, Pet, Reminder, Visit } from '@/lib/types';
 import { useStore } from '@/lib/store';
@@ -8,8 +9,10 @@ import { Avatar, Button, Card, Field, Icon, Sheet, StatusPill, inputCls } from '
 
 const PAW = 'M8.5 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm7 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM5 15a1.8 1.8 0 1 0 0-3.6A1.8 1.8 0 0 0 5 15Zm14 0a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Zm-7-1c-2.5 0-5 3-5 5 0 1.4 1.2 2 2.5 2 1 0 1.6-.5 2.5-.5s1.5.5 2.5.5c1.3 0 2.5-.6 2.5-2 0-2-2.5-5-5-5Z';
 
-export function ReminderRow({ r, pet, onEdit, showPet = true }: { r: Reminder; pet?: Pet; onEdit: () => void; showPet?: boolean }) {
-  const { completeReminder, reopenReminder } = useStore();
+export function ReminderRow({ r, pet, onEdit, showPet = true, hint = false }: { r: Reminder; pet?: Pet; onEdit: () => void; showPet?: boolean; hint?: boolean }) {
+  const [hinting, setHinting] = useState(false);
+  useEffect(() => { if (hint && !localStorage.getItem('tlapka:hint:swipe') && !matchMedia('(prefers-reduced-motion: reduce)').matches) setHinting(true); }, [hint]);
+  const { completeReminder, reopenReminder, saveReminder } = useStore();
   const s = status(r);
   const t = typeOf(r.type);
   const [pop, setPop] = useState(false);
@@ -20,7 +23,8 @@ export function ReminderRow({ r, pet, onEdit, showPet = true }: { r: Reminder; p
   const done = () => {
     setPop(true);
     try { navigator.vibrate?.([12, 30, 18]); } catch {}
-    setTimeout(() => { completeReminder(r.id); setPop(false); setDx(0); }, 380);
+    const prev = r;
+    setTimeout(() => { completeReminder(r.id); setPop(false); setDx(0); toast(`${r.title} – hotovo ✓`, () => saveReminder(prev)); }, 380);
   };
   const can = s !== 'done';
   const onDown = (e: React.PointerEvent) => {
@@ -54,7 +58,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true }: { r: Reminder; p
   return (
     <div className="relative">
       {can && (
-        <div aria-hidden className="absolute inset-0 rounded-[22px] overflow-hidden flex items-center pl-5 font-bold text-white bg-gradient-to-r from-[#FF9A5A] to-[#E8553A]" style={{ opacity: dx ? 0.35 + progress * 0.65 : 0 }}>
+        <div aria-hidden className="absolute inset-0 rounded-[22px] overflow-hidden flex items-center pl-5 font-bold text-white bg-gradient-to-r from-[#FF9A5A] to-[#E8553A]" style={{ opacity: dx ? 0.35 + progress * 0.65 : hinting ? 0.9 : 0 }}>
           <span style={{ transform: `scale(${0.8 + progress * 0.3})` }} className="transition-transform">✓ Hotovo</span>
         </div>
       )}
@@ -63,7 +67,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true }: { r: Reminder; p
           <svg key={p.id} viewBox="0 0 24 24" className="paw-print text-white" style={{ left: p.x, top: p.y, ['--r' as string]: `${p.r}deg` }} onAnimationEnd={() => setPaws((x) => x.filter((y) => y.id !== p.id))}><path d={PAW} fill="currentColor" /></svg>
         ))}
       </div>
-      <div className={`swipe-track select-none relative ${dx ? '' : 'transition-transform duration-300 ease-spring'}`} style={{ transform: `translateX(${dx}px)` }}
+      <div onAnimationEnd={() => { if (hinting) { setHinting(false); localStorage.setItem('tlapka:hint:swipe', '1'); } }} className={`swipe-track select-none relative ${hinting ? 'swipe-hint' : ''} ${dx ? '' : 'transition-transform duration-300 ease-spring'}`} style={{ transform: `translateX(${dx}px)` }}
         onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
         <Card className={`p-4 flex items-center gap-3.5 ${s === 'done' ? 'opacity-60' : ''}`}>
           <button onClick={() => { if (!suppressClick.current) onEdit(); }} className="flex items-center gap-3 flex-1 min-w-0 text-left">
@@ -77,10 +81,10 @@ export function ReminderRow({ r, pet, onEdit, showPet = true }: { r: Reminder; p
             </div>
           </button>
           {s === 'done' ? (
-            <button onClick={() => reopenReminder(r.id)} className="press text-xs font-semibold text-muted px-2 py-2">Obnovit</button>
+            <button onClick={() => reopenReminder(r.id)} className="press text-sm font-semibold text-muted px-3 min-h-[44px]">Obnovit</button>
           ) : (
             <button aria-label="Označit jako hotové" onClick={done}
-              className={`press w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all shrink-0 ${pop ? 'bg-primary border-primary text-white scale-110' : 'border-primary/40 text-primary'}`}>
+              className={`press w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all shrink-0 ${pop ? 'bg-primary border-primary text-white scale-110' : 'border-primary/40 text-primary'}`}>
               <Icon name="check" className="w-5 h-5" />
             </button>
           )}
@@ -95,7 +99,7 @@ export function VisitRow({ v, pet, onClick }: { v: Visit; pet?: Pet; onClick: ()
     <Card onClick={onClick} className="p-4 flex gap-3.5 items-start">
       <div className="w-12 shrink-0 text-center rounded-xl bg-secondary/20 py-1.5">
         <div className="text-lg font-bold leading-none">{Number(v.date.slice(8))}</div>
-        <div className="text-[11px] uppercase text-muted">{parse(v.date).toLocaleDateString('cs-CZ', { month: 'short' })}</div>
+        <div className="text-[12px] uppercase text-muted">{parse(v.date).toLocaleDateString('cs-CZ', { month: 'short' })}</div>
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{v.reason}</p>
@@ -166,13 +170,13 @@ export function Documents({ pet }: { pet: Pet }) {
   const [view, setView] = useState<{ d: DocMeta; url: string } | null>(null);
   const open = async (d: DocMeta) => {
     const b = await loadBlob(d.id, d.mime).catch(() => null);
-    if (!b) return alert('Soubor se nepodařilo načíst.');
+    if (!b) return notice('Soubor se nepodařilo načíst', 'Soubor v tomto zařízení chybí nebo je poškozený.');
     setView({ d, url: URL.createObjectURL(b) });
   };
   const close = () => { if (view) URL.revokeObjectURL(view.url); setView(null); };
   return (
     <div className="space-y-2.5">
-      <input ref={ref} type="file" accept="image/*,application/pdf" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f && f.size > MAX_DOC_BYTES) { alert('Soubor je větší než 25 MB. Zmenši ho nebo vyfoť znovu.'); e.target.value = ''; return; } if (f) { setPending(f); setMeta({ name: f.name.replace(/\.[^.]+$/, ''), kind: f.type === 'application/pdf' ? 'faktura' : 'rtg', date: today() }); } e.target.value = ''; }} />
+      <input ref={ref} type="file" accept="image/*,application/pdf" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f && f.size > MAX_DOC_BYTES) { notice('Soubor je větší než 25 MB', 'Zmenši ho nebo vyfoť znovu.'); e.target.value = ''; return; } if (f) { setPending(f); setMeta({ name: f.name.replace(/\.[^.]+$/, ''), kind: f.type === 'application/pdf' ? 'faktura' : 'rtg', date: today() }); } e.target.value = ''; }} />
       <Button variant="soft" className="w-full" onClick={() => ref.current?.click()}><Icon name="upload" /> Nahrát dokument</Button>
       {!docs.length && <p className="text-sm text-muted text-center py-4">Faktury, RTG snímky, zprávy z veteriny – vše na jednom místě.</p>}
       {docs.map((d) => (
@@ -192,8 +196,9 @@ export function Documents({ pet }: { pet: Pet }) {
           try {
             await saveBlob(id, pending);
             addDoc({ id, petId: pet.id, name: meta.name || pending.name, kind: meta.kind, mime: pending.type || 'application/octet-stream', size: pending.size, date: meta.date });
+            toast('Dokument uložen ✓');
             setPending(null);
-          } catch (e) { console.error(e); alert(e instanceof DOMException && e.name === 'QuotaExceededError' ? 'V zařízení není dost místa pro tento soubor.' : 'Soubor se nepodařilo uložit. V anonymním režimu prohlížeče může být ukládání souborů omezené – zkus běžné okno nebo aplikaci.'); } finally { setBusy(false); }
+          } catch (e) { console.error(e); notice('Uložení se nezdařilo', e instanceof DOMException && e.name === 'QuotaExceededError' ? 'V zařízení není dost místa pro tento soubor.' : 'Soubor se nepodařilo uložit. V anonymním režimu prohlížeče může být ukládání souborů omezené – zkus běžné okno nebo aplikaci.'); } finally { setBusy(false); }
         }}>
           <Field label="Název"><input className={inputCls} value={meta.name} onChange={(e) => setMeta({ ...meta, name: e.target.value })} /></Field>
           <div className="flex flex-wrap gap-2">{KINDS.map((k) => <button type="button" key={k.id} onClick={() => setMeta({ ...meta, kind: k.id })} className={`press rounded-full px-3 py-1.5 text-sm border ${meta.kind === k.id ? 'border-primary bg-primary/10 font-semibold' : 'border-ink/10 dark:border-white/10'}`}>{k.e} {k.n}</button>)}</div>
@@ -212,7 +217,7 @@ export function Documents({ pet }: { pet: Pet }) {
             ) : <p className="text-muted">Náhled není k dispozici.</p>}
             <div className="grid grid-cols-2 gap-2">
               <a href={view.url} download={view.d.name} target="_blank" rel="noreferrer" className="press inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold border border-ink/10 dark:border-white/15"><Icon name="download" /> Otevřít</a>
-              <Button variant="danger" onClick={() => { if (confirm('Smazat dokument?')) { deleteDoc(view.d.id); close(); } }}><Icon name="trash" /> Smazat</Button>
+              <Button variant="danger" onClick={async () => { if (await ask({ title: 'Smazat dokument?', text: view.d.name, ok: 'Smazat', danger: true })) { deleteDoc(view.d.id); close(); toast('Dokument smazán'); } }}><Icon name="trash" /> Smazat</Button>
             </div>
           </div>
         )}
@@ -223,7 +228,7 @@ export function Documents({ pet }: { pet: Pet }) {
 
 export function PetChip({ pet, active, onClick }: { pet?: Pet; active: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} className={`press shrink-0 flex items-center gap-1.5 rounded-full pl-1 pr-3 py-1 border text-sm font-medium transition ${active ? 'border-primary bg-primary/10 text-primary dark:text-primary-l' : 'border-ink/10 dark:border-white/10'}`}>
+    <button onClick={onClick} className={`press shrink-0 flex items-center gap-1.5 rounded-full pl-1.5 pr-3.5 min-h-[44px] border text-sm font-medium transition ${active ? 'border-primary bg-primary/10 text-primary dark:text-primary-l' : 'border-ink/10 dark:border-white/10'}`}>
       {pet ? <Avatar pet={pet} size="w-6 h-6" text="text-sm" /> : <span className="w-6 h-6 flex items-center justify-center">🐾</span>}
       {pet ? pet.name : 'Všichni'}
     </button>

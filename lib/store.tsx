@@ -42,7 +42,7 @@ function useStoreImpl() {
 
   useEffect(() => {
     if (!ready) return;
-    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { alert('Úložiště je plné – zkus menší fotku.'); }
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { import('@/components/feedback').then((m) => m.notice('Úložiště je plné', 'Zkus menší fotku nebo smaž staré záznamy.')); }
   }, [data, ready]);
 
   useEffect(() => {

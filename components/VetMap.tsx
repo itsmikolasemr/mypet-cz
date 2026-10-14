@@ -126,7 +126,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
       const L = (await import('leaflet')).default;
       layer.current.clearLayers();
       shown.forEach((v) => {
-        L.marker([v.lat, v.lon], { icon: L.divIcon({ className: '', html: `<div class="vet-pin ${v.nonstop ? 'ns' : ''}"><span>${v.nonstop ? '24' : '🩺'}</span></div>`, iconSize: [34, 34], iconAnchor: [17, 34] }) })
+        L.marker([v.lat, v.lon], { icon: L.divIcon({ className: '', html: `<div class="vet-pin ${v.nonstop ? 'ns' : ''}"><span>${v.nonstop ? '24' : '🩺'}</span></div>`, iconSize: [44, 44], iconAnchor: [22, 44] }) })
           .on('click', () => setSel(v)).addTo(layer.current!);
       });
       if (nonstop && shown.length && map.current && center) {
@@ -145,7 +145,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         <div ref={el} className="h-[46dvh] w-full bg-ink/5" data-testid="map" />
         <div className="absolute left-3 top-3 z-[500] flex gap-2">
           <button onClick={() => setNonstop(!nonstop)} aria-pressed={nonstop}
-            className={`press rounded-full px-3.5 py-2 text-sm font-bold backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            className={`press rounded-full px-4 min-h-[44px] text-sm font-bold backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
             🚨 Nonstop pohotovost
           </button>
         </div>

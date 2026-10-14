@@ -19,7 +19,7 @@ export const PERKS: { e: string; t: string; d: string; soon?: boolean }[] = [
 const FREE_LIST = ['Až 3 mazlíčci', 'Připomínky a upozornění', 'Kalendář a návštěvy', 'Mapa veterin + nonstop pohotovost', 'Dokumenty a váha', `${FREE.aivet} zkušební dotazy Aivetovi`];
 
 export function PremiumBadge({ small = false }: { small?: boolean }) {
-  return <span className={`inline-flex items-center gap-1 rounded-full font-bold text-white bg-gradient-to-br from-[#F5B04A] via-[#FF8A4C] to-[#E8553A] shadow-[0_4px_12px_-4px_rgba(232,85,58,.6)] ${small ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2.5 py-1'}`}>✦ Premium</span>;
+  return <span className={`inline-flex items-center gap-1 rounded-full font-bold text-white bg-gradient-to-br from-[#F5B04A] via-[#FF8A4C] to-[#E8553A] shadow-[0_4px_12px_-4px_rgba(232,85,58,.6)] ${small ? 'text-[12px] px-1.5 py-0.5' : 'text-xs px-2.5 py-1'}`}>✦ Premium</span>;
 }
 
 const REASON: Record<string, string> = { aivet: 'Ptej se Aiveta bez omezení', pets: `Zdarma můžeš mít ${FREE.pets} mazlíčky`, pdf: 'Zdravotní pas v PDF je součástí Premium', expenses: 'Přehled výdajů je součástí Premium', obecne: 'Víc péče, méně starostí' };
@@ -40,7 +40,7 @@ export function Paywall() {
       <ul className="space-y-2.5 mb-5">
         {PERKS.map((x) => (
           <li key={x.t} className="flex gap-3 items-start"><span className="text-xl w-7 text-center">{x.e}</span>
-            <span className="flex-1"><b className="text-[15px]">{x.t}</b>{x.soon && <span className="ml-1.5 align-middle text-[10px] font-bold uppercase rounded-full px-1.5 py-0.5 bg-ink/10 dark:bg-white/15">brzy</span>}<span className="block text-[13px] text-muted">{x.d}</span></span></li>
+            <span className="flex-1"><b className="text-[15px]">{x.t}</b>{x.soon && <span className="ml-1.5 align-middle text-[12px] font-bold uppercase rounded-full px-1.5 py-0.5 bg-ink/10 dark:bg-white/15">brzy</span>}<span className="block text-[13px] text-muted">{x.d}</span></span></li>
         ))}
       </ul>
       <div role="radiogroup" aria-label="Tarif" className="space-y-2 mb-4">
@@ -48,7 +48,7 @@ export function Paywall() {
           <button key={x.id} role="radio" aria-checked={plan === x.id} onClick={() => setPlan(x.id)}
             className={`press w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-left ring-2 transition ${plan === x.id ? 'ring-primary bg-primary/10' : 'ring-ink/10 dark:ring-white/10'}`}>
             <span className={`w-5 h-5 rounded-full border-2 ${plan === x.id ? 'border-primary bg-primary shadow-[inset_0_0_0_3px_white]' : 'border-ink/30 dark:border-white/30'}`} />
-            <span className="flex-1"><b>{x.name}</b>{x.best && <span className="ml-2 text-[10px] font-bold uppercase text-white bg-[#C2412A] rounded-full px-1.5 py-0.5">nejvýhodnější</span>}{x.note && <span className="block text-[13px] text-muted">{x.note}</span>}</span>
+            <span className="flex-1"><b>{x.name}</b>{x.best && <span className="ml-2 text-[12px] font-bold uppercase text-white bg-[#C2412A] rounded-full px-1.5 py-0.5">nejvýhodnější</span>}{x.note && <span className="block text-[13px] text-muted">{x.note}</span>}</span>
             <span className="text-right"><b>{x.price}</b><span className="block text-[12px] text-muted">{x.per}</span></span>
           </button>
         ))}
@@ -64,15 +64,20 @@ export function Paywall() {
   );
 }
 
-/** Tasteful native-ad placeholder. Never render on map / Aivet / emergency screens. Hidden for Premium. */
+/** House promo for Premium (until real ad partners exist). Never on map / Aivet / emergency screens; hidden for Premium. */
+const PROMOS: Record<string, { e: string; t: string; d: string; r: string }> = {
+  home: { e: '📄', t: 'Zdravotní pas do kapsy', d: 'Očkování, léky a alergie v PDF s QR kódem – pro veterináře i hlídání.', r: 'pdf' },
+  pets: { e: '🩺', t: 'Aivet bez omezení', d: 'Ptej se kdykoli – zná profil, léky i alergie tvých mazlíčků.', r: 'aivet' },
+};
 export function AdSlot({ id }: { id: string }) {
   const p = usePremium();
   if (p.isPremium) return null;
+  const x = PROMOS[id] ?? PROMOS.home;
   return (
-    <aside aria-label="Reklama" data-ad-slot={id} className="rounded-[22px] p-3.5 flex items-center gap-3 bg-surface/70 dark:bg-surface-d/70 ring-1 ring-dashed ring-ink/10 dark:ring-white/10">
-      <span className="w-11 h-11 rounded-2xl bg-ink/5 dark:bg-white/10 flex items-center justify-center text-lg">🦴</span>
-      <span className="flex-1 min-w-0"><span className="text-[10px] font-bold uppercase tracking-wide text-muted">Reklama</span><span className="block text-sm">Místo pro partnera – krmivo, pojištění, chovatelské potřeby</span></span>
-      <button onClick={() => p.openPaywall('obecne')} className="text-[12px] font-semibold text-primary shrink-0">Bez reklam</button>
+    <aside aria-label="Tlapka Premium" data-ad-slot={id} className="rounded-[22px] p-3.5 flex items-center gap-3 bg-gradient-to-br from-[#FFF1E6] to-[#FFE3D2] dark:from-[#3a2219] dark:to-[#2a1a14] ring-1 ring-[#E8553A]/15">
+      <span className="w-11 h-11 rounded-2xl bg-white/70 dark:bg-white/10 flex items-center justify-center text-xl shrink-0">{x.e}</span>
+      <span className="flex-1 min-w-0"><span className="block font-semibold text-[15px]">{x.t}</span><span className="block text-[13px] text-muted">{x.d}</span></span>
+      <button onClick={() => p.openPaywall(x.r)} className="press shrink-0 min-h-[44px] px-3 rounded-full text-[13px] font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]">14 dní zdarma</button>
     </aside>
   );
 }
@@ -110,7 +115,7 @@ export function Expenses() {
             {months.map((m, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
                 <div className="w-full rounded-t-lg bg-gradient-to-t from-[#E8553A] to-[#FF9A5A] transition-[height] duration-500" style={{ height: `${(m / max) * 100}%`, minHeight: m ? 4 : 0 }} title={kc(m)} />
-                <span className="text-[10px] text-muted">{MN[i]}</span>
+                <span className="text-[12px] text-muted">{MN[i]}</span>
               </div>
             ))}
           </div>

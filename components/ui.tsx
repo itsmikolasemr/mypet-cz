@@ -58,7 +58,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
         <div className="sticky top-0 z-10 bg-surface/95 dark:bg-surface-d/95 backdrop-blur px-5 pt-3 pb-3 flex items-center justify-between">
           <div className="absolute left-1/2 -translate-x-1/2 top-1.5 h-1 w-10 rounded-full bg-ink/15 dark:bg-white/20" />
           <h2 className="text-lg font-semibold pt-2">{title}</h2>
-          <button onClick={onClose} aria-label="Zavřít" className="mt-2 w-9 h-9 rounded-full bg-ink/5 dark:bg-white/10 flex items-center justify-center"><Icon name="x" className="w-4 h-4" /></button>
+          <button onClick={onClose} aria-label="Zavřít" className="mt-1 w-11 h-11 rounded-full bg-ink/5 dark:bg-white/10 flex items-center justify-center"><Icon name="x" className="w-4 h-4" /></button>
         </div>
         <div className="px-5 pb-5">{children}</div>
       </div>
@@ -109,7 +109,7 @@ const STATUS: Record<Status, [string, string]> = {
   done: ['Hotovo', 'bg-ink/5 text-muted dark:bg-white/10 dark:text-white/85'],
 };
 export function StatusPill({ s }: { s: Status }) {
-  return <span className={`text-[11px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 ${STATUS[s][1]}`}>{STATUS[s][0]}</span>;
+  return <span className={`text-[12px] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 ${STATUS[s][1]}`}>{STATUS[s][0]}</span>;
 }
 
 export function Segmented<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: { v: T; l: string }[] }) {
@@ -118,7 +118,7 @@ export function Segmented<T extends string>({ value, onChange, options }: { valu
     <div className="relative grid rounded-full bg-ink/[0.05] dark:bg-white/[0.07] p-1" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
       <span aria-hidden className="absolute top-1 bottom-1 left-1 rounded-full bg-surface dark:bg-white/[0.14] shadow-card dark:shadow-none transition-transform duration-300 ease-spring" style={{ width: `calc((100% - 8px) / ${options.length})`, transform: `translateX(${i * 100}%)` }} />
       {options.map((o) => (
-        <button key={o.v} onClick={() => onChange(o.v)} className={`relative z-10 whitespace-nowrap rounded-full px-2 py-2 text-sm font-semibold transition-colors ${value === o.v ? 'text-ink dark:text-white' : 'text-muted'}`}>{o.l}</button>
+        <button key={o.v} onClick={() => onChange(o.v)} className={`relative z-10 whitespace-nowrap rounded-full px-2 min-h-[44px] text-sm font-semibold transition-colors ${value === o.v ? 'text-ink dark:text-white' : 'text-muted'}`}>{o.l}</button>
       ))}
     </div>
   );
