@@ -3,7 +3,8 @@
 // Model: each local record <-> row (household_id, id, pet_id, data jsonb, deleted, updated_at). Last-write-wins per record,
 // server-stamped updated_at as pull cursor. Doses (reminder history growth) are also written to tl_dose_logs with who gave it.
 import { createClient, type Provider, type Session, type SupabaseClient } from '@supabase/supabase-js';
-import type { AppData } from './types';
+import type { AppData, DocMeta } from './types';
+import { loadBlob, saveBlob } from './docs';
 
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://owveqkchmcutoqlsjlyb.supabase.co';
 export const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_KEY || 'sb_publishable_EDy4Im3JrXxTsRYd62GY1A_J3gw_tcY';
@@ -73,7 +74,29 @@ type Snap = Record<Coll, Record<string, string>>; // id -> JSON of last synced v
 const emptySnap = (): Snap => ({ pets: {}, reminders: {}, visits: {}, meds: {}, allergies: {}, docs: {} });
 const stable = (o: unknown) => JSON.stringify(o);
 
-export type SyncResult = { pushed: number; pulled: number; doses: number; at: string };
+export type SyncResult = { pushed: number; pulled: number; doses: number; at: string; uploaded: number; downloaded: number; pendingFiles: number };
+
+const UP = 'tlapka:sync:uploaded';
+/** Offline-safe file queue: anything not marked uploaded is retried every sync. */
+export async function syncFiles(hh: string, docs: DocMeta[]) {
+  const c = cloud(); const done = new Set<string>(JSON.parse(localStorage.getItem(UP) || '[]'));
+  let uploaded = 0, downloaded = 0, pending = 0;
+  const seen = new Set<string>();
+  for (const d of docs) {
+    if (seen.has(d.id)) continue; seen.add(d.id);
+    const path = `${hh}/${d.id}`;
+    const local = await loadBlob(d.id, d.mime).catch(() => null);
+    if (local && !done.has(d.id)) {
+      const r = await c.storage.from('tl-docs').upload(path, local, { contentType: d.mime || 'application/octet-stream', upsert: true });
+      if (r.error) pending++; else { done.add(d.id); uploaded++; }
+    } else if (!local) {
+      const r = await c.storage.from('tl-docs').download(path);
+      if (r.data) { await saveBlob(d.id, r.data); done.add(d.id); downloaded++; } else pending++;
+    }
+  }
+  localStorage.setItem(UP, JSON.stringify([...done]));
+  return { uploaded, downloaded, pendingFiles: pending };
+}
 
 /** One full round: push local changes since last snapshot, then pull remote changes since cursor and merge (LWW). */
 export async function syncNow(hh: string, data: AppData, apply: (f: (d: AppData) => AppData) => void, who?: string): Promise<SyncResult> {
@@ -125,14 +148,23 @@ export async function syncNow(hh: string, data: AppData, apply: (f: (d: AppData)
     return n;
   });
   localStorage.setItem(SNAP, JSON.stringify(snap)); localStorage.setItem(CURSOR, max);
+  // 3) files: upload queue (local docs not yet in Storage), download docs from others missing locally
+  const files = await syncFiles(hh, [...data.docs, ...((remote.docs ?? []).filter((x) => !x.deleted).map((x) => x.data as unknown as DocMeta))]);
   const at = new Date().toISOString(); localStorage.setItem('tlapka:sync:at', at);
-  return { pushed, pulled, doses, at };
+  return { pushed, pulled, doses, at, ...files };
 }
 
 /** Realtime: call back when someone else in the household changes data or logs a dose. Requires tables in supabase_realtime publication. */
 export function subscribeHousehold(hh: string, onChange: () => void) {
   const ch = cloud().channel(`hh-${hh}`);
-  for (const t of [...Object.values(TABLE), 'tl_dose_logs']) ch.on('postgres_changes', { event: '*', schema: 'public', table: t, filter: `household_id=eq.${hh}` }, onChange);
+  let me: string | undefined; cloud().auth.getUser().then((u) => { me = u.data.user?.id; });
+  let t: ReturnType<typeof setTimeout> | undefined;
+  const f = (p: { new?: Record<string, unknown> }) => {
+    const by = (p.new?.updated_by ?? p.new?.given_by) as string | undefined;
+    if (me && by === me && !(p.new && 'given_by_name' in p.new && p.new.note === 'via share link')) return; // own echo
+    clearTimeout(t); t = setTimeout(onChange, 400);
+  };
+  for (const tb of [...Object.values(TABLE), 'tl_dose_logs']) ch.on('postgres_changes', { event: '*', schema: 'public', table: tb, filter: `household_id=eq.${hh}` }, f);
   ch.subscribe();
   return () => { cloud().removeChannel(ch); };
 }
@@ -142,4 +174,4 @@ export async function recentDoses(hh: string, petId?: string) {
   if (petId) q = q.eq('pet_id', petId);
   return (await q).data ?? [];
 }
-export function resetSyncState() { [SNAP, CURSOR, 'tlapka:hh', 'tlapka:sync:at'].forEach((k) => localStorage.removeItem(k)); }
+export function resetSyncState() { [SNAP, CURSOR, UP, 'tlapka:hh', 'tlapka:sync:at'].forEach((k) => localStorage.removeItem(k)); }

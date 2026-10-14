@@ -6,6 +6,8 @@ import { Icon } from './ui';
 import dynamic from 'next/dynamic';
 import Aivet from './Aivet';
 import { PremiumProvider } from '@/lib/premium';
+import { CloudProvider } from '@/lib/cloudsync';
+import { SharedPage } from './Shared';
 import { BannerSlot, Expenses, Paywall } from './Premium';
 import { FeedbackHost } from './feedback';
 import { CalendarScreen, Dashboard, Onboarding, PetDetail, PetsList, Reminders, Settings, type Tab } from './screens';
@@ -21,6 +23,8 @@ function Shell() {
   const { data, ready } = useStore();
   const [tab, setTab] = useState<Tab>('home');
   const [petId, setPetId] = useState<string | null>(null);
+  const [share, setShare] = useState<string | null>(null);
+  useEffect(() => { const f = () => setShare(location.hash.startsWith('#share/') ? location.hash.slice(7) : null); f(); addEventListener('hashchange', f); return () => removeEventListener('hashchange', f); }, []);
   useEffect(() => {
     const read = () => { const [t, p] = location.hash.slice(1).split('/'); if (TABS.some((x) => x.id === t) || EXTRA.includes(t as Tab)) setTab(t as Tab); setPetId(p || null); };
     read(); addEventListener('popstate', read); return () => removeEventListener('popstate', read);
@@ -36,6 +40,7 @@ function Shell() {
     const h = `#${t}${p ? '/' + p : ''}`; if (location.hash !== h) { history.pushState(null, '', h); dispatchEvent(new HashChangeEvent('hashchange')); }
     setTab(t); setPetId(p); window.scrollTo({ top: 0 });
   };
+  if (share) return <SharedPage token={share} />;
   if (!ready) return <div className="min-h-[100dvh]" />;
   if (!data.settings.onboarded) return <Onboarding />;
   const overdue = data.reminders.filter((r) => status(r) === 'overdue').length;
@@ -77,5 +82,5 @@ function Shell() {
 const CalIcon = () => (<svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /><circle cx="12" cy="15" r="1.4" fill="currentColor" /></svg>);
 
 export default function App() {
-  return <StoreProvider><PremiumProvider><Shell /><Paywall /><FeedbackHost /></PremiumProvider></StoreProvider>;
+  return <StoreProvider><PremiumProvider><CloudProvider><Shell /><Paywall /><FeedbackHost /></CloudProvider></PremiumProvider></StoreProvider>;
 }
