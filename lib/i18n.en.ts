@@ -1025,6 +1025,7 @@ export const EN: Record<string, string> = {
 "Upozornění zapnuta": "Notifications on",
 "Upozornění nejsou povolena v nastavení zařízení.": "Notifications are not allowed in device settings.",
 "Záloha, rodina, hlídač, smazání účtu": "Backup, family, sitter, account deletion",
+"rodina, hlídač, smazání účtu": "family, sitter, account deletion",
 "Měsíční": "Monthly",
 "Roční": "Yearly",
 "Rodinný": "Family",
@@ -1234,6 +1235,7 @@ type R = [RegExp, string | ((m: RegExpMatchArray) => string)];
 /** Anchored rules for whole strings with numbers/names. */
 export const EN_RULES: R[] = [
   [/^(pondělí|úterý|středa|čtvrtek|pátek|sobota|neděle) (\d+)\. (\S+)$/i, (m) => `${WD[m[1].toLowerCase()]} ${m[2]} ${MON[m[3]] ?? m[3]}`],
+  [/^Starejte se o (.+) spolu: kdo venčil, kdo krmil, kdo dal lék\.$/, 'Look after $1 together: who walked, who fed, who gave the meds.'],
   [/^Zbývá (\d+) (úkol|úkoly|úkolů)$/, (m) => `${m[1]} ${pl(m[1], 'task', 'tasks')} left`],
   [/^Hotovo (\d+) z (\d+)$/, 'Done $1 of $2'],
   [/^(\d+) z (\d+) hotovo$/, '$1 of $2 done'],

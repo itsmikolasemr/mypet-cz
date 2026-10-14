@@ -4,10 +4,10 @@ import { unzipSync } from '/workspace/mypet-scan/node_modules/fflate/esm/index.m
 const BASE = 'http://localhost:4125/'; const S = '/workspace/mypet-shots/'; const PW = process.env.TLAPKA_TEST_PW;
 const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' }); const errs = []; const R = {};
 const mk = async () => { const c = await b.newContext({ ...devices['iPhone 14'], locale: 'cs-CZ', acceptDownloads: true, permissions: BR === 'webkit' ? [] : ['clipboard-read', 'clipboard-write', 'notifications'] }); const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message)); return p; };
-const nav = async (p, l) => { if (await p.locator('[role=alertdialog]').count()) { console.log('DLG@' + l + ':', (await p.locator('[role=alertdialog]').innerText()).replace(/\n/g, ' ')); } await p.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: new RegExp('^' + l) }).click(); await p.waitForTimeout(500); };
+const nav = async (p, l) => { if (await p.locator('[role=alertdialog]').count()) { console.log('DLG@' + l + ':', (await p.locator('[role=alertdialog]').innerText()).replace(/\n/g, ' ')); } await p.keyboard.press('Escape'); await p.waitForTimeout(300); await p.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: new RegExp('^' + l) }).click(); await p.waitForTimeout(500); };
 const hash = async (p, h) => { await p.evaluate((h) => { history.pushState(null, '', '#' + h); dispatchEvent(new PopStateEvent('popstate')); }, h); await p.waitForTimeout(600); };
 const dlg = async (p) => { const l = p.locator('[role=alertdialog]'); await l.waitFor({ timeout: 15000 }); const t = await l.innerText(); await p.getByRole('button', { name: 'Rozumím' }).click(); return t; };
-const paywallOpen = async (p) => { const n = await p.getByText('79 Kč').count(); await p.keyboard.press('Escape'); await p.evaluate(() => dispatchEvent(new PopStateEvent('popstate'))); await p.waitForTimeout(300); return n > 0; };
+const paywallOpen = async (p) => { const n = await p.getByText(/(49|99) Kč/).count(); await p.keyboard.press('Escape'); await p.evaluate(() => dispatchEvent(new PopStateEvent('popstate'))); await p.waitForTimeout(300); return n > 0; };
 const data = async (p) => JSON.parse(await p.evaluate(() => localStorage.getItem('tlapka:data:v1')));
 const A = await mk(); await A.goto(BASE); await A.getByText('Vyzkoušet s ukázkovými daty').click(); await A.waitForTimeout(600);
 // ---- FREE ----
@@ -46,7 +46,7 @@ await nav(A, 'Mazlíčci'); await A.getByText(d1.pets[0].name).first().click(); 
 await A.getByText('Vytvořit odkaz a QR').click(); await A.locator('[data-pass-link]').waitFor({ timeout: 15000 }); const passUrl = await A.locator('[data-pass-link]').getAttribute('data-pass-link');
 await A.locator('[data-pass-link]').scrollIntoViewIfNeeded(); await A.screenshot({ path: S + BR + '-101-v11-pass-qr.png' });
 await A.getByText('Vytvořit odkaz a QR').click(); R.secondPassFree = (await dlg(A)).split('\n')[0];
-const P = await mk(); await P.goto(passUrl); await P.getByText('Zdravotní pas').waitFor({ timeout: 10000 }); R.passPage = { podano: await P.getByRole('button', { name: 'Podáno' }).count(), name: await P.locator('[data-pet]').first().innerText() };
+const P = await mk(); await P.goto(passUrl); await P.getByText(/^(Zdravotní pas|Předávací karta)$/).waitFor({ timeout: 10000 }); R.passPage = { podano: await P.getByRole('button', { name: 'Podáno' }).count(), name: await P.locator('[data-pet]').first().innerText() };
 await P.screenshot({ path: S + BR + '-102-v11-pass-page.png', fullPage: true });
 // ---- PREMIUM ----
 await A.evaluate(async () => { const dev = localStorage.getItem('tlapka:device'); const j = await (await fetch('/api/entitlement', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: dev, plan: 'yearly', test: true }) })).json(); localStorage.setItem('tlapka:ent', JSON.stringify({ plan: 'yearly', exp: j.exp, token: j.token, test: true, source: 'test' })); });
@@ -64,9 +64,9 @@ await A.getByRole('button', { name: 'Vysvětlit zprávu' }).click(); await A.loc
 R.second = (await A.locator('[data-second-reply]').innerText()).slice(0, 60); R.secondImg = JSON.parse(fs.readFileSync('/workspace/pwtest/mock-last.json')).hasImg;
 await A.screenshot({ path: S + BR + '-104-v11-druhy-nazor.png', fullPage: true });
 await nav(A, 'Mazlíčci'); await A.getByText(n1.pets[0].name).first().click(); await A.waitForTimeout(500);
-R.travel = await A.locator('[data-travel] li').count(); await A.locator('[data-travel]').scrollIntoViewIfNeeded(); await A.screenshot({ path: S + BR + '-105-v11-travel.png' });
+R.travel = (await A.locator('[data-travel]').count()) ? await A.locator('[data-travel] li').count() : 'v1.2: Premium (Sdílet → Cestovní checklist)'; if (await A.locator('[data-travel]').count()) await A.locator('[data-travel]').scrollIntoViewIfNeeded(); await A.screenshot({ path: S + BR + '-105-v11-travel.png' });
 // as-needed med: safe-again-after
-await A.getByRole('button', { name: 'Zdraví' }).click(); await A.locator('div:has(> p:text-is("💊 Léky")) button').click();
+await A.getByRole('button', { name: 'Zdraví' }).click(); await A.locator('div:has(> p [data-glyph=pill]) > button').click();
 await A.getByLabel('Název léku').fill('Metacam (dle potřeby)'); await A.locator('select').filter({ hasText: 'Denně ráno' }).selectOption('Dle potřeby');
 await A.locator('input[name=minHours]').fill('8'); await A.getByRole('button', { name: 'Uložit', exact: true }).click(); await A.waitForTimeout(500);
 await A.locator('[data-prn] button').first().click(); await A.waitForTimeout(500);

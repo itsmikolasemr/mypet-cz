@@ -5,7 +5,7 @@ const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch({ chan
 const mk = async () => { const c = await b.newContext({ ...devices['iPhone 14'], locale: 'cs-CZ', permissions: BR === 'webkit' ? [] : ['clipboard-read', 'clipboard-write'] }); const p = await c.newPage(); p.on('console', (m) => m.text().includes('SYNCERR') && console.log(m.text())); p.on('pageerror', (e) => errs.push(e.message));  return p; };
 const login = async (p, email) => { 
   await p.locator('nav[aria-label="Hlavní navigace"]').waitFor({ timeout: 20000 });
-  await p.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: /^Nastavení/ }).click();
+  await p.keyboard.press('Escape'); await p.waitForTimeout(300); await p.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: /^Nastavení/ }).click();
   await p.locator('main button', { hasText: /(Přihlásit|Spravovat) ›/ }).first().click(); await p.getByText('Přihlásit heslem').waitFor({ timeout: 15000 }); await p.getByText('Přihlásit heslem').click(); await p.fill('input[type=email]', email); await p.fill('input[type=password]', PW);
   await p.getByRole('button', { name: 'Přihlásit se', exact: true }).click();
   await p.getByText('Synchronizovat teď').waitFor({ timeout: 15000 });
@@ -26,7 +26,7 @@ await A.getByText('Synchronizovat teď').click(); await A.waitForTimeout(5000);
 R.aUploaded = JSON.parse(await ls(A, 'tlapka:sync:uploaded') || '[]').length;
 if (await A.locator('[role=alertdialog]').count()) { console.log('DIALOG:', await A.locator('[role=alertdialog]').innerText()); process.exit(1); }
 await A.getByText('Pozvat do domácnosti').click(); const inv = await dlg(A); const code = inv.match(/Kód ([0-9a-f]+)/)[1];
-await A.getByText('Odkaz pro hlídače').click(); const sh = await dlg(A); const shareUrl = sh.match(/https?:\S+/)[0];
+await A.getByText('Odkaz pro hlídače').click(); const sh = await dlg(A); if (!/https?:/.test(sh)) console.log("SHARE DIALOG:", sh); const shareUrl = sh.match(/https?:\S+/)[0];
 await A.screenshot({ path: S + BR + '-92-e2e-A-account.png' });
 // B: empty app, login, join
 const B = await mk(); await B.context().addInitScript(() => { if (!localStorage.getItem('tlapka:data:v1')) localStorage.setItem('tlapka:data:v1', JSON.stringify({ version: 1, pets: [], reminders: [], visits: [], docs: [], meds: [], allergies: [], settings: { theme: 'system', onboarded: true, notify: false, notifyHour: 9 } })); }); await B.goto(BASE);
@@ -38,7 +38,7 @@ const bd = await data(B); const ad = await data(A);
 R.bPets = bd.pets.length + '/' + ad.pets.length; R.bRems = bd.reminders.length + '/' + ad.reminders.length; R.bDocs = bd.docs.length;
 R.bDocFile = await B.evaluate(async (id) => new Promise((res) => { const r = indexedDB.open('tlapka-docs', 1); r.onupgradeneeded = () => r.result.createObjectStore('blobs'); r.onsuccess = () => { try { const db = r.result; const st = db.transaction(db.objectStoreNames[0]).objectStore(db.objectStoreNames[0]).get(id); st.onsuccess = () => res(!!st.result); st.onerror = () => res('err'); } catch (e) { res(String(e)); } }; r.onerror = () => res('noidb'); }), bd.docs[0]?.id);
 // B marks reminder done -> dose by Petr; A should get it via realtime
-await B.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: /^Připomínky/ }).click(); await B.waitForTimeout(500);
+await B.keyboard.press('Escape'); await B.waitForTimeout(300); await B.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: /^Připomínky/ }).click(); await B.waitForTimeout(500);
 const remTitle = await B.locator('[aria-label^="Označit"]').first().getAttribute('aria-label');
 await B.locator('[aria-label^="Označit"]').first().click(); await B.waitForTimeout(500);
 const bDue = (await data(B)).reminders.map((r) => r.id + r.dueDate + r.history.length).sort().join();
@@ -46,11 +46,11 @@ for (let i = 0; i < 30; i++) { const x = (await data(A)).reminders.map((r) => r.
 const aDue = (await data(A)).reminders.map((r) => r.id + r.dueDate + r.history.length).sort().join();
 R.realtimeBtoA = aDue === bDue; R.bDoneRem = bDue !== (await data(A)).reminders.map(() => '').join() ;
 // A renames a pet -> B realtime
-await A.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: /^Nastavení/ }).click(); await A.waitForTimeout(800); await A.locator('main button', { hasText: /(Přihlásit|Spravovat) ›/ }).first().click(); 
+await A.keyboard.press('Escape'); await A.waitForTimeout(300); await A.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: /^Nastavení/ }).click(); await A.waitForTimeout(800); await A.locator('main button', { hasText: /(Přihlásit|Spravovat) ›/ }).first().click(); 
 await A.evaluate(() => 0);
 R.aDoseList = await A.locator('[data-dose]').allInnerTexts();
 // sitter (no account)
-const C = await mk(); await C.goto(shareUrl); await C.getByText('Hlídání').waitFor({ timeout: 10000 });
+const C = await mk(); await C.goto(shareUrl); await C.getByText(/^(Hlídání|Předávací karta)$/).first().waitFor({ timeout: 10000 });
 await C.fill('input[placeholder="např. Jana"]', 'Eva'); await C.getByRole('button', { name: 'Podáno' }).first().click(); await C.waitForTimeout(2500);
 R.sitterLine = await C.locator('text=podal(a) Eva').first().innerText().catch(() => 'missing');
 await C.screenshot({ path: S + BR + '-94-e2e-sitter-page.png' });
