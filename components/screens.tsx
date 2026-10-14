@@ -11,7 +11,7 @@ import type { Pet, Reminder, Visit } from '@/lib/types';
 import { useStore, validate } from '@/lib/store';
 import { addDays, age, diffDays, fmtDate, parse, plural, SPECIES, speciesOf, status, toISO, today, uid } from '@/lib/utils';
 import { notifySupported, requestPermission, showNow } from '@/lib/notify';
-import { Avatar, Button, Card, DateInput, Empty, Fab, Icon, Logo, PageHeader, Segmented, Sheet } from './ui';
+import { Avatar, Button, Card, DateInput, Empty, Fab, Icon, Logo, PawMark, PageHeader, Segmented, Sheet } from './ui';
 import { AllergyForm, MedForm, PetForm, ReminderForm, SEVERITY, VisitForm, WeightForm } from './forms';
 import type { Allergy, Medication } from '@/lib/types';
 import { Documents, PetChip, ReminderRow, VisitRow, WeightChart } from './parts';
@@ -590,7 +590,7 @@ export function Onboarding() {
     <div data-onboarding={step} style={{ paddingBottom: "calc(max(env(safe-area-inset-bottom), 16px) + var(--badge, 0px))" }} className="min-h-[100dvh] flex flex-col px-6 pt-safe bg-gradient-to-b from-[#DCEBFA] to-bg dark:from-[#1E2733] dark:to-bg-d">
       <div className="pt-10 flex items-center justify-between"><Logo className="h-10 text-ink dark:text-white" /><span className="text-sm text-muted" aria-live="polite">{step + 1} / {steps}</span></div>
       <div className="flex-1 flex flex-col justify-center animate-screen py-6" key={step}>
-        {step === 0 && <>{glyphBox('paw')}<h1 className="text-[34px] leading-tight font-bold tracking-tight">Vítej v Tlapce</h1><p className="text-lg text-muted mt-3">Odčervení, klíšťata, očkování i léky – Tlapka ti včas připomene. Nastavíme to spolu za minutu.</p></>}
+        {step === 0 && <><div className="w-28 h-28 mb-7 drop-shadow-xl"><PawMark animate className="w-full h-full" label="Tlapka" /></div><h1 className="text-[34px] leading-tight font-bold tracking-tight">Vítej v Tlapce</h1><p className="text-lg text-muted mt-3">Odčervení, klíšťata, očkování i léky – Tlapka ti včas připomene. Nastavíme to spolu za minutu.</p></>}
         {step === 1 && <>
           <h1 className="text-[28px] leading-tight font-bold tracking-tight mb-5">Kdo je tvůj mazlíček?</h1>
           <label className="block text-sm font-semibold mb-1.5" htmlFor="ob-name">Jméno</label>

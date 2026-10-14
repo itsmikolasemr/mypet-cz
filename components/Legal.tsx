@@ -74,7 +74,7 @@ export function About({ open }: { open: (t: 'privacy' | 'terms') => void }) {
   return (
     <div>
       <PageHeader title="O aplikaci" />
-      <div className="text-center mb-5"><Logo className="h-12 mx-auto text-ink dark:text-white" /><p className="text-muted text-sm mt-2">Verze 1.1 · vyrobeno v Česku s láskou k tlapkám</p></div>
+      <div className="text-center mb-5"><Logo animate className="h-14 mx-auto" /><p className="text-muted text-sm mt-2">Verze 1.1 · vyrobeno v Česku s láskou k tlapkám</p></div>
       <Card className="divide-y divide-ink/5 dark:divide-white/5">
         {([['privacy', 'Ochrana osobních údajů'], ['terms', 'Podmínky užívání']] as const).map(([k, l]) => <button key={k} onClick={() => open(k)} className="press w-full text-left px-4 min-h-[52px] font-medium flex items-center justify-between">{l}<span aria-hidden className="text-muted">›</span></button>)}
         <a className="block px-4 py-3.5 font-medium" href={`mailto:${COMPANY.email.startsWith('[') ? 'podpora@example.com' : COMPANY.email}?subject=Tlapka%20–%20zpětná%20vazba`}>Napsat nám <span className="block text-[13px] text-muted"><Ph>{COMPANY.email}</Ph></span></a>

@@ -1,9 +1,19 @@
 // Premium: PDF health pass ("zdravotní pas") with QR summary. Lazy-loaded, fully on-device.
 import type { AppData, Pet } from './types';
+import type { PDFPage, rgb as RgbFn } from 'pdf-lib';
 import { age, fmtDate, speciesOf, typeOf, today } from './utils';
 import { SEVERITY } from '@/components/forms';
 
 const SEX: Record<string, string> = { samec: 'samec', samice: 'samice', nezname: 'neuvedeno' };
+
+/** Polštářek brand mark (light tile, 4 graphite toes, baby-blue pad) drawn as vectors; s = tile size in pt, (x,y) = bottom-left. */
+function drawMark(page: PDFPage, rgb: typeof RgbFn, x: number, y: number, s: number) {
+  const k = s / 1024, r = 230 * k;
+  page.drawSvgPath(`M${r},0 H${s - r} A${r},${r} 0 0 1 ${s},${r} V${s - r} A${r},${r} 0 0 1 ${s - r},${s} H${r} A${r},${r} 0 0 1 0,${s - r} V${r} A${r},${r} 0 0 1 ${r},0 Z`, { x, y: y + s, color: rgb(0.925, 0.937, 0.953) });
+  const toe = rgb(0.18, 0.192, 0.22);
+  for (const [cx, cy] of [[255.2, 410.2], [404.8, 295.4], [619.2, 295.4], [768.8, 410.2]]) page.drawCircle({ x: x + cx * k, y: y + s - cy * k, size: 55.1 * k, color: toe });
+  page.drawCircle({ x: x + 512 * k, y: y + s - 590 * k, size: 190 * k, color: rgb(0.498, 0.702, 0.91) });
+}
 
 export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
   const [{ PDFDocument, rgb }, fontkit, QR] = await Promise.all([import('pdf-lib'), import('@pdf-lib/fontkit').then((m) => m.default), import('qrcode')]);
@@ -26,6 +36,7 @@ export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
 
   // header band
   page.drawRectangle({ x: 0, y: H - 96, width: W, height: 96, color: brand });
+  drawMark(page, rgb, W - M - 56, H - 76, 56);
   page.drawText('Zdravotní pas', { x: M, y: H - 46, size: 24, font: B, color: navy });
   page.drawText(`${pet.name} · vygenerováno v aplikaci Tlapka ${fmtDate(today())}`, { x: M, y: H - 70, size: 11, font: F, color: navy });
   y = H - 120;
@@ -91,6 +102,7 @@ export async function simplePdf(title: string, subtitle: string, sections: { h: 
   const ensure = (h: number) => { if (y - h < M) { page = doc.addPage([W, H]); y = H - M; } };
   const wrap = (t: string, font: typeof F, size: number) => { const out: string[] = []; for (const para of t.split('\n')) { let line = ''; for (const w of para.split(' ')) { const tryL = line ? line + ' ' + w : w; if (font.widthOfTextAtSize(tryL, size) > W - 2 * M && line) { out.push(line); line = w; } else line = tryL; } out.push(line); } return out; };
   page.drawRectangle({ x: 0, y: H - 96, width: W, height: 96, color: rgb(0.498, 0.702, 0.91) });
+  drawMark(page, rgb, W - M - 56, H - 76, 56);
   page.drawText(title, { x: M, y: H - 46, size: 22, font: B, color: navy }); page.drawText(subtitle, { x: M, y: H - 70, size: 11, font: F, color: navy });
   y = H - 120;
   for (const s of sections) {

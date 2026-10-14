@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Map as LMap, LayerGroup } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Button, Card, Icon, PageHeader, Sheet } from './ui';
+import { Button, Card, Icon, PageHeader, PawLoader, Sheet } from './ui';
 import { API_BASE } from '@/lib/api';
 import { useStore } from '@/lib/store';
 import type { CardStore } from '@/lib/types';
@@ -224,7 +224,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
             🛍️ Zverimexy
           </button>
         </div>
-        {state === 'loading' && <div className="absolute inset-x-0 bottom-3 z-[500] mx-auto w-max rounded-full bg-surface/90 dark:bg-surface-d/90 backdrop-blur px-4 py-2 text-sm shadow-card animate-fade">Hledám veteriny…</div>}
+        {state === 'loading' && <div className="absolute inset-x-0 bottom-3 z-[500] mx-auto w-max rounded-full bg-surface/90 dark:bg-surface-d/90 backdrop-blur px-4 py-2 text-sm shadow-card animate-fade"><PawLoader label="Hledám veteriny…" className="w-5 h-5" /></div>}
       </div>
       <p className="text-[13px] text-muted mt-3 px-1 leading-snug">Klepni na značku nebo vyber místo ze seznamu. <b>V nouzi vždy nejdřív zavolej.</b></p>
       <details className="text-[12px] text-muted mt-1 px-1 leading-snug"><summary className="cursor-pointer min-h-[32px] flex items-center">Odkud jsou data?</summary>Z komunitní mapy <a className="underline" href="https://www.openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> (snímek říjen 2026), mohou být neúplná. „Nonstop“ ukazuje místa s otevírací dobou 24/7 včetně několika pražských klinik ověřených na jejich webu. Zverimexy (624) a výběhy (402) jsou uložené v appce, fungují i offline.</details>

@@ -1,6 +1,7 @@
 'use client';
 // In-app toasts (with 5 s undo) and confirm/notice dialogs – replaces browser confirm()/alert().
 import { useEffect, useRef, useState } from 'react';
+import { PawMark } from './ui';
 
 type Toast = { id: number; msg: string; undo?: () => void };
 type Ask = { title: string; text?: string; ok?: string; cancel?: string | null; danger?: boolean; resolve: (v: boolean) => void };
@@ -32,6 +33,7 @@ export function FeedbackHost() {
       {t && (
         <div role="status" aria-live="polite" className="fixed left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-32px)] max-w-[400px] flex items-center gap-3 rounded-2xl bg-[#1C222A] text-white px-4 py-2 shadow-float animate-up"
           style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + var(--banner, 0px) + 96px)' }}>
+          <span className="dark shrink-0" key={t.id}><PawMark animate tile={false} className="w-6 h-6" /></span>
           <span className="flex-1 text-[15px] py-2">{t.msg}</span>
           {t.undo && <button onClick={() => { t.undo?.(); setT(null); toast('Vráceno zpět'); }} className="press min-h-[44px] px-3 -mr-2 font-bold text-[#9CC8F2]">Zpět</button>}
         </div>

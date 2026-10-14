@@ -158,14 +158,29 @@ export function Fab({ onClick, label }: { onClick: () => void; label: string }) 
   );
 }
 
-export function Logo({ className = 'h-8' }: { className?: string }) {
-  // Final brand logo (dark grey paw tile + baby-blue dot); dark variant swaps the wordmark to light grey.
+/** "Polštářek" mark: light tile (dark: graphite), 4 graphite toes (dark: white), baby-blue pad. animate = toes then pad (loader / success). */
+export function PawMark({ className = 'h-8 w-8', animate = false, loop = false, tile = true, label }: { className?: string; animate?: boolean; loop?: boolean; tile?: boolean; label?: string }) {
   return (
-    <span className={`inline-flex ${className}`} role="img" aria-label="Tlapka">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/logo-light.svg" alt="" className="h-full w-auto dark:hidden" draggable={false} />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/logo-dark.svg" alt="" className="h-full w-auto hidden dark:block" draggable={false} />
+    <svg viewBox="0 0 1024 1024" className={`${className} ${animate ? (loop ? 'paw-anim paw-loop' : 'paw-anim') : ''}`} {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })} data-pawmark>
+      {tile && <rect width="1024" height="1024" rx="230" className="fill-[#ECEFF3] dark:fill-[#2E3138]" />}
+      {[[255.2, 410.2], [404.8, 295.4], [619.2, 295.4], [768.8, 410.2]].map(([cx, cy], i) => <circle key={i} cx={cx} cy={cy} r="55.1" className="paw-toe fill-[#2E3138] dark:fill-white" style={{ animationDelay: `${i * 90}ms` }} />)}
+      <circle cx="512" cy="590" r="190" fill="#7FB3E8" className="paw-pad" />
+    </svg>
+  );
+}
+
+/** Small looping loader built from the brand mark (toes → pad). */
+export function PawLoader({ label = 'Načítám…', className = 'w-6 h-6' }: { label?: string; className?: string }) {
+  return <span role="status" className="inline-flex items-center gap-2"><PawMark className={className} animate loop tile={false} /><span>{label}</span></span>;
+}
+
+export function Logo({ className = 'h-8', animate = false }: { className?: string; animate?: boolean }) {
+  const px = Number(className.match(/(?:^|\s)h-(\d+)/)?.[1] ?? 8) * 4;
+  // Polštářek logo: mark + Manrope ExtraBold wordmark + round baby-blue "pad" period. Colours follow the theme (light/dark/Sklo).
+  return (
+    <span className={`inline-flex items-center ${className}`} style={{ gap: px * 0.22 }} role="img" aria-label="Tlapka" data-logo>
+      <PawMark animate={animate} className="h-full w-auto aspect-square shrink-0" />
+      <span aria-hidden className="font-extrabold tracking-[-0.03em] leading-none text-[#2E3138] dark:text-white" style={{ fontSize: px * 0.62 }}>Tlapka<span className="inline-block rounded-full bg-[#7FB3E8] align-baseline ml-[0.04em]" style={{ width: '0.15em', height: '0.15em' }} /></span>
     </span>
   );
 }
