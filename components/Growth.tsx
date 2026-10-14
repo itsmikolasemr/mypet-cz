@@ -314,7 +314,7 @@ export function Tlapkari() {
         {!cloud.session ? <p className="text-[13px] text-muted">{needAuth('auth')}</p> : !items.length ? <p className="text-[13px] text-muted">Zatím tu nic není. Přidej kamaráda přes QR.</p> : (
           <ul className="space-y-2" data-feed>{items.map((e) => <li key={e.id} className="flex items-center gap-2 text-[14px]">
             <span className="flex-1"><b>{e.who?.pet_name ?? '?'}</b> {label(e)}</span>
-            {(['paw', 'dot'] as const).map((k) => <button key={k} aria-label={k === 'paw' ? 'Tlapka' : 'Tečka'} aria-pressed={e.reactions.mine === k} onClick={() => reactTo(e, k)} className={`press min-h-[44px] min-w-[44px] rounded-full px-2 text-[13px] font-semibold ${e.reactions.mine === k ? 'bg-primary/20 text-primary-d dark:text-primary' : 'text-muted'}`}>{k === 'paw' ? <Emo e="🐾" className="w-4 h-4 inline" /> : '•'} {e.reactions[k] || ''}</button>)}
+            {(['paw', 'dot'] as const).map((k) => <button key={k} aria-label={k === 'paw' ? 'Reakce tlapka' : 'Reakce tečka'} aria-pressed={e.reactions.mine === k} onClick={() => reactTo(e, k)} className={`press min-h-[44px] min-w-[44px] rounded-full px-2 text-[13px] font-semibold ${e.reactions.mine === k ? 'bg-primary/20 text-primary-d dark:text-primary' : 'text-muted'}`}>{k === 'paw' ? <Emo e="🐾" className="w-4 h-4 inline" /> : '•'} {e.reactions[k] || ''}</button>)}
           </li>)}</ul>)}
       </Card>
       <ChallengesCard />

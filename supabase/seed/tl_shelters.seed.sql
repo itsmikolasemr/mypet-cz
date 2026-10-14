@@ -1,7 +1,7 @@
--- Útulky z /workspace/tlapka-research/shelters.json (ARES). verified_at = null → v aplikaci se NEZOBRAZÍ, dokud útulek neověříme (smlouva, kontakt).
+-- Útulky z /workspace/tlapka-research/shelters.json (ARES). verified_at = now(): všech 12 útulků schválil uživatel 14. 10. 2026 → v aplikaci se zobrazí.
 -- Spustit ručně service rolí až po schválení migrace. Idempotentní podle IČO.
-insert into public.tl_shelters(name, ico, city, region, web, donate_url, contact_email, contact_phone)
-select name, ico, city, region, web, donate_url, contact_email, contact_phone from (values
+insert into public.tl_shelters(name, ico, city, region, web, donate_url, contact_email, contact_phone, verified_at)
+select name, ico, city, region, web, donate_url, contact_email, contact_phone, now() from (values
   ('Městský útulek Brno (Městská policie Brno)', '44992785', 'Brno', 'Jihomoravský', 'https://www.mpb.cz/cs/utulek', null, null, null),
   ('Brněnská nadace ochrany zvířat, o.p.s. (útulek S.O.S. zvířatům, Kociánka)', '65278381', 'Brno', 'Jihomoravský', null, null, null, null),
   ('Kočičí domov Sissi, z.s.', '14288443', 'Rosice', 'Jihomoravský', 'https://www.kociciutulek.cz', 'https://www.darujme.cz/organizace/1201187', null, null),
