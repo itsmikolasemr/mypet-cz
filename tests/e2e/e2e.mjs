@@ -15,7 +15,7 @@ const ls = (p, k) => p.evaluate((k) => localStorage.getItem(k), k);
 const data = async (p) => JSON.parse(await ls(p, 'tlapka:data:v1'));
 // A: sample data + one document
 const A = await mk(); await A.goto(BASE); await A.getByText('Přeskočit').click(); await A.getByText('Vyzkoušet s ukázkovými daty').click(); await A.waitForTimeout(500);
-await A.getByText('📎 Dokument').click(); await A.waitForTimeout(500);
+await A.locator('main button', { hasText: 'Dokument' }).first().click(); await A.locator('[data-doc-picker] button').first().click(); await A.waitForTimeout(500);
 await A.locator('input[type=file][accept*="pdf"]').setInputFiles('/workspace/pwtest/faktura.pdf'); await A.waitForTimeout(400);
 await A.getByRole('button', { name: 'Uložit', exact: true }).click(); await A.waitForTimeout(600);
 R.aDocs = (await data(A)).docs.length;

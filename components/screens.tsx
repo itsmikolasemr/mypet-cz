@@ -1,4 +1,5 @@
 'use client';
+import { createPortal } from 'react-dom';
 import { Account } from './Account';
 import { HandoverCard } from './Handover';
 import { BatteryGuide, ExportAll, PassShare, PrnRow, ScanButton, TrashSection, TravelChecklist } from './V11';
@@ -8,7 +9,7 @@ import type { Pet, Reminder, Visit } from '@/lib/types';
 import { useStore, validate } from '@/lib/store';
 import { age, diffDays, fmtDate, parse, plural, speciesOf, status, toISO, today } from '@/lib/utils';
 import { notifySupported, requestPermission, showNow } from '@/lib/notify';
-import { Avatar, Button, Card, Empty, Fab, Icon, Logo, PageHeader, Segmented } from './ui';
+import { Avatar, Button, Card, Empty, Fab, Icon, Logo, PageHeader, Segmented, Sheet } from './ui';
 import { AllergyForm, MedForm, PetForm, ReminderForm, SEVERITY, VisitForm, WeightForm } from './forms';
 import type { Allergy, Medication } from '@/lib/types';
 import { Documents, PetChip, ReminderRow, VisitRow, WeightChart } from './parts';
@@ -26,6 +27,8 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
   const [edit, setEdit] = useState<Reminder | null>(null);
   const [newRem, setNewRem] = useState(false);
   const [newPet, setNewPet] = useState(false);
+  const [pickDoc, setPickDoc] = useState(false);
+  const openDocs = (id: string) => { setPickDoc(false); sessionStorage.setItem('tlapka:petTab', 'doklady'); openPet(id); };
   const prem = usePremium();
   const addPet = () => (prem.canAddPet(data.pets.length) ? setNewPet(true) : prem.openPaywall('pets'));
   useEffect(() => { if (sessionStorage.getItem('tlapka:openAddPet')) { sessionStorage.removeItem('tlapka:openAddPet'); setNewPet(true); } }, []);
@@ -57,7 +60,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             <h2 className="font-semibold text-lg mb-2">Rychle přidat</h2>
             <div className="grid grid-cols-3 gap-2.5">
               <button onClick={() => setNewRem(true)} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg">🔔</span>Připomínku</button>
-              <button onClick={() => { sessionStorage.setItem('tlapka:petTab', 'doklady'); openPet(data.pets[0].id); }} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg">📎</span>Dokument</button>
+              <button onClick={() => (data.pets.length > 1 ? setPickDoc(true) : openDocs(data.pets[0].id))} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg">📎</span>Dokument</button>
               <ScanButton className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight" />
             </div>
           </section>
@@ -114,6 +117,17 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
       )}
       <ReminderForm open={!!edit || newRem} reminder={edit ?? undefined} onClose={() => { setEdit(null); setNewRem(false); }} />
       <PetForm open={newPet} onClose={() => setNewPet(false)} />
+      {pickDoc && createPortal(<Sheet open={pickDoc} onClose={() => setPickDoc(false)} title="Ke komu dokument patří?">
+        <p className="text-[14px] text-muted -mt-1 mb-4">Vyber mazlíčka – otevřou se jeho Doklady, kam fakturu, zprávu nebo RTG nahraješ.</p>
+        <div className="grid grid-cols-3 gap-3" data-doc-picker>
+          {data.pets.map((p) => (
+            <button key={p.id} onClick={() => openDocs(p.id)} className="press rounded-2xl p-3 text-center bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 min-h-[44px]">
+              <Avatar pet={p} size="w-16 h-16 mx-auto" text="text-3xl" />
+              <span className="block font-semibold mt-1.5 truncate">{p.name}</span>
+            </button>
+          ))}
+        </div>
+      </Sheet>, document.body)}
     </div>
   );
 }

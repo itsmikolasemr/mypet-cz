@@ -48,7 +48,7 @@ function Shell() {
   const overdue = data.reminders.filter((r) => status(r) === 'overdue').length;
   return (
     <div className="min-h-[100dvh]">
-      <main className="max-w-md mx-auto px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-[calc(env(safe-area-inset-bottom)+var(--badge,0px)+var(--banner,0px)+132px)]">
+      <main className="max-w-md mx-auto overflow-x-clip px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-[calc(env(safe-area-inset-bottom)+var(--badge,0px)+var(--banner,0px)+132px)]">
         {EXTRA.includes(tab) && <button onClick={() => nav('home')} className="press -ml-1 mb-1 flex items-center gap-1 text-primary-d dark:text-primary font-semibold min-h-[44px] pr-3"><Icon name="back" /> Přehled</button>}
         <div key={tab + (petId ?? '')} className="animate-screen">
           {tab === 'home' && <Dashboard go={(t) => nav(t)} openPet={(id) => nav('pets', id)} />}
