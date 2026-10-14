@@ -269,7 +269,7 @@ begin
   if me is null then raise exception 'not authenticated'; end if;
   rar := case p_badge
     when 'family' then 'tecka' when 'sitter' then 'tecka' when 'party3' then 'bricho' when 'ambassador10' then 'tlapka'
-    when 'year365' then 'zlata' when 'days100' then 'tlapka' when 'days30' then 'bricho' when 'days7' then 'tecka'
+    when 'year365' then 'zlata' when 'founder' then 'zlata' when 'days100' then 'tlapka' when 'days30' then 'bricho' when 'days7' then 'tecka'
     else null end;
   if rar is null then rar := coalesce((select 'tecka' where p_badge ~ '^[a-z0-9_]{2,32}$'), null); end if;
   if rar is null then raise exception 'unknown badge'; end if;
@@ -280,11 +280,13 @@ begin
     when 'sitter' then exists (select 1 from public.tl_share_links s join public.tl_household_members m on m.household_id = s.household_id where m.user_id = me)
     when 'party3' then friends >= 3
     when 'ambassador10' then friends >= 10
+    when 'founder' then exists (select 1 from public.tl_achievements where user_id = me and badge = 'founder' and verified) -- granted by the RevenueCat webhook only
     else false end;
   insert into public.tl_achievements(user_id, badge, pet_id, rarity, verified) values (me, p_badge, coalesce(p_pet,''), rar, ok)
     on conflict (user_id, badge, pet_id) do update set verified = public.tl_achievements.verified or excluded.verified;
   if ok then
     days := case rar when 'bricho' then 1 when 'tlapka' then 7 when 'zlata' then 30 else 0 end;
+    if p_badge = 'founder' then days := 0; end if; -- Zakládající Tlapkař: badge only, no extra Premium month
     if days > 0 then got := tl_private.grant_days(me, 'badge', p_badge, days); end if;
   end if;
   return jsonb_build_object('badge', p_badge, 'verified', ok, 'days', got);

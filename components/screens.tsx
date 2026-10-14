@@ -24,6 +24,7 @@ import { useAmbient } from './ambient';
 import { usePremium } from '@/lib/premium';
 import { AdSlot, PremiumBadge } from './Premium';
 import { LangPicker } from './LangPicker';
+import { BadgeToggle, BadgesCard, CoOwnerCard, PromoRow, ReferralCard, ShareExtras } from './Growth';
 
 const sortRem = (a: Reminder, b: Reminder) => a.dueDate.localeCompare(b.dueDate);
 const greeting = () => { const h = new Date().getHours(); return h < 10 ? 'Dobré ráno' : h < 18 ? 'Ahoj' : 'Dobrý večer'; };
@@ -57,6 +58,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             <span className={`flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold shadow-card dark:shadow-card-d ring-1 ${overdue.length ? 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:ring-red-500/20' : 'bg-surface dark:bg-surface-d ring-ink/5 dark:ring-white/10'}`}><span className="inline-flex items-center gap-1.5"><Emo e={overdue.length ? '⚠️' : '✨'} />{overdue.length ? `${overdue.length} po termínu` : 'Nic nemeškáš'}</span></span>
           </div>
           <TodayCard open={() => go('today')} />
+          <Card className="p-4 flex items-center gap-3" onClick={() => go('tlapkari')}><span aria-hidden className="w-10 h-10 rounded-2xl bg-primary/15 grid place-items-center"><Emo e="👥" className="w-6 h-6" /></span><span data-tlapkari-entry className="flex-1"><b className="block">Tlapkaři</b><span className="text-[13px] text-muted">Kamarádi z výběhu, výzvy, útulky a Dar z Tlapky</span></span><Icon name="chev" className="w-4 h-4 text-muted" /></Card>
           {overdue.length > 0 && (
             <section className="space-y-2.5"><h2 className="font-semibold text-lg text-red-700 dark:text-red-400">Po termínu</h2>{overdue.map((r, i) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} hint={i === 0} onEdit={() => setEdit(r)} />)}</section>
           )}
@@ -222,10 +224,11 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
           {pet.notes && <div className="col-span-2"><p className="text-muted text-xs">Poznámky</p><p>{pet.notes}</p></div>}
         </Card>
       )}
+      <BadgesCard pet={pet} />
         </>)}
         {tab === 'sdilet' && (<>
       <PassButton pet={pet} />
-      <div className="space-y-3"><HandoverCard pet={pet} /><PassShare pet={pet} /><TravelChecklist pet={pet} /></div>
+      <div className="space-y-3"><CoOwnerCard pet={pet} /><ShareExtras pet={pet} /><HandoverCard pet={pet} /><PassShare pet={pet} /><TravelChecklist pet={pet} /></div>
         </>)}
         {tab === 'pece' && (<>
           <Button variant="soft" className="w-full" onClick={() => setRem('new')}><Icon name="plus" /> Nová připomínka</Button>
@@ -492,6 +495,7 @@ export function Settings() {
             <p className="text-[12px] text-muted mt-2 px-1">{THEMES.find((t) => t.v === data.settings.theme)?.d}</p>
           </Card>
           <LangPicker />
+          <Card className="mt-3"><BadgeToggle /></Card>
         </section>
         <section aria-labelledby="predplatne-h"><h2 id="predplatne-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1 scroll-mt-4">Předplatné</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
@@ -502,7 +506,9 @@ export function Settings() {
               <Row icon="✦" title="Získat Premium" sub="Aivet bez omezení, bez reklam, PDF pas, výdaje · 14 dní zdarma" right={<span className="text-sm font-bold text-primary">99 Kč</span>} onClick={() => prem.openPaywall('obecne')} />
             )}
             <Row icon="↻" title="Obnovit nákupy" sub="Máš Premium z jiného telefonu se stejným Apple ID / Google účtem?" onClick={async () => { const r = await prem.restore(); notice(r ? 'Nákup obnoven' : 'Nic k obnovení', r ? 'Premium je zase aktivní.' : 'K tomuto Apple ID / Google účtu jsme nenašli aktivní předplatné. Platby v obchodech zatím nejsou zapnuté (testovací verze).'); }} />
+          <PromoRow />
           </Card>
+        <div className="mt-3"><ReferralCard /></div>
         </section>
         <section aria-labelledby="upozorneni-h"><h2 id="upozorneni-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1 scroll-mt-4">Upozornění</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
@@ -551,19 +557,20 @@ function PassButton({ pet }: { pet: Pet }) {
   const { data } = useStore();
   const prem = usePremium();
   const [busy, setBusy] = useState(false);
-  const run = async () => {
+  const run = async (lang?: 'en' | 'de') => {
     if (!prem.isPremium) return prem.openPaywall('pdf');
     setBusy(true);
-    try { const { healthPassPdf, saveOrShare } = await import('@/lib/pdf'); const b = await healthPassPdf(data, pet); const where = await saveOrShare(b, `zdravotni-pas-${pet.name.normalize('NFD').replace(/[^\w-]/g, '').toLowerCase() || 'mazlicek'}.pdf`); toast(where.startsWith('file:') ? 'Zdravotní pas uložen do Dokumentů ✓' : 'Zdravotní pas stažen ✓'); }
+    try { const { healthPassPdf, saveOrShare } = await import('@/lib/pdf'); const b = await healthPassPdf(data, pet, lang); const where = await saveOrShare(b, `${lang === 'en' ? 'health-passport-' : lang === 'de' ? 'gesundheitspass-' : 'zdravotni-pas-'}${pet.name.normalize('NFD').replace(/[^\w-]/g, '').toLowerCase() || 'mazlicek'}.pdf`); toast(where.startsWith('file:') ? 'Zdravotní pas uložen do Dokumentů ✓' : 'Zdravotní pas stažen ✓'); }
     catch (e) { console.error(e); notice('PDF se nepodařilo vytvořit', 'Zkus to prosím znovu.'); } finally { setBusy(false); }
   };
-  return (
-    <button onClick={run} disabled={busy} className="press w-full mb-3 flex items-center gap-3 rounded-[22px] p-3.5 text-left bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 disabled:opacity-60">
+  return (<>
+    <button onClick={() => run()} disabled={busy} className="press w-full mb-3 flex items-center gap-3 rounded-[22px] p-3.5 text-left bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 disabled:opacity-60">
       <span className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-xl"><Emo e="📄" className="w-6 h-6" /></span>
       <span className="flex-1"><b className="block">Zdravotní pas (PDF&nbsp;+&nbsp;QR){!prem.isPremium && <> <PremiumBadge small /></>}</b><span className="text-sm text-muted">{busy ? 'Připravuji…' : 'Očkování, léky a alergie pro veterináře'}</span></span>
       <Icon name="chev" className="w-4 h-4" />
     </button>
-  );
+    <div className="flex items-center gap-2 -mt-1 mb-3 px-1 text-[13px]" data-pass-lang><span className="text-muted flex-1">Na cesty v jazyce</span>{(['en', 'de'] as const).map((l) => <button key={l} disabled={busy} onClick={() => run(l)} className="press min-h-[44px] min-w-[44px] rounded-full px-3 font-bold bg-primary/10 text-primary-d dark:text-primary" data-notr>{l === 'en' ? 'English' : 'Deutsch'}</button>)}</div>
+  </>);
 }
 
 /* ---------------- Onboarding ---------------- */
@@ -628,5 +635,5 @@ export function Onboarding() {
   );
 }
 
-export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses' | 'second' | 'cards' | 'privacy' | 'terms' | 'about' | 'today';
+export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses' | 'second' | 'cards' | 'privacy' | 'terms' | 'about' | 'today' | 'tlapkari';
 export type { Pet };

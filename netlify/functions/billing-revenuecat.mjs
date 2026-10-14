@@ -1,6 +1,9 @@
 // RevenueCat webhook -> tl_profiles.is_premium. Configure in RevenueCat: URL https://<site>/api/billing/revenuecat,
 // Authorization header = REVENUECAT_WEBHOOK_AUTH. App must call Purchases.logIn(<supabase user id>) so app_user_id = Supabase uid.
-import { env, json, isUuid, setPremium } from './_supa.mjs';
+import { admin, env, json, isUuid, setPremium } from './_supa.mjs';
+// v1.2: Zakládající Tlapkař – buying the founder product grants the rare badge (badge only, no extra Premium days).
+const FOUNDER = env('REVENUECAT_FOUNDER_PRODUCT') || 'tlapka_founder_yearly_499';
+const founderBadge = (u) => admin('/rest/v1/tl_achievements?on_conflict=user_id,badge,pet_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify({ user_id: u, badge: 'founder', pet_id: '', rarity: 'zlata', verified: true }) }).catch((x) => console.error('founder badge', x.message));
 const ON = new Set(['INITIAL_PURCHASE', 'RENEWAL', 'UNCANCELLATION', 'PRODUCT_CHANGE', 'NON_RENEWING_PURCHASE', 'SUBSCRIPTION_EXTENDED', 'TEMPORARY_ENTITLEMENT_GRANT']);
 const OFF = new Set(['EXPIRATION']); // CANCELLATION/BILLING_ISSUE keep access until expiration_at_ms
 const safeEq = (a, b) => { if (!a || !b || a.length !== b.length) return false; let x = 0; for (let i = 0; i < a.length; i++) x |= a.charCodeAt(i) ^ b.charCodeAt(i); return x === 0; };
@@ -16,7 +19,7 @@ export default async (req) => {
   const users = [e.app_user_id, ...(e.aliases || []), ...(e.transferred_to || [])].filter(isUuid);
   if (!users.length) return json({ ok: true, ignored: 'no_supabase_uid' });
   const until = e.expiration_at_ms ? new Date(e.expiration_at_ms) : null;
-  if (ON.has(e.type)) { for (const u of new Set(users)) await setPremium(u, true, until, 'revenuecat'); return json({ ok: true, premium: true }); }
+  if (ON.has(e.type)) { for (const u of new Set(users)) { await setPremium(u, true, until, 'revenuecat'); if (String(e.product_id || '').startsWith(FOUNDER)) await founderBadge(u); } return json({ ok: true, premium: true }); }
   if (OFF.has(e.type)) { for (const u of new Set(users)) await setPremium(u, false, until, 'revenuecat'); return json({ ok: true, premium: false }); }
   if (e.type === 'TRANSFER') { for (const u of (e.transferred_from || []).filter(isUuid)) await setPremium(u, false, null, 'revenuecat'); for (const u of (e.transferred_to || []).filter(isUuid)) await setPremium(u, true, until, 'revenuecat'); return json({ ok: true }); }
   return json({ ok: true, ignored: e.type });

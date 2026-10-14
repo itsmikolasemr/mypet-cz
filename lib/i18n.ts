@@ -6,6 +6,7 @@
  * Language: localStorage 'tlapka:lang' → otherwise device language (cs/sk → cs, anything else → en).
  */
 import { EN, EN_RULES, EN_INLINE } from './i18n.en';
+import { DE } from './i18n.de';
 
 export type Lang = 'cs' | 'en';
 const KEY = 'tlapka:lang';
@@ -25,7 +26,13 @@ export function setLang(l: Lang | 'auto') {
   location.reload();
 }
 /** Locale for Intl/Date formatting. */
-export const loc = () => (getLang() === 'en' ? 'en-GB' : 'cs-CZ');
+export const loc = () => (docLang === 'de' ? 'de-DE' : docLang === 'en' ? 'en-GB' : docLang === 'cs' ? 'cs-CZ' : getLang() === 'en' ? 'en-GB' : 'cs-CZ');
+
+/** Document language override (health passport for travel: EN / DE regardless of the UI language). DE falls back to EN. */
+export type DocLang = Lang | 'de';
+let docLang: DocLang | null = null;
+export const curLang = (): DocLang => docLang ?? getLang();
+export async function withLang<T>(l: DocLang, f: () => Promise<T>): Promise<T> { const prev = docLang; docLang = l; try { return await f(); } finally { docLang = prev; } }
 
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
 const CZ = /[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]|\b(a|je|na|do|pro|se|ve|od|z)\b/;
@@ -54,9 +61,11 @@ function inline(k: string) {
 }
 /** Translate one string (exact, rules, segments, inline). Returns the input when unknown. */
 export function tr(s: string): string {
-  if (getLang() !== 'en' || !s) return s;
+  const L = curLang();
+  if (L === 'cs' || !s) return s;
   const k = norm(s);
   if (!k || !/[A-Za-zÀ-ž]/.test(k)) return s;
+  if (L === 'de') { const d = DE[k] ?? (k.match(/^(.+?)\s*([·:–])$/) && DE[k.replace(/\s*[·:–]$/, '')] ? DE[k.replace(/\s*[·:–]$/, '')] + ' ' + k.slice(-1) : undefined); if (d) return keepWs(s, d); }
   const x = core(k);
   return x == null ? s : keepWs(s, x);
 }

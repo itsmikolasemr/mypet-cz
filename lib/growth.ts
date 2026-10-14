@@ -93,10 +93,48 @@ export async function rewardDays() {
 export const claimBadge = (id: string, petId = '') => rpc<{ verified: boolean; days: number }>('tl_claim_badge', { p_badge: id, p_pet: petId });
 
 // ── pet friends via QR (offline, nothing leaves the phone until scanned) ──
-export interface FriendCard { v: 1; n: string; s: Species; b?: string; o?: string; x?: string[] }
+export interface FriendCard { v: 1; n: string; s: Species; b?: string; o?: string; x?: string[]; t?: string }
 export const friendPayload = (c: FriendCard) => `${SITE}/#friend/${btoa(unescape(encodeURIComponent(JSON.stringify(c)))).replace(/=+$/, '')}`;
 export function parseFriend(text: string): FriendCard | null {
   const m = text.match(/#friend\/([A-Za-z0-9+/_-]+)/); if (!m) return null;
   try { const j = JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))))); return j && j.v === 1 && typeof j.n === 'string' ? { ...j, n: j.n.slice(0, 40), o: j.o?.slice(0, 40) } : null; } catch { return null; }
 }
 export const toFriend = (c: FriendCard, place?: string): PetFriend => ({ id: `${c.n}:${c.s}:${c.b ?? ''}:${c.o ?? ''}`, name: c.n, species: c.s, birthDate: c.b, owner: c.o, badges: c.x?.slice(0, 3), addedAt: new Date().toISOString(), place });
+
+// ── Tlapkaři community (round 3): city-only profile, friends via QR token, system-event feed, paw/dot reactions ──
+export const LEVELS = ['Štěňátko', 'Tlapkař', 'Výběhový štamgast', 'Parťák party', 'Legenda tlapek'] as const;
+const LEVEL_AT = [0, 5, 10, 18, 26];
+/** Cosmetic only – from the number of earned badges; never unlocks care features. */
+export const levelOf = (badges: number) => { let i = 0; LEVEL_AT.forEach((n, k) => { if (badges >= n) i = k; }); return { i: i + 1, name: LEVELS[i], next: LEVEL_AT[i + 1] ?? null }; };
+export interface Tlapkar { user_id?: string; pet_name: string; species: string; breed?: string | null; city?: string | null; avatar?: string | null; showcase?: string[]; level?: number; birthday?: string | null }
+export async function myProfile(): Promise<Tlapkar | null> {
+  try { const u = (await cloud().auth.getUser()).data.user; if (!u) return null; const r = await cloud().from('tl_tlapkari').select('*').eq('user_id', u.id).maybeSingle(); return (r.data as Tlapkar) ?? null; } catch { return null; }
+}
+export async function saveProfile(p: Tlapkar) {
+  try { const r = await cloud().from('tl_tlapkari').upsert({ ...p, city: p.city?.trim().slice(0, 60) || null, updated_at: new Date().toISOString() }); return !r.error; } catch { return false; }
+}
+export const friendToken = () => rpc<string>('tl_friend_token', {});
+export const friendAdd = (token: string) => rpc<{ ok: boolean; pet?: string }>('tl_friend_add', { p_token: token });
+export interface FeedItem { id: number; user_id: string; kind: string; ref: string | null; created_at: string; who?: Tlapkar; reactions: { paw: number; dot: number; mine?: 'paw' | 'dot' } }
+export async function feed(): Promise<FeedItem[]> {
+  try {
+    const c = cloud(); const me = (await c.auth.getUser()).data.user?.id;
+    const [ev, pr, re] = await Promise.all([c.from('tl_feed_events').select('id, user_id, kind, ref, created_at').order('created_at', { ascending: false }).limit(50), c.from('tl_tlapkari').select('user_id, pet_name, species, city, level'), c.from('tl_feed_reactions').select('event_id, user_id, kind')]);
+    return ((ev.data ?? []) as FeedItem[]).map((e) => { const rs = (re.data ?? []).filter((r) => r.event_id === e.id);
+      return { ...e, who: (pr.data ?? []).find((p) => p.user_id === e.user_id) as Tlapkar | undefined, reactions: { paw: rs.filter((r) => r.kind === 'paw').length, dot: rs.filter((r) => r.kind === 'dot').length, mine: rs.find((r) => r.user_id === me)?.kind } }; });
+  } catch { return []; }
+}
+export async function react(eventId: number, kind: 'paw' | 'dot' | null) {
+  try { const c = cloud(); const me = (await c.auth.getUser()).data.user?.id; if (!me) return false;
+    if (!kind) return !(await c.from('tl_feed_reactions').delete().eq('event_id', eventId).eq('user_id', me)).error;
+    return !(await c.from('tl_feed_reactions').upsert({ event_id: eventId, user_id: me, kind })).error; } catch { return false; }
+}
+export const feedBadge = (id: string) => rpc<null>('tl_feed_badge', { p_badge: id });
+export interface Shelter { id: string; name: string; city: string; region: string; web?: string | null; donate_url?: string | null; contact_email?: string | null; contact_phone?: string | null }
+export interface Adoption { id: string; shelter_id: string; name: string; species: string; age_text?: string | null; sex?: string | null; photo_url?: string | null; temperament?: string | null; kids_ok?: boolean | null; dogs_ok?: boolean | null; cats_ok?: boolean | null }
+export async function shelters(): Promise<{ shelters: Shelter[]; adoptions: Adoption[]; month: { month: string; shelter_id: string; donated_czk: number | null; proof_url: string | null } | null }> {
+  try { const c = cloud(); const [s, a, m] = await Promise.all([c.from('tl_shelters').select('id, name, city, region, web, donate_url, contact_email, contact_phone'), c.from('tl_adoptions').select('*').order('created_at', { ascending: false }).limit(30), c.from('tl_shelter_of_month').select('month, shelter_id, donated_czk, proof_url').order('month', { ascending: false }).limit(1)]);
+    return { shelters: (s.data ?? []) as Shelter[], adoptions: (a.data ?? []) as Adoption[], month: (m.data?.[0] as never) ?? null }; } catch { return { shelters: [], adoptions: [], month: null }; }
+}
+/** "Mám zájem" – opens the shelter's own contact (mail/phone/web); Tlapka never handles the adoption itself. */
+export const interestHref = (s: Shelter, a: Adoption) => s.contact_email ? `mailto:${s.contact_email}?subject=${encodeURIComponent(`Zájem o adopci: ${a.name}`)}&body=${encodeURIComponent(`Dobrý den,\nmám zájem o ${a.name}. Viděl/a jsem ho/ji v aplikaci Tlapka.\n`)}` : s.contact_phone ? `tel:${s.contact_phone.replace(/\s/g, '')}` : s.web ?? '#';

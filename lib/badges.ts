@@ -17,7 +17,7 @@ export const RARITY: Record<Rarity, { name: string; reward: string }> = {
 };
 export type Group = 'pece' | 'zdravi' | 'pohyb' | 'cesty' | 'karty' | 'rodina' | 'milniky' | 'sezonni';
 export const GROUPS: Record<Group, string> = { pece: 'Péče a pravidelnost', zdravi: 'Zdraví (bezpečně)', pohyb: 'Pohyb a výběhy', cesty: 'Cesty', karty: 'Nákupy a karty', rodina: 'Rodina a sdílení', milniky: 'Milníky', sezonni: 'Sezónní' };
-export interface Badge { id: string; name: string; desc: string; rarity: Rarity; group: Group; scope: 'pet' | 'owner'; server?: boolean; season?: [number, number] }
+export interface Badge { id: string; name: string; desc: string; rarity: Rarity; group: Group; scope: 'pet' | 'owner'; server?: boolean; noReward?: boolean; season?: [number, number] }
 export interface Progress { have: number; need: number; done: boolean }
 
 export const BADGES: Badge[] = [
@@ -43,7 +43,7 @@ export const BADGES: Badge[] = [
   { id: 'family', name: 'Ve dvou se to lépe táhne', desc: 'Pozvaný člen rodiny nebo partner.', rarity: 'tecka', group: 'rodina', scope: 'owner', server: true },
   { id: 'sitter', name: 'Hlídač připraven', desc: 'Vyplněná karta pro hlídače.', rarity: 'tecka', group: 'rodina', scope: 'pet' },
   { id: 'party3', name: 'Tlapka parta', desc: '3 přátelé, kteří Tlapku opravdu používají.', rarity: 'bricho', group: 'rodina', scope: 'owner', server: true },
-  { id: 'founder', name: 'Zakládající Tlapkař', desc: 'Byl/a jsi u toho od začátku – roční předplatné v prvních 3 měsících.', rarity: 'zlata', group: 'rodina', scope: 'owner', server: true },
+  { id: 'founder', name: 'Zakládající Tlapkař', desc: 'Byl/a jsi u toho od začátku – roční předplatné v prvních 3 měsících.', rarity: 'zlata', group: 'rodina', scope: 'owner', server: true, noReward: true },
   { id: 'ambassador10', name: 'Ambasador tlapek', desc: '10 přátel v Tlapce.', rarity: 'tlapka', group: 'rodina', scope: 'owner', server: true },
   { id: 'wrapped', name: 'Wrapped hvězda', desc: 'Sdílený Tlapka Wrapped.', rarity: 'bricho', group: 'rodina', scope: 'pet' },
   { id: 'birthday', name: 'Všechno nejlepší!', desc: 'Narozeniny mazlíčka v Tlapce.', rarity: 'bricho', group: 'milniky', scope: 'pet' },

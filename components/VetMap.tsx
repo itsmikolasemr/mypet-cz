@@ -1,4 +1,6 @@
 'use client';
+import { ParkCheckin } from './Growth';
+import { useStore as useStoreG } from '@/lib/store';
 import { Emo, GT } from './glyphs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Map as LMap, LayerGroup } from 'leaflet';
@@ -133,6 +135,7 @@ async function liveVets(c: { lat: number; lon: number }, radius: number): Promis
 }
 
 export default function VetMap({ initialNonstop = false }: { initialNonstop?: boolean }) {
+  const { patch: patchStore } = useStoreG();
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<LMap | null>(null);
   const layer = useRef<LayerGroup | null>(null);
@@ -160,7 +163,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   useEffect(() => {
     if (!navigator.geolocation) { setLocNote('Poloha není dostupná – zobrazuji Prahu.'); setCenter(PRAHA); return; }
     navigator.geolocation.getCurrentPosition(
-      (p) => setCenter({ lat: p.coords.latitude, lon: p.coords.longitude }),
+      (p) => { const c = { lat: p.coords.latitude, lon: p.coords.longitude }; setCenter(c); if (!inCZ(c)) { const at = new Date().toISOString(); patchStore((d) => ({ ...d, flags: { ...(d.flags ?? {}), ...Object.fromEntries(d.pets.filter((x) => !x.memorial).map((x) => [`abroad:${x.id}`, d.flags?.[`abroad:${x.id}`] ?? at])) } })); } },
       () => { setLocNote('Bez přístupu k poloze – zobrazuji Prahu.'); setCenter(PRAHA); },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
     );
@@ -303,6 +306,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
             {sel.nonstop && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">{sel.tags['source:ns'] ? 'Nonstop 24/7 (ověřeno na webu kliniky)' : 'Nonstop 24/7 (dle OSM)'}</span>}
             <Card className="p-4 space-y-2.5 text-[14px]">
               {sel.park ? <p data-park-facts><span className="text-muted text-xs block">Výběh</span>{parkFacts(t).join(' · ') || 'Bez dalších údajů v OSM'}{t.description ? <span className="block text-sm text-muted mt-1">{t.description}</span> : null}</p> : <p><span className="text-muted text-xs block">Adresa</span>{address(t) || 'Neuvedena'}</p>}
+              {sel.park && <ParkCheckin park={sel} />}
               <p><span className="text-muted text-xs block">Otevírací doba</span>{t.opening_hours ? czHours(t.opening_hours).map((l, i) => <span key={i} className="block">{l}</span>) : 'Neuvedena v OSM'}</p>
               {(t.phone || t['contact:phone']) && <p><span className="text-muted text-xs block">Telefon</span><a className="text-primary font-semibold" href={`tel:${(t.phone || t['contact:phone']).split(';')[0].replace(/\s/g, '')}`}>{t.phone || t['contact:phone']}</a></p>}
               {(t.website || t['contact:website']) && <p className="truncate"><span className="text-muted text-xs block">Web</span><a className="text-primary" target="_blank" rel="noreferrer" href={t.website || t['contact:website']}>{(t.website || t['contact:website']).replace(/^https?:\/\//, '')}</a></p>}

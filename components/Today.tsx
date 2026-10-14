@@ -1,4 +1,5 @@
 'use client';
+import { FairShareCard } from './Growth';
 import { myName } from '@/lib/growth';
 import { loc } from '@/lib/i18n';
 /** v1.2 „Tlapka Den“ – in-app twin of the home-screen widget: today's meds / feeding / walks, one tap to tick. */
@@ -76,6 +77,8 @@ export function TodayScreen() {
           <p className="text-[13px] text-muted">Odškrtávat jde i z widgetu na ploše – iPhone i Android.</p></div>
       </Card>
       <WidgetHelp />
+      <FairShareCard />
+      <NyePlan />
       {!tasks.length && <Card className="p-5 text-center text-muted text-[13px]">Žádné denní úkoly. Přidej krmení a venčení v Předávací kartě (Mazlíček → Sdílet) nebo lék s dávkováním.</Card>}
       {byPet.map(({ p, list }) => (
         <section key={p.id} className="space-y-2">
@@ -96,4 +99,15 @@ function WidgetHelp() {
     notice('Widget na plochu', ios ? 'Podrž prst na ploše → ＋ vlevo nahoře → najdi Tlapka → vyber velikost (malý, střední nebo na zamčenou obrazovku) → Přidat widget.' : 'Podrž prst na ploše → Widgety → Tlapka → přetáhni „Tlapka Den“ na plochu.');
   };
   return <button onClick={add} data-add-widget className="press w-full min-h-[48px] rounded-2xl font-semibold text-primary bg-primary/10 flex items-center justify-center gap-2"><Glyph name="sparkle" className="w-5 h-5" />Přidat widget na plochu</button>;
+}
+
+/** Silvestr (20.–31. 12.): calm plan for fireworks night – the "nye" badge rewards preparing, not anything risky. */
+function NyePlan() {
+  const { data, setFlag } = useStore(); const n = new Date();
+  if (n.getMonth() !== 11 || n.getDate() < 20 || !data.pets.length) return null;
+  const done = data.pets.every((p) => p.memorial || data.flags?.[`nye:${p.id}`]);
+  return (
+    <Card className="p-4"><p className="font-semibold">Plán na Silvestr</p><p className="text-[13px] text-muted mb-2">Klidné místo, zatemnění, jmenovka s telefonem, procházka ještě za světla. Při silné úzkosti se poraď s veterinářem.</p>
+      <button disabled={done} onClick={() => data.pets.filter((p) => !p.memorial).forEach((p) => setFlag(`nye:${p.id}`))} className="press w-full min-h-[44px] rounded-2xl font-semibold text-primary bg-primary/10 disabled:opacity-60">{done ? 'Připraveno ✓' : 'Mám připraveno'}</button></Card>
+  );
 }

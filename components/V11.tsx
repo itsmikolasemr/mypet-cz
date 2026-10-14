@@ -218,7 +218,7 @@ export function PassShare({ pet }: { pet: Pet }) {
 
 type Dest = 'eu' | 'special' | 'uk' | 'third';
 export function TravelChecklist({ pet }: { pet: Pet }) {
-  const { data } = useStore(); const prem = usePremium();
+  const { data, setFlag } = useStore(); const prem = usePremium();
   const [dest, setDest] = useState<Dest>('eu'); const [date, setDate] = useState(addDays(today(), 30));
   const rabies = data.reminders.filter((r) => r.petId === pet.id && r.type === 'ockovani' && /vztekl|rabi|rabis/i.test(`${r.title} ${r.product}`));
   const lastRabies = rabies.flatMap((r) => r.history).sort().at(-1);
@@ -245,6 +245,7 @@ export function TravelChecklist({ pet }: { pet: Pet }) {
       </div>
       <ul className="space-y-2" data-travel>{items.map((i) => (
         <li key={i.t} className="flex gap-3"><span aria-hidden className={i.ok === true ? 'text-green-600 dark:text-green-400' : i.ok === false ? 'text-red-600 dark:text-red-400' : 'text-muted'}><Emo e={i.ok === true ? '✅' : i.ok === false ? '⚠️' : '☐'} className="w-6 h-6" /></span><div><p className="font-medium">{i.t}<span className="sr-only">{i.ok === true ? ' – splněno' : i.ok === false ? ' – chybí' : ''}</span></p>{i.d && <p className="text-[13px] text-muted">{i.d}</p>}</div></li>))}</ul>
+      <Button variant="soft" className="w-full" disabled={!!data.flags?.[`packed:${pet.id}`]} onClick={() => setFlag(`packed:${pet.id}`)}>{data.flags?.[`packed:${pet.id}`] ? 'Sbaleno ✓' : 'Mám sbaleno'}</Button>
       <p className="text-[12px] text-muted">Orientační přehled pravidel EU. Před cestou vždy ověř aktuální podmínky na svscr.cz.</p>
     </Card>
   );

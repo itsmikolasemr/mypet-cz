@@ -117,3 +117,14 @@ insert into public.tl_shelters(name, ico, city, region) values ('Neověřený', 
 set role anon; select count(*) as sh from public.tl_shelters \gset
 reset role;
 select case when :sh = 0 then 'ok unverified shelters hidden' else 'FAIL shelters' end;
+-- founder badge: client can't self-grant; webhook-granted badge verifies but adds no Premium days
+select pg_temp.as_user('cccccccc-cccc-cccc-cccc-cccccccccccc'); set role authenticated;
+select (public.tl_claim_badge('founder')->>'verified')::boolean as f1 \gset
+reset role;
+update public.tl_achievements set verified = true where user_id = 'cccccccc-cccc-cccc-cccc-cccccccccccc' and badge = 'founder';
+select pg_temp.as_user('cccccccc-cccc-cccc-cccc-cccccccccccc'); set role authenticated;
+select public.tl_claim_badge('founder') as f2 \gset
+reset role;
+select case when not :'f1'::boolean and (:'f2'::jsonb->>'verified')::boolean and (:'f2'::jsonb->>'days')::int = 0 then 'ok founder badge server-only, no extra month' else 'FAIL founder ' || :'f2' end;
+-- Rodina: max 6 people per household
+select case when position('up to 6' in pg_get_functiondef('tl_private.check_member_limit'::regproc)) > 0 then 'ok family cap 6' else 'FAIL family cap' end;

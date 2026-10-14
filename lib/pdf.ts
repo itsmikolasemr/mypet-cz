@@ -1,4 +1,4 @@
-import { tr, getLang } from './i18n';
+import { tr, curLang, withLang, type DocLang } from './i18n';
 import { loc } from './i18n';
 // Premium: PDF health pass ("zdravotní pas") with QR summary. Lazy-loaded, fully on-device.
 import type { AppData, Pet } from './types';
@@ -18,13 +18,18 @@ function drawMark(page: PDFPage, rgb: typeof RgbFn, x: number, y: number, s: num
   page.drawCircle({ x: x + 512 * k, y: y + s - 598 * k, size: 200 * k, color: rgb(0.498, 0.702, 0.91) });
 }
 
-export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
+/** lang: document language override – 'en' / 'de' for travel (Cestovní režim), default = UI language. */
+export async function healthPassPdf(data: AppData, pet: Pet, lang?: DocLang): Promise<Blob> {
+  return lang ? withLang(lang, () => passPdf(data, pet)) : passPdf(data, pet);
+}
+const ageText = (b: string) => { const a = age(b); if (curLang() !== 'de') return tr(a); const n = a.match(/\d+/)?.[0] ?? ''; return /měs/.test(a) ? `${n} Monate` : /týd/.test(a) ? `${n} Wochen` : `${n} Jahre`; };
+async function passPdf(data: AppData, pet: Pet): Promise<Blob> {
   const [{ PDFDocument, rgb }, fontkit, QR] = await Promise.all([import('pdf-lib'), import('@pdf-lib/fontkit').then((m) => m.default), import('qrcode')]);
   const doc = await PDFDocument.create();
   doc.registerFontkit(fontkit);
   const [reg, bold] = await Promise.all(['/fonts/LiberationSans-Regular.ttf', '/fonts/LiberationSans-Bold.ttf'].map((u) => fetch(u).then((r) => r.arrayBuffer())));
   const F = await doc.embedFont(reg, { subset: true }), B = await doc.embedFont(bold, { subset: true });
-  doc.setTitle(`Zdravotní pas – ${pet.name}`); doc.setCreator('Tlapka'); doc.setLanguage(getLang());
+  doc.setTitle(`${tr('Zdravotní pas')} – ${pet.name}`); doc.setCreator('Tlapka'); doc.setLanguage(curLang());
   const W = 595, H = 842, M = 44;
   let page = doc.addPage([W, H]); let y = H - M;
   const ink = rgb(0.114, 0.118, 0.133), muted = rgb(0.337, 0.357, 0.388), brand = rgb(0.498, 0.702, 0.91), brandText = rgb(0.141, 0.376, 0.624), navy = rgb(0.059, 0.145, 0.251), red = rgb(0.75, 0.1, 0.1);
@@ -41,13 +46,13 @@ export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
   page.drawRectangle({ x: 0, y: H - 96, width: W, height: 96, color: brand });
   drawMark(page, rgb, W - M - 56, H - 76, 56);
   page.drawText(tr('Zdravotní pas'), { x: M, y: H - 46, size: 24, font: B, color: navy });
-  page.drawText(tr(`${pet.name} · vygenerováno v aplikaci Tlapka ${fmtDate(today())}`), { x: M, y: H - 70, size: 11, font: F, color: navy });
+  page.drawText(`${pet.name} · ${tr('vygenerováno v aplikaci Tlapka')} ${fmtDate(today())}`, { x: M, y: H - 70, size: 11, font: F, color: navy });
   y = H - 120;
 
   const meds = data.meds.filter((m) => m.petId === pet.id && (!m.end || m.end >= today()));
   const allergies = data.allergies.filter((a) => a.petId === pet.id);
   const w = pet.weights[pet.weights.length - 1];
-  const summary = [`Tlapka – ${pet.name}`, `${speciesOf(pet.species).name}${pet.breed ? ', ' + pet.breed : ''}`, pet.microchip ? `Čip: ${pet.microchip}` : '', allergies.length ? `ALERGIE: ${allergies.map((a) => a.allergen).join(', ')}` : 'Alergie: žádné', meds.length ? `Léky: ${meds.map((m) => `${m.name} ${m.dose}`.trim()).join('; ')}` : ''].filter(Boolean).join('\n');
+  const summary = [`Tlapka – ${pet.name}`, `${tr(speciesOf(pet.species).name)}${pet.breed ? ', ' + pet.breed : ''}`, pet.microchip ? `${tr('Čip')}: ${pet.microchip}` : '', allergies.length ? `${tr('ALERGIE')}: ${allergies.map((a) => a.allergen).join(', ')}` : `${tr('Alergie')}: ${tr('žádné')}`, meds.length ? `Léky: ${meds.map((m) => `${m.name} ${m.dose}`.trim()).join('; ')}` : ''].filter(Boolean).join('\n');
   const qr = await doc.embedPng(await QR.toDataURL(summary, { margin: 1, width: 300, errorCorrectionLevel: 'M' }));
   const top = y;
   page.drawImage(qr, { x: W - M - 110, y: top - 110, width: 110, height: 110 });
@@ -56,24 +61,24 @@ export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
     try { const img = pet.photo.includes('png') ? await doc.embedPng(pet.photo) : await doc.embedJpg(pet.photo); page.drawImage(img, { x: M, y: top - 96, width: 96, height: 96 }); } catch {}
   }
   const col = pet.photo ? M + 112 : M;
-  const rows: [string, string][] = [['Jméno', pet.name], ['Druh / plemeno', `${speciesOf(pet.species).name}${pet.breed ? ' – ' + pet.breed : ''}`], ['Pohlaví', SEX[pet.sex] ?? ''], ['Narození', pet.birthDate ? `${fmtDate(pet.birthDate)} (${age(pet.birthDate)})` : 'neuvedeno'], ['Číslo čipu', pet.microchip || 'neuvedeno'], ['Barva', pet.color || '–'], ['Poslední váha', w ? `${w.kg.toLocaleString(loc())} kg (${fmtDate(w.date)})` : 'neuvedeno']];
-  for (const [k, v] of rows) { page.drawText(k, { x: col, y: y - 10, size: 8.5, font: F, color: muted }); page.drawText(v, { x: col + 92, y: y - 10, size: 10.5, font: B, color: ink, maxWidth: W - M - 120 - col - 92 }); y -= 16; }
+  const rows: [string, string][] = [['Jméno', pet.name], ['Druh / plemeno', `${tr(speciesOf(pet.species).name)}${pet.breed ? ' – ' + pet.breed : ''}`], ['Pohlaví', tr(SEX[pet.sex] ?? '')], ['Narození', pet.birthDate ? `${fmtDate(pet.birthDate)} (${ageText(pet.birthDate)})` : tr('neuvedeno')], ['Číslo čipu', pet.microchip || tr('neuvedeno')], ['Barva', pet.color || '–'], ['Poslední váha', w ? `${w.kg.toLocaleString(loc())} kg (${fmtDate(w.date)})` : tr('neuvedeno')]];
+  for (const [k, v] of rows) { page.drawText(tr(k), { x: col, y: y - 10, size: 8.5, font: F, color: muted }); page.drawText(v, { x: col + 92, y: y - 10, size: 10.5, font: B, color: ink, maxWidth: W - M - 120 - col - 92 }); y -= 16; }
   y = Math.min(y, top - 132);
 
   h2('Alergie a intolerance');
   if (!allergies.length) text('Žádné zaznamenané.', { color: muted });
-  for (const a of allergies) text(`• ${a.allergen}${a.reaction ? ' – ' + a.reaction : ''} (${SEVERITY.find((s) => s.id === a.severity)?.n.toLowerCase() ?? a.severity})`, { font: B, color: red });
+  for (const a of allergies) text(`• ${a.allergen}${a.reaction ? ' – ' + a.reaction : ''} (${tr(SEVERITY.find((s) => s.id === a.severity)?.n ?? a.severity).toLowerCase()})`, { font: B, color: red });
   h2('Aktuální léky');
   if (!meds.length) text('Žádné.', { color: muted });
-  for (const m of meds) text(`• ${m.name}${m.dose ? ', ' + m.dose : ''}${m.frequency ? ', ' + m.frequency : ''} – od ${fmtDate(m.start)}${m.end ? ' do ' + fmtDate(m.end) : ''}`);
+  for (const m of meds) text(`• ${m.name}${m.dose ? ', ' + m.dose : ''}${m.frequency ? ', ' + tr(m.frequency) : ''} – ${tr('od')} ${fmtDate(m.start)}${m.end ? ` ${tr('do')} ` + fmtDate(m.end) : ''}`);
   h2('Očkování a prevence');
   const prev = data.reminders.filter((r) => r.petId === pet.id && ['ockovani', 'odcerveni', 'antiparazitika'].includes(r.type));
   if (!prev.length) text('Žádné záznamy.', { color: muted });
-  for (const r of prev) text(`• ${typeOf(r.type).name}: ${r.title}${r.product ? ' (' + r.product + ')' : ''} – provedeno: ${r.history.length ? r.history.slice(-4).map(fmtDate).join(', ') : '–'}; další termín: ${r.completedAt ? 'splněno' : fmtDate(r.dueDate)}`);
+  for (const r of prev) text(`• ${tr(typeOf(r.type).name)}: ${tr(r.title)}${r.product ? ' (' + r.product + ')' : ''} – ${tr('provedeno')}: ${r.history.length ? r.history.slice(-4).map(fmtDate).join(', ') : '–'}; ${tr('další termín')}: ${r.completedAt ? tr('splněno') : fmtDate(r.dueDate)}`);
   h2('Návštěvy veterináře');
   const visits = data.visits.filter((v) => v.petId === pet.id).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 15);
   if (!visits.length) text('Žádné záznamy.', { color: muted });
-  for (const v of visits) text(`• ${fmtDate(v.date)} – ${v.reason || 'návštěva'}${v.clinic ? ', ' + v.clinic : ''}${v.notes ? '. ' + v.notes : ''}`);
+  for (const v of visits) text(`• ${fmtDate(v.date)} – ${v.reason ? tr(v.reason) : tr('návštěva')}${v.clinic ? ', ' + v.clinic : ''}${v.notes ? '. ' + v.notes : ''}`);
   if (pet.notes) { h2('Poznámky'); text(pet.notes); }
   y -= 14; text('Dokument vytvořil majitel v aplikaci Tlapka z vlastních záznamů. Nejde o úřední doklad ani o EU pas zvířete.', { size: 8, color: muted });
   const bytes = await doc.save();
@@ -99,7 +104,7 @@ export async function simplePdf(title: string, subtitle: string, sections: { h: 
   const doc = await PDFDocument.create(); doc.registerFontkit(fontkit);
   const [reg, bold] = await Promise.all(['/fonts/LiberationSans-Regular.ttf', '/fonts/LiberationSans-Bold.ttf'].map((u) => fetch(u).then((r) => r.arrayBuffer())));
   const F = await doc.embedFont(reg, { subset: true }), B = await doc.embedFont(bold, { subset: true });
-  doc.setTitle(title); doc.setCreator('Tlapka'); doc.setLanguage(getLang());
+  doc.setTitle(title); doc.setCreator('Tlapka'); doc.setLanguage(curLang());
   const W = 595, H = 842, M = 44; let page = doc.addPage([W, H]); let y = H - M;
   const ink = rgb(0.114, 0.118, 0.133), muted = rgb(0.337, 0.357, 0.388), navy = rgb(0.059, 0.145, 0.251), brandText = rgb(0.141, 0.376, 0.624), red = rgb(0.7, 0.08, 0.08);
   const ensure = (h: number) => { if (y - h < M) { page = doc.addPage([W, H]); y = H - M; } };

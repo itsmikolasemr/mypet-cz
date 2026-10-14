@@ -13,6 +13,10 @@ const Wallet = dynamic(() => import('./Wallet').then((m) => m.Wallet), { ssr: fa
 import { BannerSlot, Expenses, Paywall } from './Premium';
 import { FeedbackHost } from './feedback';
 import { TodayScreen } from './Today';
+import { BadgeWatcher, GrowthLinks, Tlapkari } from './Growth';
+import { useCloud } from '@/lib/cloudsync';
+import { captureRef, claimPendingRef } from '@/lib/growth';
+function RefCapture() { const c = useCloud(); useEffect(() => { captureRef(); }, []); useEffect(() => { if (c.session) claimPendingRef().then((r) => { if (r?.ok) import('./feedback').then((f) => f.notice('Vítej v Tlapce', `Od kamaráda máš ${r.days} dní Premium.`)); }); }, [c.session]); return null; }
 import { startI18n } from '@/lib/i18n';
 const Privacy = dynamic(() => import('./Legal').then((m) => m.Privacy));
 const Terms = dynamic(() => import('./Legal').then((m) => m.Terms));
@@ -20,7 +24,7 @@ const About = dynamic(() => import('./Legal').then((m) => m.About));
 import { CalendarScreen, Dashboard, Onboarding, PetDetail, PetsList, Reminders, Settings, type Tab } from './screens';
 
 const VetMap = dynamic(() => import('./VetMap'), { ssr: false, loading: () => <div className="h-[46dvh] rounded-[26px] bg-ink/5 animate-pulse mt-20" /> });
-const EXTRA: Tab[] = ['today', 'map', 'ai', 'expenses', 'second', 'cards', 'privacy', 'terms', 'about'];
+const EXTRA: Tab[] = ['today', 'tlapkari', 'map', 'ai', 'expenses', 'second', 'cards', 'privacy', 'terms', 'about'];
 const FROM_SETTINGS: Tab[] = ['privacy', 'terms', 'about'];
 
 const TABS: { id: Tab; l: string; i: 'home' | 'paw' | 'bell' | 'heart' | 'cog' }[] = [
@@ -69,6 +73,7 @@ function Shell() {
         <div key={tab + (petId ?? '')} className="animate-screen">
           {tab === 'home' && <Dashboard go={(t) => nav(t)} openPet={(id) => nav('pets', id)} />}
           {tab === 'today' && <TodayScreen />}
+          {tab === 'tlapkari' && <Tlapkari />}
           {tab === 'map' && <VetMap initialNonstop={petId === 'nonstop'} />}
           {tab === 'ai' && <Aivet initialPet={petId ?? undefined} openMap={() => nav('map', 'nonstop')} />}
           {tab === 'pets' && (petId ? <PetDetail id={petId} back={() => history.length > 1 ? history.back() : nav('pets')} ask={() => nav('ai', petId)} /> : <PetsList openPet={(id) => nav('pets', id)} />)}
@@ -108,5 +113,5 @@ const CalIcon = () => (<svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" 
 
 export default function App() {
   useEffect(() => { startI18n(); }, []);
-  return <StoreProvider><PremiumProvider><CloudProvider><Shell /><Paywall /><FeedbackHost /></CloudProvider></PremiumProvider></StoreProvider>;
+  return <StoreProvider><PremiumProvider><CloudProvider><Shell /><Paywall /><FeedbackHost /><BadgeWatcher /><GrowthLinks /><RefCapture /></CloudProvider></PremiumProvider></StoreProvider>;
 }

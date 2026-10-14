@@ -204,3 +204,6 @@ html.glass .swipe-track > .bg-surface, html.glass .swipe-track .bg-surface { bac
 .wr-in { animation: wr-in .7s cubic-bezier(.2,.9,.3,1) both; }
 .wr-pop { animation: wr-pop .6s cubic-bezier(.3,1.5,.5,1) both; }
 @media (prefers-reduced-motion: reduce) { .wr-in, .wr-pop { animation: none; } }
+/* glass: selected radio chips (Jazyk, tarify, motivy) must read as selected – the level-2 pane rule above flattens bg-primary/10 */
+html.glass [role="radio"][aria-checked="true"] { background: rgba(127,179,232,.32) !important; box-shadow: inset 0 0 0 2px #3D7FC4, 0 6px 16px -10px rgba(30,34,40,.45) !important; }
+html.glass [role="radio"][aria-checked="true"] .text-muted { color: #17191D; }
