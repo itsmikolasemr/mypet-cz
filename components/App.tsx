@@ -49,6 +49,7 @@ function Shell() {
   return (
     <div className="min-h-[100dvh]">
       <main className="max-w-md mx-auto px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-[calc(env(safe-area-inset-bottom)+var(--badge,0px)+var(--banner,0px)+132px)]">
+        {EXTRA.includes(tab) && <button onClick={() => nav('home')} className="press -ml-1 mb-1 flex items-center gap-1 text-primary-d dark:text-primary font-semibold min-h-[44px] pr-3"><Icon name="back" /> Přehled</button>}
         <div key={tab + (petId ?? '')} className="animate-screen">
           {tab === 'home' && <Dashboard go={(t) => nav(t)} openPet={(id) => nav('pets', id)} />}
           {tab === 'map' && <VetMap initialNonstop={petId === 'nonstop'} />}
@@ -66,9 +67,9 @@ function Shell() {
       <nav aria-label="Hlavní navigace" className="fixed inset-x-0 z-40 flex justify-center px-5 pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + 12px)' }}>
         <div className="pointer-events-auto relative w-full max-w-[400px] grid grid-cols-5 p-1.5 rounded-[30px] bg-surface/70 dark:bg-[#1C222A]/70 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-ink/[0.06] dark:ring-white/10 shadow-float dark:shadow-float-d">
           <span aria-hidden className="absolute top-1.5 bottom-1.5 left-1.5 rounded-[24px] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_6px_16px_-4px_rgba(127,179,232,.55)] transition-[transform,opacity] duration-500 ease-spring"
-            style={{ width: 'calc((100% - 12px) / 5)', transform: `translateX(${Math.max(0, TABS.findIndex((t) => t.id === tab)) * 100}%)`, opacity: TABS.some((t) => t.id === tab) ? 1 : 0 }} />
+            style={{ width: 'calc((100% - 12px) / 5)', transform: `translateX(${Math.max(0, TABS.findIndex((t) => t.id === tab)) * 100}%)`, opacity: 1 }} />
           {TABS.map((t) => {
-            const a = tab === t.id;
+            const a = tab === t.id || (t.id === 'home' && EXTRA.includes(tab));
             return (
               <button key={t.id} onClick={() => nav(t.id)} aria-current={a ? 'page' : undefined}
                 className={`relative z-10 h-14 flex flex-col items-center justify-center gap-0.5 rounded-[24px] transition-colors duration-300 ${a ? 'text-white' : 'text-muted hover:text-ink dark:hover:text-white'}`}>

@@ -136,7 +136,8 @@ export function Wallet() {
       <PageHeader title="Věrnostní karty" sub={cards.length ? `${cards.length} ${cards.length === 1 ? 'karta' : cards.length < 5 ? 'karty' : 'karet'} · sdílené s domácností` : 'Všechny zverimexy v kapse'} fab={<Fab label="Přidat kartu" onClick={() => setEdit(blank())} />} />
       {!cards.length ? (
         <Empty emoji="💳" title="Zatím žádná karta" text="Naskenuj věrnostní kartu ze Super zoo, Zoo Bonus, Pet Center, Fressnapf / Maxi Zoo nebo Krmiv Hulín. U pokladny ji pak jen ukážeš." action={<Button onClick={() => setEdit(blank())}>＋ Přidat kartu</Button>} />
-      ) : (
+      ) : (<>
+        <p className="text-[13px] text-muted px-1 -mt-1 mb-3">👆 Klepni na kartu – u pokladny se ukáže velký kód a zesvětlí se displej.</p>
         <ul className="pb-4" aria-label="Karty">
           {cards.map((c, i) => { const s = look(c); return (
             <li key={c.id} data-card={c.id} className={`relative ${i ? '-mt-[86px]' : ''}`} style={{ zIndex: i + 1 }}>
@@ -157,7 +158,7 @@ export function Wallet() {
                 </div>
               </div>
             </li>); })}
-        </ul>
+        </ul></>
       )}
       {cards.length > 0 && <p className="text-[13px] text-muted text-center px-6 mt-2">Klepni na kartu a ukaž ji u pokladny. Nejpoužívanější karty jsou nahoře.</p>}
       <Sheet open={!!edit} onClose={() => setEdit(null)} title={edit?.code ? 'Upravit kartu' : 'Nová karta'}>{edit && <CardForm key={edit.id} initial={edit} onDone={() => setEdit(null)} />}</Sheet>

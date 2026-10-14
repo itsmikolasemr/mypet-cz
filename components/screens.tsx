@@ -46,33 +46,50 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             <span className="flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">📅 {upcoming.length} {upcoming.length === 1 ? 'úkol' : upcoming.length >= 2 && upcoming.length <= 4 ? 'úkoly' : 'úkolů'} / 30 dní</span>
             <span className={`flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold shadow-card dark:shadow-card-d ring-1 ${overdue.length ? 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:ring-red-500/20' : 'bg-surface dark:bg-surface-d ring-ink/5 dark:ring-white/10'}`}>{overdue.length ? `⚠️ ${overdue.length} po termínu` : '✨ Nic nemeškáš'}</span>
           </div>
-          <p className="text-[13px] text-muted -mt-5 px-1">Tip: připomínku odškrtneš i potažením doprava 🐾</p>
-          <div className="grid grid-cols-2 gap-3 -mt-2">
-            <button onClick={() => setNewRem(true)} className="press min-h-[48px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[15px]">＋ Připomínka</button>
-            <button onClick={() => { sessionStorage.setItem('tlapka:petTab', 'doklady'); openPet(data.pets[0].id); }} className="press min-h-[48px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[15px]">📎 Dokument</button>
-            <ScanButton className="press min-h-[48px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[15px] flex items-center justify-center gap-1.5" />
-            <button onClick={() => go('second')} className="press min-h-[48px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[15px]">🩻 Druhý názor</button>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Card onClick={() => go('ai')} className="p-4">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] text-xl flex items-center justify-center shadow-[0_8px_18px_-8px_rgba(127,179,232,.7)] mb-3">🩺</div>
-              <p className="font-semibold">Aivet</p><p className="text-[13px] text-muted">Poradí, co dělat</p>
+          {overdue.length > 0 && (
+            <section className="space-y-2.5"><h2 className="font-semibold text-lg text-red-700 dark:text-red-400">Po termínu</h2>{overdue.map((r, i) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} hint={i === 0} onEdit={() => setEdit(r)} />)}</section>
+          )}
+          <section className="space-y-2.5">
+            <div className="flex items-center justify-between"><h2 className="font-semibold text-lg">Nadcházející</h2><button className="text-sm font-semibold text-primary min-h-[44px] min-w-[44px] justify-center px-2 -mr-2 inline-flex items-center min-h-[44px] px-2 -mr-2 inline-flex items-center" onClick={() => setNewRem(true)}>+ Přidat</button></div>
+            {upcoming.length ? upcoming.slice(0, 5).map((r, i) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} hint={!overdue.length && i === 0} onEdit={() => setEdit(r)} />) : <Card className="p-4 text-sm text-muted text-center">Příštích 30 dní nic. 🎉</Card>}
+          </section>
+          <section>
+            <h2 className="font-semibold text-lg mb-2">Rychle přidat</h2>
+            <div className="grid grid-cols-3 gap-2.5">
+              <button onClick={() => setNewRem(true)} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg">🔔</span>Připomínku</button>
+              <button onClick={() => { sessionStorage.setItem('tlapka:petTab', 'doklady'); openPet(data.pets[0].id); }} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg">📎</span>Dokument</button>
+              <ScanButton className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight" />
+            </div>
+          </section>
+          <section>
+            <h2 className="font-semibold text-lg mb-2">Pomocníci</h2>
+            <div className="grid grid-cols-2 gap-2.5">
+            <Card onClick={() => go('ai')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">🩺</div>
+              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Aivet</span><span className="block text-[12px] text-muted leading-snug">Poradí, co dělat</span></span>
             </Card>
-            <Card onClick={() => go('map')} className="p-4">
-              <div className="w-11 h-11 rounded-2xl bg-primary/10 text-xl flex items-center justify-center mb-3">🗺️</div>
-              <p className="font-semibold">Veteriny</p><p className="text-[13px] text-muted">V okolí i nonstop</p>
+            <Card onClick={() => go('map')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">🗺️</div>
+              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Mapa</span><span className="block text-[12px] text-muted leading-snug">Veteriny, nonstop, výběhy</span></span>
             </Card>
-            <Card onClick={() => go('cards')} className="p-4 col-span-2 flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">💳</div>
-              <span className="flex-1"><span className="font-semibold">Věrnostní karty</span><span className="block text-[13px] text-muted">{data.cards.length ? `${data.cards.length} v peněžence · ukaž u pokladny` : 'Super zoo, Zoo Bonus, Fressnapf…'}</span></span>
-              <Icon name="chev" className="w-4 h-4 text-muted" />
+            <Card onClick={() => go('cards')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">💳</div>
+              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Věrnostní karty</span><span className="block text-[12px] text-muted leading-snug">{data.cards.length ? `${data.cards.length} v kapse` : 'Zverimexy v kapse'}</span></span>
             </Card>
-            <Card onClick={() => go('expenses')} className="p-4 col-span-2 flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">💰</div>
-              <span className="flex-1"><span className="font-semibold flex items-center gap-2">Výdaje {!prem.isPremium && <PremiumBadge small />}</span><span className="block text-[13px] text-muted">Kolik stojí péče po měsících</span></span>
-              <Icon name="chev" className="w-4 h-4 text-muted" />
+            <Card onClick={() => go('expenses')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">💰</div>
+              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Výdaje</span><span className="block text-[12px] text-muted leading-snug">Kolik stojí péče{!prem.isPremium && ' · ✦ Premium'}</span></span>
             </Card>
-          </div>
+            <Card onClick={() => go('second')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">🩻</div>
+              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Druhý názor</span><span className="block text-[12px] text-muted leading-snug">Vysvětlí zprávu od vety</span></span>
+            </Card>
+            <Card onClick={() => { sessionStorage.setItem('tlapka:petTab', 'sdilet'); openPet(data.pets[0].id); }} className="p-3.5 flex items-center gap-3 min-h-[72px]">
+              <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">🧳</div>
+              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Pro hlídače</span><span className="block text-[12px] text-muted leading-snug">Karta: krmení, léky, kontakty</span></span>
+            </Card>
+            </div>
+          </section>
           <section>
             <div className="flex items-center justify-between mb-2"><h2 className="font-semibold text-lg">Mazlíčci</h2><button className="text-sm font-semibold text-primary min-h-[44px] min-w-[44px] justify-center px-2 -mr-2 inline-flex items-center min-h-[44px] px-2 -mr-2 inline-flex items-center" onClick={() => go('pets')}>Vše</button></div>
             <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 pt-1 pb-3">
@@ -88,13 +105,6 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
                 <p className="text-sm text-muted mt-1.5">Přidat</p>
               </button>
             </div>
-          </section>
-          {overdue.length > 0 && (
-            <section className="space-y-2.5"><h2 className="font-semibold text-lg text-red-700 dark:text-red-400">Po termínu</h2>{overdue.map((r, i) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} hint={i === 0} onEdit={() => setEdit(r)} />)}</section>
-          )}
-          <section className="space-y-2.5">
-            <div className="flex items-center justify-between"><h2 className="font-semibold text-lg">Nadcházející</h2><button className="text-sm font-semibold text-primary min-h-[44px] min-w-[44px] justify-center px-2 -mr-2 inline-flex items-center min-h-[44px] px-2 -mr-2 inline-flex items-center" onClick={() => setNewRem(true)}>+ Přidat</button></div>
-            {upcoming.length ? upcoming.slice(0, 5).map((r, i) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} hint={!overdue.length && i === 0} onEdit={() => setEdit(r)} />) : <Card className="p-4 text-sm text-muted text-center">Příštích 30 dní nic. 🎉</Card>}
           </section>
           <AdSlot id="home" />
           {nextVisit && (
@@ -145,7 +155,7 @@ export function PetsList({ openPet }: { openPet: (id: string) => void }) {
 export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask?: () => void }) {
   const { data, deletePet, deleteWeight, addWeight } = useStore();
   const pet = data.pets.find((p) => p.id === id);
-  const [tab, setTab] = useState<'pece' | 'zdravi' | 'vaha' | 'doklady'>(() => { const t = typeof window !== 'undefined' && sessionStorage.getItem('tlapka:petTab'); if (t) sessionStorage.removeItem('tlapka:petTab'); return t === 'doklady' ? 'doklady' : 'pece'; });
+  const [tab, setTab] = useState<'profil' | 'pece' | 'zdravi' | 'doklady' | 'sdilet'>(() => { const t = typeof window !== 'undefined' && sessionStorage.getItem('tlapka:petTab'); if (t) sessionStorage.removeItem('tlapka:petTab'); return t === 'doklady' || t === 'sdilet' || t === 'zdravi' ? t : 'pece'; });
   const [edit, setEdit] = useState(false);
   const [rem, setRem] = useState<Reminder | null | 'new'>(null);
   const [vis, setVis] = useState<Visit | null | 'new'>(null);
@@ -174,20 +184,27 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
           {allergies.length > 0 && <button onClick={() => setTab('zdravi')} className="mt-1.5 min-h-[44px] text-[13px] font-bold rounded-full px-3.5 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400">⚠️ Alergie: {allergies.map((a) => a.allergen).join(', ')}</button>}
         </div>
       </div>
+      {ask && <button onClick={ask} className="press w-full mb-3 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_14px_30px_-14px_rgba(127,179,232,.7)]">
+        <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">🩺</span>
+        <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-[#0F2540]/75">Zná profil, léky i alergie – {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
+      </button>}
+      <div className="sticky z-20 -mx-1 px-1 py-1 mb-1 bg-bg/80 dark:bg-bg-d/80 backdrop-blur-xl rounded-full" style={{ top: 'calc(env(safe-area-inset-top) + 72px)' }}>
+        <Segmented value={tab} onChange={setTab} options={[{ v: 'profil', l: 'Profil' }, { v: 'pece', l: 'Péče' }, { v: 'zdravi', l: 'Zdraví' }, { v: 'doklady', l: 'Doklady' }, { v: 'sdilet', l: 'Sdílet' }]} />
+      </div>
+      <p className="text-[12px] text-muted text-center mt-1.5">{({ profil: 'Základní údaje a Aivet', pece: 'Připomínky: odčervení, očkování, drápky…', zdravi: 'Léky, alergie, návštěvy a váha', doklady: 'Faktury, zprávy, RTG snímky', sdilet: 'Zdravotní pas, karta pro hlídače, cesty' } as const)[tab]}</p>
+      <div className="mt-5 space-y-3 stagger" key={tab}>
+        {tab === 'profil' && (<>
       {info.length > 0 && (
-        <Card className="p-4 mb-4 grid grid-cols-2 gap-y-2.5 gap-x-3 text-sm">
+        <Card className="p-4 grid grid-cols-2 gap-y-2.5 gap-x-3 text-sm">
           {info.map(([k, v]) => <div key={k}><p className="text-muted text-xs">{k}</p><p className="font-medium break-all">{v}</p></div>)}
           {pet.notes && <div className="col-span-2"><p className="text-muted text-xs">Poznámky</p><p>{pet.notes}</p></div>}
         </Card>
       )}
+        </>)}
+        {tab === 'sdilet' && (<>
       <PassButton pet={pet} />
-      <div className="space-y-3 mt-3"><HandoverCard pet={pet} /><PassShare pet={pet} /><TravelChecklist pet={pet} /></div>
-      {ask && <button onClick={ask} className="press w-full mb-4 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_14px_30px_-14px_rgba(127,179,232,.7)]">
-        <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">🩺</span>
-        <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-white/85">Zná profil, léky i alergie – {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
-      </button>}
-      <Segmented value={tab} onChange={setTab} options={[{ v: 'pece', l: 'Péče' }, { v: 'zdravi', l: 'Zdraví' }, { v: 'vaha', l: 'Váha' }, { v: 'doklady', l: 'Doklady' }]} />
-      <div className="mt-5 space-y-3 stagger" key={tab}>
+      <div className="space-y-3"><HandoverCard pet={pet} /><PassShare pet={pet} /><TravelChecklist pet={pet} /></div>
+        </>)}
         {tab === 'pece' && (<>
           <Button variant="soft" className="w-full" onClick={() => setRem('new')}><Icon name="plus" /> Nová připomínka</Button>
           {!rems.length && <p className="text-sm text-muted text-center py-4">Žádné připomínky. Přidej třeba odčervení Milbemaxem.</p>}
@@ -234,8 +251,6 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
               <ul className="space-y-1.5 text-sm">{rems.flatMap((r) => r.history.map((h) => ({ h, r }))).sort((a, b) => b.h.localeCompare(a.h)).slice(0, 12).map(({ h, r }, i) => <li key={i} className="flex justify-between gap-2"><span>{r.title}{r.product ? ` – ${r.product}` : ''}</span><span className="text-muted shrink-0">{fmtDate(h)}</span></li>)}</ul>
             </Card>
           )}
-        </>)}
-        {tab === 'vaha' && (<>
           <Card className="p-4"><WeightChart pet={pet} /></Card>
           <Button variant="soft" className="w-full" onClick={() => setWt(true)}><Icon name="scale" /> Zapsat váhu</Button>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
@@ -419,6 +434,11 @@ export function Settings() {
   return (
     <div>
       <PageHeader title="Nastavení" />
+      <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-4 -mt-1">
+        {([['ucet-h', '👤 Účet'], ['vzhled-h', '🎨 Vzhled'], ['predplatne-h', '✦ Premium'], ['upozorneni-h', '🔔 Upozornění'], ['data-h', '📦 Data']] as const).map(([id, l]) => (
+          <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="press shrink-0 rounded-full px-3.5 min-h-[40px] text-[13px] font-semibold bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">{l}</button>
+        ))}
+      </div>
       <div className="space-y-7 stagger">
         <section aria-labelledby="ucet-h"><h2 id="ucet-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Účet a záloha</h2><Account /></section>
         <section aria-labelledby="vzhled-h"><h2 id="vzhled-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Vzhled</h2>
@@ -442,7 +462,7 @@ export function Settings() {
             <p className="text-[12px] text-muted mt-2 px-1">{THEMES.find((t) => t.v === data.settings.theme)?.d}</p>
           </Card>
         </section>
-        <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Předplatné</h2>
+        <section aria-labelledby="predplatne-h"><h2 id="predplatne-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1 scroll-mt-4">Předplatné</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
             {prem.isPremium && prem.ent ? (<>
               <Row icon="✦" title="Tlapka Premium" sub={`${{ monthly: 'Měsíční', yearly: 'Roční', family: 'Rodinný', trial: 'Zkušební (14 dní)' }[prem.ent.plan]} tarif · platí do ${fmtDate(toISO(new Date(prem.ent.exp)))}`} right={<PremiumBadge />} onClick={() => prem.openPaywall('obecne')} />
@@ -452,7 +472,7 @@ export function Settings() {
             )}
           </Card>
         </section>
-        <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Upozornění</h2>
+        <section aria-labelledby="upozorneni-h"><h2 id="upozorneni-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1 scroll-mt-4">Upozornění</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
             <Row icon="🔔" title="Připomínat termíny" sub={notifySupported() ? 'Upozornění v den termínu' : /iP(hone|ad|od)/.test(navigator.userAgent) ? 'Na iPhonu: Sdílet → Přidat na plochu, pak upozornění zapneš (iOS 16.4+)' : 'Tento prohlížeč upozornění nepodporuje'} onClick={toggleNotify}
               right={<span className={`w-12 h-7 rounded-full p-0.5 transition ${data.settings.notify ? 'bg-primary' : 'bg-ink/15 dark:bg-white/20'}`}><span className={`block w-6 h-6 rounded-full bg-white shadow transition ${data.settings.notify ? 'translate-x-5' : ''}`} /></span>} />
@@ -464,7 +484,7 @@ export function Settings() {
           </Card>
           <div className="mt-3"><BatteryGuide /></div>
         </section>
-        <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Data</h2>
+        <section aria-labelledby="data-h"><h2 id="data-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1 scroll-mt-4">Data</h2>
           <div className="space-y-3 mb-3"><ExportAll /><TrashSection /></div>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
             <Row icon="📤" title="Exportovat zálohu" sub="JSON se všemi záznamy (bez souborů dokumentů)" onClick={exportJson} />

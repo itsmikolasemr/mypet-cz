@@ -6,7 +6,7 @@ await c.addInitScript(() => { window.__copied = []; Object.defineProperty(naviga
 const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message));
 await p.goto(BASE); await p.getByText('Přeskočit').click(); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(600);
 await p.evaluate(() => { history.pushState(null, '', '#pets/max'); dispatchEvent(new PopStateEvent('popstate')); }); await p.waitForTimeout(700);
-await p.locator('[data-handover]').scrollIntoViewIfNeeded();
+await p.getByRole('button', { name: 'Sdílet', exact: true }).click(); await p.locator('[data-handover]').scrollIntoViewIfNeeded();
 await p.locator('[data-edit-care]').click();
 await p.fill('[name=feedWhat0]', 'Granule Brit Care Lamb'); await p.fill('[name=feedAmount0]', '150 g'); await p.fill('[name=feedTimes0]', '2'); await p.fill('[name=feedAt0]', '7:00, 18:00');
 await p.fill('[name=walks]', '3× denně 30 min, u silnice na vodítku'); await p.fill('[name=habits]', 'Spí v obýváku'); await p.fill('[name=fears]', 'Ohňostroje');

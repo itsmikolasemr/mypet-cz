@@ -155,29 +155,28 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   const t = sel?.tags ?? {};
   return (
     <div>
-      <PageHeader title={parksOn ? 'Psí výběhy v okolí' : 'Veteriny v okolí'} sub={locNote || 'Podle tvé polohy'} />
+      <PageHeader title={parksOn ? 'Výběhy pro psy' : nonstop ? 'Nonstop pohotovost' : 'Veteriny v okolí'} sub={locNote || 'Podle tvé polohy'} />
       <div className="relative rounded-[26px] overflow-hidden shadow-float dark:shadow-float-d ring-1 ring-ink/5 dark:ring-white/10">
         <div ref={el} className="h-[46dvh] w-full bg-ink/5" data-testid="map" />
-        <div className="absolute inset-x-3 top-3 z-[500] flex flex-wrap gap-2">
+        <div className="absolute inset-x-2 top-2 z-[500] grid grid-cols-2 gap-2">
           <button onClick={() => setNonstop(!nonstop)} aria-pressed={nonstop}
-            className={`press rounded-full px-4 min-h-[44px] text-sm font-bold backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
-            🚨 Nonstop pohotovost
+            className={`press rounded-full px-2 min-h-[44px] text-[13px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            🚨 Nonstop
           </button>
           <button onClick={toggleParks} aria-pressed={parksOn} data-filter="parks"
-            className={`press rounded-full px-4 min-h-[44px] text-sm font-bold backdrop-blur-xl shadow-card ring-1 transition ${parksOn ? 'bg-[#2F7D4A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
-            🐕 Psí výběhy
+            className={`press rounded-full px-2 min-h-[44px] text-[13px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${parksOn ? 'bg-[#2F7D4A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            🐕 Výběhy pro psy
           </button>
         </div>
         {state === 'loading' && <div className="absolute inset-x-0 bottom-3 z-[500] mx-auto w-max rounded-full bg-surface/90 dark:bg-surface-d/90 backdrop-blur px-4 py-2 text-sm shadow-card animate-fade">Hledám veteriny…</div>}
       </div>
-      <p className="text-[12px] text-muted mt-3 px-1 leading-snug">
-        Data pocházejí z <a className="underline" href="https://www.openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> (komunitní mapa) a mohou být neúplná nebo zastaralá. Psí výběhy jsou z OSM (leisure=dog_park, snímek říjen 2026). Filtr „nonstop“ ukazuje nejbližší místa s otevírací dobou 24/7 (OSM + několik pražských klinik ověřených na jejich webu). <b>V nouzi vždy nejdřív zavolej.</b>
-      </p>
+      <p className="text-[13px] text-muted mt-3 px-1 leading-snug">Klepni na značku nebo vyber místo ze seznamu. <b>V nouzi vždy nejdřív zavolej.</b></p>
+      <details className="text-[12px] text-muted mt-1 px-1 leading-snug"><summary className="cursor-pointer min-h-[32px] flex items-center">Odkud jsou data?</summary>Z komunitní mapy <a className="underline" href="https://www.openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> (snímek říjen 2026), mohou být neúplná. „Nonstop“ ukazuje místa s otevírací dobou 24/7 včetně několika pražských klinik ověřených na jejich webu.</details>
       <div className="mt-4 space-y-3 stagger">
         {state === 'error' && (
           <Card className="p-4 text-center"><p className="font-semibold">Nepodařilo se načíst data</p><p className="text-sm text-muted mt-1">Mapová služba OpenStreetMap (Overpass) je teď přetížená. Zkus to za pár minut.</p><Button variant="soft" className="mt-3" onClick={() => center && load(center)}>Zkusit znovu</Button></Card>
         )}
-        {stale && <p className="text-[12px] text-muted px-1">Uložený seznam klinik (OSM, říjen 2026) – živá data se načítají na pozadí.</p>}
+        {stale && <p className="text-[12px] text-muted px-1">Ukazuji uložený seznam klinik, čerstvá data se načítají na pozadí.</p>}
         {state === 'ok' && !shown.length && (
           <Card className="p-4 text-center text-sm text-muted">{parksOn ? 'V okolí není v OSM žádný psí výběh.' : nonstop ? 'V okolí není v OSM žádná ordinace označená jako nonstop (24/7). Zkus vypnout filtr a obvolat nejbližší kliniky.' : 'V okolí jsme nic nenašli.'}</Card>
         )}

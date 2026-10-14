@@ -34,15 +34,15 @@ await nav(A, 'Nastavení'); await A.locator('[data-trash] button').first().click
 await A.screenshot({ path: S + BR + '-100-v11-free-settings.png', fullPage: true });
 // premium-gated
 await nav(A, 'Přehled'); await A.getByText('AI sken dokladu').click(); R.scanPaywall = await paywallOpen(A);
-await A.getByText('Druhý názor').first().click(); await A.waitForTimeout(500); await A.fill('textarea', 'ALT 180 U/l'); await A.getByRole('button', { name: 'Vysvětlit zprávu' }).click(); R.secondPaywall = await paywallOpen(A);
+await A.evaluate(() => { history.pushState(null, '', '#second'); dispatchEvent(new PopStateEvent('popstate')); }); await A.waitForTimeout(500); await A.fill('textarea', 'ALT 180 U/l'); await A.getByRole('button', { name: 'Vysvětlit zprávu' }).click(); R.secondPaywall = await paywallOpen(A);
 R.api402 = await A.evaluate(async () => (await fetch('/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Tlapka-Device': localStorage.getItem('tlapka:device') }, body: JSON.stringify({ mode: 'scan', image: 'data:image/png;base64,AAAA' }) })).status);
-await nav(A, 'Mazlíčci'); await A.getByText(d1.pets[0].name).first().click(); await A.waitForTimeout(500);
+await nav(A, 'Mazlíčci'); await A.getByText(d1.pets[0].name).first().click(); await A.waitForTimeout(500); await A.getByRole('button', { name: 'Sdílet', exact: true }).click(); await A.waitForTimeout(300);
 await A.getByRole('button', { name: /^Otevřít/ }).click(); R.travelPaywall = await paywallOpen(A);
 // ---- account (free): pass link limit, sitter gated ----
 await nav(A, 'Nastavení'); await A.getByText('Přihlásit heslem').click(); await A.fill('input[type=email]', 'tlapka-e2e-a@example.com'); await A.fill('input[type=password]', PW);
 await A.getByRole('button', { name: 'Přihlásit se', exact: true }).click(); await A.getByText('Synchronizovat teď').waitFor({ timeout: 15000 }); await A.waitForTimeout(4000);
 await A.getByText('Odkaz pro hlídače').click(); R.sitterPaywallFree = await paywallOpen(A);
-await nav(A, 'Mazlíčci'); await A.getByText(d1.pets[0].name).first().click(); await A.waitForTimeout(500);
+await nav(A, 'Mazlíčci'); await A.getByText(d1.pets[0].name).first().click(); await A.waitForTimeout(500); await A.getByRole('button', { name: 'Sdílet', exact: true }).click(); await A.waitForTimeout(300);
 await A.getByText('Vytvořit odkaz a QR').click(); await A.locator('[data-pass-link]').waitFor({ timeout: 15000 }); const passUrl = await A.locator('[data-pass-link]').getAttribute('data-pass-link');
 await A.locator('[data-pass-link]').scrollIntoViewIfNeeded(); await A.screenshot({ path: S + BR + '-101-v11-pass-qr.png' });
 await A.getByText('Vytvořit odkaz a QR').click(); R.secondPassFree = (await dlg(A)).split('\n')[0];
@@ -58,7 +58,7 @@ await A.screenshot({ path: S + BR + '-103-v11-scan-review.png' });
 const n0 = await data(A); await A.getByRole('button', { name: 'Uložit', exact: true }).click(); await A.waitForTimeout(800); const n1 = await data(A);
 R.scanCreated = { visits: n1.visits.length - n0.visits.length, reminders: n1.reminders.length - n0.reminders.length, docs: n1.docs.length - n0.docs.length, cost: n1.visits.at(-1).cost, rem: n1.reminders.at(-1).title + ' ' + n1.reminders.at(-1).dueDate };
 R.mockSaw = JSON.parse(fs.readFileSync('/workspace/pwtest/mock-last.json'));
-await A.getByText('Druhý názor').first().click(); await A.waitForTimeout(500); await A.fill('textarea', 'ALT 180 U/l, ostatní v normě');
+await A.evaluate(() => { history.pushState(null, '', '#second'); dispatchEvent(new PopStateEvent('popstate')); }); await A.waitForTimeout(500); await A.fill('textarea', 'ALT 180 U/l, ostatní v normě');
 await A.locator('input[type=file][capture]').last().setInputFiles('/workspace/pwtest/scan.png'); await A.waitForTimeout(500);
 await A.getByRole('button', { name: 'Vysvětlit zprávu' }).click(); await A.locator('[data-second-reply]').waitFor({ timeout: 15000 });
 R.second = (await A.locator('[data-second-reply]').innerText()).slice(0, 60); R.secondImg = JSON.parse(fs.readFileSync('/workspace/pwtest/mock-last.json')).hasImg;

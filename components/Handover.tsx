@@ -92,7 +92,8 @@ export function HandoverCard({ pet }: { pet: Pet }) {
         <p className="text-[13px] text-muted">Krmení, léky, alergie, zvyky, venčení a kontakty na jednom místě – pro hlídače, babičku nebo hlídací web.</p></div>
       {has ? <ul className="text-[14px] space-y-1">{sections.filter((s) => ['feeding', 'meds', 'allergies', 'walks'].includes(s.key)).map((s) => <li key={s.key} className={s.alert ? 'text-red-700 dark:text-red-300 font-semibold' : ''}><b>{s.h.replace('⚠ ', '⚠️ ')}:</b> {s.lines.join('; ')}</li>)}</ul>
         : <p className="text-[14px]">Zatím nevyplněno. Léky a alergie se doplní samy z karty mazlíčka.</p>}
-      <button className={soft + ' w-full'} onClick={() => setEdit(true)} data-edit-care>{has ? '✎ Upravit kartu' : '＋ Vyplnit kartu'}</button>
+      <button className={has ? soft + ' w-full' : 'press w-full min-h-[48px] rounded-2xl font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_10px_24px_-12px_rgba(127,179,232,.8)]'} onClick={() => setEdit(true)} data-edit-care>{has ? '✎ Upravit kartu' : '＋ Vyplnit kartu (2 minuty)'}</button>
+      <p className="text-[12px] font-bold uppercase tracking-wide text-muted pt-1">Poslat hlídači</p>
       <div className="grid grid-cols-2 gap-2">
         <button className={soft} disabled={busy} onClick={link} data-h-link>🔗 {busy ? 'Vytvářím…' : 'Odkaz'}</button>
         <button className={soft} onClick={pdf} data-h-pdf>📄 PDF</button>
