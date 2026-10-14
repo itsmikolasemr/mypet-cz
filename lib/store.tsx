@@ -103,6 +103,7 @@ function useStoreImpl() {
       const docs = (await Promise.all(x.docs.map(async (d) => ((await loadBlob(d.id, d.mime).catch(() => null)) ? d : null)))).filter((d): d is DocMeta => !!d);
       setData({ ...x, docs });
     },
+    applyRemote: (f: (d: AppData) => AppData) => upd(f),
     reset: () => { data.docs.forEach((x) => deleteBlob(x.id).catch(() => {})); setData(empty()); },
   };
 }

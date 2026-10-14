@@ -1,4 +1,5 @@
 'use client';
+import { Account } from './Account';
 import { ask as askDialog, notice, toast } from './feedback';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Pet, Reminder, Visit } from '@/lib/types';
@@ -406,6 +407,7 @@ export function Settings() {
     <div>
       <PageHeader title="Nastavení" />
       <div className="space-y-7 stagger">
+        <section aria-labelledby="ucet-h"><h2 id="ucet-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Účet a záloha</h2><Account /></section>
         <section aria-labelledby="vzhled-h"><h2 id="vzhled-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Vzhled</h2>
           <Card className="p-3">
             <div role="radiogroup" aria-label="Motiv aplikace" className="grid grid-cols-4 gap-2">
