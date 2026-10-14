@@ -39,7 +39,7 @@ export function FeedbackHost() {
       {a && (
         <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-3 bg-black/40 animate-fade" onClick={() => close(false)}>
           <div role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.key === 'Escape' && close(false)}
-            className="w-full max-w-sm rounded-[28px] bg-surface dark:bg-surface-d p-5 shadow-float animate-up" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
+            className="w-full max-w-sm rounded-[28px] bg-surface dark:bg-surface-d p-5 shadow-float animate-up" style={{ marginBottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px))' }}>
             <p id="dlg-t" className="text-lg font-bold">{a.title}</p>
             {a.text && <p className="text-[15px] text-muted mt-1.5">{a.text}</p>}
             <div className="flex gap-2 mt-5">

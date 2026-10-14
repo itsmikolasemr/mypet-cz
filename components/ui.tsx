@@ -54,7 +54,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" role="dialog" aria-modal aria-label={title}>
       <div className="absolute inset-0 bg-ink/30 dark:bg-black/60 backdrop-blur-[2px] animate-fade" onClick={onClose} />
-      <div className="relative w-[calc(100%-16px)] max-w-md max-h-[90dvh] overflow-y-auto rounded-[30px] bg-surface/95 dark:bg-surface-d/95 backdrop-blur-xl ring-1 ring-ink/5 dark:ring-white/10 shadow-float dark:shadow-float-d animate-up" style={{ marginBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
+      <div className="relative w-[calc(100%-16px)] max-w-md max-h-[90dvh] overflow-y-auto rounded-[30px] bg-surface/95 dark:bg-surface-d/95 backdrop-blur-xl ring-1 ring-ink/5 dark:ring-white/10 shadow-float dark:shadow-float-d animate-up" style={{ marginBottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + 8px)' }}>
         <div className="sticky top-0 z-10 bg-surface/95 dark:bg-surface-d/95 backdrop-blur px-5 pt-3 pb-3 flex items-center justify-between">
           <div className="absolute left-1/2 -translate-x-1/2 top-1.5 h-1 w-10 rounded-full bg-ink/15 dark:bg-white/20" />
           <h2 className="text-lg font-semibold pt-2">{title}</h2>
