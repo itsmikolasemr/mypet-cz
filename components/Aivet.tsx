@@ -1,4 +1,6 @@
 'use client';
+import { loc } from '@/lib/i18n';
+import { getLang } from '@/lib/i18n';
 import { Emo, GT } from './glyphs';
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
@@ -63,7 +65,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
     }
     setBusy(true);
     try {
-      const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', ...prem.headers() }, body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })), pet: profile() }) });
+      const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', ...prem.headers() }, body: JSON.stringify({ lang: getLang(), messages: next.map(({ role, content }) => ({ role, content })), pet: profile() }) });
       const j = await r.json().catch(() => ({}));
       if (typeof j.trialLeft === 'number') prem.setTrialLeft(j.trialLeft);
       if (r.status === 402) { prem.setTrialLeft(0); throw new Error(`Zkušební dotazy jsou vyčerpané. Tvoje otázka zůstala uložená – s Premium (14 dní zdarma, tlačítko nahoře) ti Aivet odpoví hned. Když jde o akutní stav, otevři Mapu → 🚨 Nonstop, ta je vždy zdarma.`); }
@@ -110,14 +112,14 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
         <Card className="p-6 text-center">
           <div className="mx-auto w-20 h-20 rounded-[26px] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-4xl flex items-center justify-center shadow-float mb-4 animate-float text-[#0F2540]"><Emo e="🩺" className="w-10 h-10" /></div>
           <h2 className="text-lg font-bold">Aivet se teprve chystá</h2>
-          <p className="text-muted mt-1.5 text-[15px]">{status === 'off' ? 'Poradce zatím není zapnutý – brzy tu bude. Do té doby se při potížích obrať na svého veterináře.' : 'Poradce je teď nedostupný (offline nebo lokální verze). Zkus to později.'}</p>
+          <p className="text-muted mt-1.5 text-[14px]">{status === 'off' ? 'Poradce zatím není zapnutý – brzy tu bude. Do té doby se při potížích obrať na svého veterináře.' : 'Poradce je teď nedostupný (offline nebo lokální verze). Zkus to později.'}</p>
           <button onClick={openMap} className="press mt-5 w-full rounded-2xl py-3 font-semibold bg-primary/10 text-primary"><GT t="🗺️ Veteriny v okolí" /></button>
         </Card>
       ) : (
         <>
           {pet && (
             <Card className="p-3.5 mb-4 text-[13px] text-muted">
-              Radím podle profilu – <b className="text-ink dark:text-white">{pet.name}</b> ({[speciesOf(pet.species).name, age(pet.birthDate), pet.weights.length ? `${pet.weights[pet.weights.length - 1].kg.toLocaleString('cs-CZ')} kg` : ''].filter(Boolean).join(', ')})
+              Radím podle profilu – <b className="text-ink dark:text-white">{pet.name}</b> ({[speciesOf(pet.species).name, age(pet.birthDate), pet.weights.length ? `${pet.weights[pet.weights.length - 1].kg.toLocaleString(loc())} kg` : ''].filter(Boolean).join(', ')})
               {allergies.length > 0 && <> · <span className="text-red-600 dark:text-red-400 font-semibold">alergie: {allergies.map((a) => a.allergen).join(', ')}</span></>}
             </Card>
           )}
@@ -131,7 +133,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
             )}
             {msgs.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-screen`}>
-                <div className={`max-w-[85%] rounded-[22px] px-4 py-3 text-[15px] leading-relaxed space-y-0.5 ${m.role === 'user' ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] rounded-br-md shadow-[0_8px_20px_-10px_rgba(127,179,232,.7)]' : 'bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 rounded-bl-md'}`}>
+                <div className={`max-w-[85%] rounded-[22px] px-4 py-3 text-[14px] leading-relaxed space-y-0.5 ${m.role === 'user' ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] rounded-br-md shadow-[0_8px_20px_-10px_rgba(127,179,232,.7)]' : 'bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 rounded-bl-md'}`}>
                   {m.role === 'assistant' ? render(m.content) : m.content}
                   {m.role === 'assistant' && m.emergency && <button onClick={openMap} className="press mt-2 w-full rounded-2xl bg-red-600 text-white font-bold py-2.5"><GT t="🚨 Najít nonstop veterinu" /></button>}
                 </div>

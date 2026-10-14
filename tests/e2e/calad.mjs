@@ -2,7 +2,7 @@ import { chromium, webkit, devices } from 'playwright';
 const BASE = 'http://localhost:4123/'; const S = '/workspace/mypet-shots/';
 for (const [name, eng] of [['chromium', chromium], ['webkit', webkit]]) {
   const b = await (name === 'chromium' ? eng.launch({ channel: 'chrome' }) : eng.launch());
-  const ctx = await b.newContext({ ...devices['iPhone 14'] }); const p = await ctx.newPage(); const errs = [];
+  const ctx = await b.newContext({ ...devices['iPhone 14'], locale: 'cs-CZ' }); const p = await ctx.newPage(); const errs = [];
   p.on('pageerror', (e) => errs.push(e.message));
   await p.goto(BASE); await p.getByText('Vyzkoušet s ukázkovými daty').click();
   await p.waitForTimeout(600);

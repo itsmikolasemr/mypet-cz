@@ -1,4 +1,5 @@
 'use client';
+import { loc } from '@/lib/i18n';
 /** v1.2 „Tlapka Den“ – in-app twin of the home-screen widget: today's meds / feeding / walks, one tap to tick. */
 import { useMemo } from 'react';
 import { useStore } from '@/lib/store';
@@ -28,7 +29,7 @@ export function TaskRow({ t, compact = false }: { t: TodayTask; compact?: boolea
     <div className={`flex items-center gap-3 ${compact ? 'py-2' : 'p-3'} ${t.done ? 'opacity-60' : ''}`} data-task={t.id} data-done={t.done ? '1' : '0'}>
       <span className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name={k.g} /></span>
       <span className="flex-1 min-w-0">
-        <span className={`block font-semibold text-[15px] leading-tight truncate ${t.done ? 'line-through decoration-2 decoration-[#7FB3E8]' : ''}`}>{t.kind === 'walk' ? `Venčení – ${t.pet}` : `${t.title}`}</span>
+        <span className={`block font-semibold text-[14px] leading-tight truncate ${t.done ? 'line-through decoration-2 decoration-[#7FB3E8]' : ''}`}>{t.kind === 'walk' ? `Venčení – ${t.pet}` : `${t.title}`}</span>
         <span className="block text-[12.5px] text-muted truncate">{[t.time, t.kind === 'walk' ? t.sub : t.pet, t.kind !== 'walk' ? t.sub : ''].filter(Boolean).join(' · ')}</span>
       </span>
       <button onClick={tick} aria-pressed={t.done} aria-label={`${t.done ? 'Vrátit' : 'Odškrtnout'}: ${t.title} – ${t.pet}`}
@@ -51,7 +52,7 @@ export function TodayCard({ open }: { open: () => void }) {
       <Card className="p-3 pt-2">
         <div className="flex items-center gap-3 px-1 pb-1">
           <Ring done={done} total={tasks.length} size={48} />
-          <p className="flex-1 text-[14px] font-semibold leading-snug">{done === tasks.length ? 'Všechno hotovo. Dobrá práce!' : `Zbývá ${tasks.length - done} ${tasks.length - done === 1 ? 'úkol' : tasks.length - done <= 4 ? 'úkoly' : 'úkolů'}`}<span className="block text-[12.5px] font-normal text-muted">Léky, krmení a venčení – i na ploše telefonu.</span></p>
+          <p className="flex-1 text-[13px] font-semibold leading-snug">{done === tasks.length ? 'Všechno hotovo. Dobrá práce!' : `Zbývá ${tasks.length - done} ${tasks.length - done === 1 ? 'úkol' : tasks.length - done <= 4 ? 'úkoly' : 'úkolů'}`}<span className="block text-[12.5px] font-normal text-muted">Léky, krmení a venčení – i na ploše telefonu.</span></p>
         </div>
         <div className="divide-y divide-ink/5 dark:divide-white/5">{tasks.filter((t) => !t.done).slice(0, 3).map((t) => <TaskRow key={t.id} t={t} compact />)}</div>
       </Card>
@@ -64,7 +65,7 @@ export function TodayScreen() {
   const tasks = useMemo(() => todayTasks(data), [data]);
   const done = tasks.filter((t) => t.done).length;
   const byPet = data.pets.map((p) => ({ p, list: tasks.filter((t) => t.petId === p.id) })).filter((x) => x.list.length);
-  const d = new Date().toLocaleDateString('cs-CZ', { weekday: 'long', day: 'numeric', month: 'long' });
+  const d = new Date().toLocaleDateString(loc(), { weekday: 'long', day: 'numeric', month: 'long' });
   return (
     <div className="space-y-5" data-today>
       <PageHeader title="Dnes" sub={d.charAt(0).toUpperCase() + d.slice(1)} />
@@ -74,7 +75,7 @@ export function TodayScreen() {
           <p className="text-[13px] text-muted">Odškrtávat jde i z widgetu na ploše – iPhone i Android.</p></div>
       </Card>
       <WidgetHelp />
-      {!tasks.length && <Card className="p-5 text-center text-muted text-[14px]">Žádné denní úkoly. Přidej krmení a venčení v Předávací kartě (Mazlíček → Sdílet) nebo lék s dávkováním.</Card>}
+      {!tasks.length && <Card className="p-5 text-center text-muted text-[13px]">Žádné denní úkoly. Přidej krmení a venčení v Předávací kartě (Mazlíček → Sdílet) nebo lék s dávkováním.</Card>}
       {byPet.map(({ p, list }) => (
         <section key={p.id} className="space-y-2">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted px-1">{p.name} · {list.filter((t) => t.done).length}/{list.length}</h2>

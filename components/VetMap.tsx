@@ -258,7 +258,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
               </Card>}
             </>); })()}
             {sel.nonstop && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">{sel.tags['source:ns'] ? 'Nonstop 24/7 (ověřeno na webu kliniky)' : 'Nonstop 24/7 (dle OSM)'}</span>}
-            <Card className="p-4 space-y-2.5 text-[15px]">
+            <Card className="p-4 space-y-2.5 text-[14px]">
               {sel.park ? <p data-park-facts><span className="text-muted text-xs block">Výběh</span>{parkFacts(t).join(' · ') || 'Bez dalších údajů v OSM'}{t.description ? <span className="block text-sm text-muted mt-1">{t.description}</span> : null}</p> : <p><span className="text-muted text-xs block">Adresa</span>{address(t) || 'Neuvedena'}</p>}
               <p><span className="text-muted text-xs block">Otevírací doba</span>{t.opening_hours ? czHours(t.opening_hours).map((l, i) => <span key={i} className="block">{l}</span>) : 'Neuvedena v OSM'}</p>
               {(t.phone || t['contact:phone']) && <p><span className="text-muted text-xs block">Telefon</span><a className="text-primary font-semibold" href={`tel:${(t.phone || t['contact:phone']).split(';')[0].replace(/\s/g, '')}`}>{t.phone || t['contact:phone']}</a></p>}
@@ -286,10 +286,10 @@ function CitySearch({ onPick }: { onPick: (c: { name: string; lat: number; lon: 
     <div className="relative mb-3" data-city-search>
       <label htmlFor="city-q" className="sr-only">Hledat město</label>
       <input id="city-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Hledat město, např. Olomouc" autoComplete="off" enterKeyHint="search"
-        className="w-full rounded-full px-4 min-h-[46px] text-[15px] bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 outline-none focus:ring-2 focus:ring-primary" />
+        className="w-full rounded-full px-4 min-h-[46px] text-[14px] bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 outline-none focus:ring-2 focus:ring-primary" />
       {res.length > 0 && q && (
         <ul role="listbox" aria-label="Nalezená místa" className="absolute z-[600] inset-x-0 top-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d ring-1 ring-ink/10 dark:ring-white/10 overflow-hidden">
-          {res.map((c) => <li key={c.name + c.lat}><button role="option" aria-selected={false} onClick={() => { onPick(c); setQ(''); setRes([]); }} className="press w-full text-left px-4 min-h-[44px] text-[15px] border-b last:border-0 border-ink/5 dark:border-white/5">{c.name}</button></li>)}
+          {res.map((c) => <li key={c.name + c.lat}><button role="option" aria-selected={false} onClick={() => { onPick(c); setQ(''); setRes([]); }} className="press w-full text-left px-4 min-h-[44px] text-[14px] border-b last:border-0 border-ink/5 dark:border-white/5">{c.name}</button></li>)}
         </ul>
       )}
     </div>

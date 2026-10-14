@@ -1,3 +1,4 @@
+import { tr } from './i18n';
 /** Renders one Wrapped slide to a 1080×1920 canvas (IG story) – brand: #7FB3E8 polštářek, grafit #3A3D43, světle šedá #ECEFF3, Manrope. */
 import type { Slide } from './wrapped';
 
@@ -27,6 +28,7 @@ export function drawPaw(ctx: CanvasRenderingContext2D, x: number, y: number, siz
 
 export async function renderSlide(s: Slide, i: number, total: number, opts: { photo?: string; qr?: string } = {}): Promise<HTMLCanvasElement> {
   const W = 1080, H = 1920; const c = document.createElement('canvas'); c.width = W; c.height = H; const ctx = c.getContext('2d')!;
+  { const f = ctx.fillText.bind(ctx), m = ctx.measureText.bind(ctx); ctx.fillText = (t: string, x: number, y: number, w?: number) => f(tr(t), x, y, w); ctx.measureText = (t: string) => m(tr(t)); }
   const th = themeFor(i, s.key); const ff = fontFamily();
   const g = ctx.createLinearGradient(0, 0, W * 0.4, H); g.addColorStop(0, th.bg[0]); g.addColorStop(1, th.bg[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   // dot pattern (brand system: tečky)

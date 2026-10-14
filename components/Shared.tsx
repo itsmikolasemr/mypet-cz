@@ -1,4 +1,5 @@
 'use client';
+import { loc } from '@/lib/i18n';
 import { SharedHandover } from './Handover';
 import { Emo } from './glyphs';
 // Caretaker page (#share/<token>): works without account or local data. Shows pets, today's tasks and marks doses.
@@ -15,7 +16,7 @@ export function SharedPage({ token }: { token: string }) {
   const [name, setName] = useState(() => (typeof localStorage !== 'undefined' && localStorage.getItem('tlapka:sitterName')) || '');
   const load = useCallback(() => Promise.resolve(sharedView(token)).then((r) => setV((r.data as V) ?? null)).catch(() => setV(null)), [token]);
   useEffect(() => { load(); const t = setInterval(load, 30000); return () => clearInterval(t); }, [load]);
-  const t = (iso: string) => new Date(iso).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+  const t = (iso: string) => new Date(iso).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' });
   const lastDose = (pet: string, rem?: string, med?: string) => v?.doses.find((d) => d.pet_id === pet && (rem ? d.reminder_id === rem : d.med_id === med));
   const give = async (pet: string, rem: string | null, med: string | null) => {
     const n = name.trim() || 'Hlídač'; localStorage.setItem('tlapka:sitterName', n);
@@ -28,7 +29,7 @@ export function SharedPage({ token }: { token: string }) {
       {v === undefined && <p className="text-muted">Načítám…</p>}
       {v === null && <Card className="p-5"><p className="font-bold text-lg">Odkaz neplatí</p><p className="text-muted mt-1">Vypršel nebo ho majitel zrušil. Požádej o nový.</p></Card>}
       {v && <>
-        <div><h1 className="text-2xl font-bold">{v.pets.some((p) => p.care) ? 'Předávací karta' : v.scope === 'pass' ? 'Zdravotní pas' : 'Hlídání'}</h1><p className="text-[14px] text-muted">Platí do {new Date(v.expires_at).toLocaleString('cs-CZ')} · bez registrace</p></div>
+        <div><h1 className="text-2xl font-bold">{v.pets.some((p) => p.care) ? 'Předávací karta' : v.scope === 'pass' ? 'Zdravotní pas' : 'Hlídání'}</h1><p className="text-[13px] text-muted">Platí do {new Date(v.expires_at).toLocaleString(loc())} · bez registrace</p></div>
         {v.scope === 'today' && <label className="block"><span className="text-[13px] font-semibold">Tvoje jméno (uvidí ho majitel)</span>
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder="např. Jana" className="mt-1 w-full min-h-[48px] rounded-2xl px-4 bg-ink/5 dark:bg-white/10" /></label>}
         {v.pets.map((p) => {
@@ -36,9 +37,9 @@ export function SharedPage({ token }: { token: string }) {
           return (
             <Card key={p.id} className="p-4 space-y-3" >
               <p className="text-lg font-bold" data-pet={p.id}>{p.name}</p>
-              {!!al.length && <p className="text-[14px] rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 px-3 py-2 flex items-center gap-1.5"><Emo e="⚠️" />Alergie: {al.map((a) => a.allergen).join(', ')}</p>}
+              {!!al.length && <p className="text-[13px] rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 px-3 py-2 flex items-center gap-1.5"><Emo e="⚠️" />Alergie: {al.map((a) => a.allergen).join(', ')}</p>}
               {[...ms.map((m) => ({ k: `m${m.id}`, title: `${m.name} · ${m.dose}`, sub: m.frequency, rem: null as string | null, med: m.id as string | null })),
-                ...rs.map((r) => ({ k: `r${r.id}`, title: r.title, sub: `termín ${new Date(r.dueDate).toLocaleDateString('cs-CZ')}`, rem: r.id as string | null, med: null as string | null }))].map((x) => {
+                ...rs.map((r) => ({ k: `r${r.id}`, title: r.title, sub: `termín ${new Date(r.dueDate).toLocaleDateString(loc())}`, rem: r.id as string | null, med: null as string | null }))].map((x) => {
                 const d = lastDose(p.id, x.rem ?? undefined, x.med ?? undefined);
                 return (
                   <div key={x.k} className="flex items-center gap-3">
@@ -48,7 +49,7 @@ export function SharedPage({ token }: { token: string }) {
                 );
               })}
               <SharedHandover pet={p} data={{ meds: v.meds as unknown as import('@/lib/types').Medication[], allergies: v.allergies as unknown as import('@/lib/types').Allergy[] }} />
-              {!rs.length && !ms.length && !p.care && <p className="text-[14px] text-muted">{v.scope === 'pass' ? 'Žádné záznamy.' : 'Dnes nic k podání.'}</p>}
+              {!rs.length && !ms.length && !p.care && <p className="text-[13px] text-muted">{v.scope === 'pass' ? 'Žádné záznamy.' : 'Dnes nic k podání.'}</p>}
             </Card>
           );
         })}

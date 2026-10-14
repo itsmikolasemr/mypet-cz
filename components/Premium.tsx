@@ -1,4 +1,5 @@
 'use client';
+import { loc } from '@/lib/i18n';
 import { Emo, GT } from './glyphs';
 import { useEffect, useMemo, useState } from 'react';
 import { usePremium, PLANS, FREE, type PlanId } from '@/lib/premium';
@@ -29,7 +30,8 @@ const COMPARE: [string, string, string, string][] = [
 const FREE_LIST = ['Až 3 mazlíčci', 'Připomínky a upozornění', 'Kalendář a návštěvy', 'Mapa veterin + nonstop pohotovost', 'Dokumenty a váha', `${FREE.aivet} zkušební dotazy Aivetovi`];
 
 export function PremiumBadge({ small = false }: { small?: boolean }) {
-  return <span className={`inline-flex items-center gap-1 rounded-full font-bold text-[#0F2540] bg-gradient-to-br from-[#CFE4F8] via-[#A9CEF3] to-[#7FB3E8] shadow-[0_4px_12px_-4px_rgba(127,179,232,.6)] ${small ? 'text-[12px] px-1.5 py-0.5' : 'text-xs px-2.5 py-1'}`}>✦ Premium</span>;
+  void small
+  return <span className="pbadge inline-flex shrink-0 items-center align-middle whitespace-nowrap rounded-[5px] border border-[#7FB3E8]/60 bg-[#7FB3E8]/12 px-1.5 py-[1px] text-[10px] font-extrabold uppercase leading-[14px] tracking-[0.06em] text-[#3D7FC4] dark:text-[#A9CEF3]">Premium</span>
 }
 
 const REASON: Record<string, string> = { aivet: 'Ptej se Aiveta bez omezení', pets: `Zdarma můžeš mít ${FREE.pets} mazlíčky`, pdf: 'Zdravotní pas v PDF je součástí Premium', expenses: 'Přehled výdajů je součástí Premium', obecne: 'Víc péče, méně starostí' };
@@ -50,7 +52,7 @@ export function Paywall() {
       <ul className="space-y-2.5 mb-5">
         {PERKS.map((x) => (
           <li key={x.t} className="flex gap-3 items-start"><span className="w-7 flex justify-center text-primary-d dark:text-primary">{EMOJI_GLYPH[x.e] ? <Glyph name={EMOJI_GLYPH[x.e]} /> : <span aria-hidden><Emo e={x.e} className="w-6 h-6" /></span>}</span>
-            <span className="flex-1"><b className="text-[15px]">{x.t}</b>{x.soon && <span className="ml-1.5 align-middle text-[12px] font-bold uppercase rounded-full px-1.5 py-0.5 bg-ink/10 dark:bg-white/15">brzy</span>}<span className="block text-[13px] text-muted">{x.d}</span></span></li>
+            <span className="flex-1"><b className="text-[14px]">{x.t}</b>{x.soon && <span className="ml-1.5 align-middle text-[12px] font-bold uppercase rounded-full px-1.5 py-0.5 bg-ink/10 dark:bg-white/15">brzy</span>}<span className="block text-[13px] text-muted">{x.d}</span></span></li>
         ))}
       </ul>
       <table data-compare className="w-full text-[13px] mb-5 rounded-2xl overflow-hidden ring-1 ring-ink/10 dark:ring-white/10">
@@ -93,7 +95,7 @@ export function AdSlot({ id }: { id: string }) {
   return (
     <aside aria-label="Tlapka Premium" data-ad-slot={id} className="rounded-[22px] p-3.5 flex items-center gap-3 bg-gradient-to-br from-[#EAF3FC] to-[#DCEBFA] dark:from-[#1E2733] dark:to-[#22262D] ring-1 ring-[#7FB3E8]/15">
       <span className="w-11 h-11 rounded-2xl bg-white/70 dark:bg-white/10 flex items-center justify-center text-xl shrink-0"><Emo e={x.e} className="w-6 h-6" /></span>
-      <span className="flex-1 min-w-0"><span className="block font-semibold text-[15px]">{x.t}</span><span className="block text-[13px] text-muted">{x.d}</span></span>
+      <span className="flex-1 min-w-0"><span className="block font-semibold text-[14px]">{x.t}</span><span className="block text-[13px] text-muted">{x.d}</span></span>
       <button onClick={() => p.openPaywall(x.r)} className="press shrink-0 min-h-[44px] px-3 rounded-full text-[13px] font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">14 dní zdarma</button>
     </aside>
   );
@@ -140,17 +142,17 @@ export function Expenses() {
   // free basic sum: the real yearly total is always visible (charts & breakdown are Premium)
   const realY = data.visits.filter((v) => (v.cost ?? 0) > 0 && Number(v.date.slice(0, 4)) === Y);
   const realTotal = realY.reduce((s, v) => s + (v.cost ?? 0), 0);
-  const kc = (n: number) => `${Math.round(n).toLocaleString('cs-CZ')} Kč`;
+  const kc = (n: number) => `${Math.round(n).toLocaleString(loc())} Kč`;
   const MN = ['led', 'úno', 'bře', 'dub', 'kvě', 'čer', 'čec', 'srp', 'zář', 'říj', 'lis', 'pro'];
   return (
     <div>
       <PageHeader title="Výdaje" sub="Z cen návštěv u veterináře" action={p.isPremium ? <PremiumBadge /> : undefined} />
-      {!p.isPremium && <div data-free-total className="mb-4"><Card className="p-5"><p className="text-sm text-muted">Celkem v roce {Y}</p><p className="text-[34px] font-bold tracking-tight leading-tight">{kc(realTotal)}</p><p className="text-[13px] text-muted">{realY.length ? `${realY.length} ${plural(realY.length, 'placená návštěva', 'placené návštěvy', 'placených návštěv')}` : 'Cenu doplníš u návštěvy v kalendáři.'}</p></Card></div>}
+      {!p.isPremium && <div data-free-total className="mb-4"><Card className="p-5"><p className="text-sm text-muted">Celkem v roce {Y}</p><p className="text-[30px] font-bold tracking-tight leading-tight">{kc(realTotal)}</p><p className="text-[13px] text-muted">{realY.length ? `${realY.length} ${plural(realY.length, 'placená návštěva', 'placené návštěvy', 'placených návštěv')}` : 'Cenu doplníš u návštěvy v kalendáři.'}</p></Card></div>}
       <div className={`space-y-4 ${p.isPremium ? '' : 'blur-[5px] pointer-events-none select-none'}`} inert={!p.isPremium}>
         <div className="flex gap-2 overflow-x-auto no-scrollbar">{years.map((y) => <button key={y} onClick={() => setYear(y)} className={`press rounded-full px-3.5 py-1.5 text-sm font-semibold ${y === year ? 'bg-primary-d text-[#0F2540]' : 'bg-surface dark:bg-surface-d ring-1 ring-ink/10 dark:ring-white/10'}`}>{y}</button>)}</div>
         <Card className="p-5">
           <p className="text-sm text-muted">Celkem v roce {year}</p>
-          <p className="text-[34px] font-bold tracking-tight leading-tight">{kc(total)}</p>
+          <p className="text-[30px] font-bold tracking-tight leading-tight">{kc(total)}</p>
           <p className="text-[13px] text-muted">{inY.length ? `${inY.length} ${plural(inY.length, 'placená návštěva', 'placené návštěvy', 'placených návštěv')} · průměr ${kc(total / inY.length)}` : 'Žádné placené návštěvy'}</p>
           <div className="mt-4 flex items-end gap-1.5 h-28" role="img" aria-label={`Výdaje po měsících v roce ${year}`}>
             {months.map((m, i) => (

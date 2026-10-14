@@ -2,7 +2,7 @@
 import { chromium, webkit, devices } from 'playwright';
 const BR = process.env.BROWSER === 'webkit' ? 'webkit' : 'chromium'; const BASE = 'http://localhost:4125/'; const R = {}; const errs = [];
 const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch();
-const p = await (await b.newContext({ ...devices['iPhone 14'] })).newPage(); p.on('pageerror', (e) => errs.push(e.message));
+const p = await (await b.newContext({ ...devices['iPhone 14'], locale: 'cs-CZ' })).newPage(); p.on('pageerror', (e) => errs.push(e.message));
 await p.goto(BASE); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(600);
 await p.locator('main button', { hasText: 'Dokument' }).first().click(); await p.waitForTimeout(500);
 R.pickerNames = await p.locator('[data-doc-picker] button').allInnerTexts();

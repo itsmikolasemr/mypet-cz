@@ -50,7 +50,7 @@ function Cashier({ card, onClose }: { card: LoyaltyCard; onClose: () => void }) 
       </div>
       <div className="w-full max-w-md bg-white rounded-2xl p-4" onClick={(e) => e.stopPropagation()}><Code code={card.code} format={card.format} big /></div>
       {card.format === 'QR' && <p className="mt-3 font-mono text-lg tracking-wider">{card.code}</p>}
-      {card.notes && <p className="mt-4 text-[15px] text-black/60 text-center max-w-sm">{card.notes}</p>}
+      {card.notes && <p className="mt-4 text-[14px] text-black/60 text-center max-w-sm">{card.notes}</p>}
       <p className="absolute bottom-[calc(env(safe-area-inset-bottom)+20px)] text-[13px] text-black/45">Jas naplno · klepnutím zavřeš</p>
     </div>
   );
@@ -139,7 +139,7 @@ export function Wallet() {
       <PageHeader title="Věrnostní karty" sub={cards.length ? `${cards.length} ${cards.length === 1 ? 'karta' : cards.length < 5 ? 'karty' : 'karet'} · sdílené s domácností` : 'Všechny zverimexy v kapse'} fab={<Fab label="Přidat kartu" onClick={() => setEdit(blank())} />} />
       {!cards.length ? (
         <Empty emoji="💳" title="Zatím žádná karta" text="Vyber obchod a naskenuj kartu. U pokladny ji pak jen ukážeš." action={<div data-quick-brands className="grid grid-cols-2 gap-2 text-left">
-          {ORDER.map((k) => { const st = STORES[k]; return <button key={k} data-brand={k} onClick={() => setEdit({ ...blank(), store: k })} className="press min-h-[56px] rounded-2xl px-3 py-2 flex items-center gap-2 font-semibold text-[14px] shadow-card" style={{ background: `linear-gradient(135deg, ${st.from}, ${st.to})`, color: st.ink }}><span aria-hidden className="shrink-0"><Emo e={st.emoji} className="w-5 h-5" /></span><span className="leading-tight">{k === 'custom' ? 'Jiná karta' : st.name}</span></button>; })}
+          {ORDER.map((k) => { const st = STORES[k]; return <button key={k} data-brand={k} onClick={() => setEdit({ ...blank(), store: k })} className="press min-h-[56px] rounded-2xl px-3 py-2 flex items-center gap-2 font-semibold text-[13px] shadow-card" style={{ background: `linear-gradient(135deg, ${st.from}, ${st.to})`, color: st.ink }}><span aria-hidden className="shrink-0"><Emo e={st.emoji} className="w-5 h-5" /></span><span className="leading-tight">{k === 'custom' ? 'Jiná karta' : st.name}</span></button>; })}
         </div>} />
       ) : (<>
         <p className="text-[13px] text-muted px-1 -mt-1 mb-3"><GT t="👆 Klepni na kartu – u pokladny se ukáže velký kód a zesvětlí se displej." /></p>
@@ -153,12 +153,12 @@ export function Wallet() {
                 <span className="pointer-events-none absolute -right-10 -top-12 w-40 h-40 rounded-full bg-white/15 blur-2xl" />
                 <div className="relative flex items-start gap-3">
                   <span className="w-10 h-10 rounded-xl bg-white/20 ring-1 ring-white/30 flex items-center justify-center text-xl"><Emo e={s.emoji} className="w-6 h-6" /></span>
-                  <span className="flex-1 min-w-0"><span className="block font-bold text-[17px] truncate" data-card-title>{cardTitle(c)}</span>
+                  <span className="flex-1 min-w-0"><span className="block font-bold text-[16px] truncate" data-card-title>{cardTitle(c)}</span>
                     <span className="block text-[12px] opacity-80">{c.uses ? `Použito ${c.uses}×` : 'Zatím nepoužito'}</span></span>
                   <button aria-label={`Upravit ${cardTitle(c)}`} onClick={(e) => { e.stopPropagation(); setEdit(c); }} className="w-10 h-10 -m-1 rounded-full bg-white/15 flex items-center justify-center "><Emo e="✎" className="w-5 h-5" /></button>
                 </div>
                 <div className="relative mt-[38px] flex items-end justify-between gap-3">
-                  <span className="font-mono text-[15px] tracking-[.14em] truncate">{c.format === 'QR' ? 'QR kód' : (/^\d{8,}$/.test(c.code) ? c.code.replace(/(\d{4})(?=\d)/g, '$1 ') : c.code)}</span>
+                  <span className="font-mono text-[14px] tracking-[.14em] truncate">{c.format === 'QR' ? 'QR kód' : (/^\d{8,}$/.test(c.code) ? c.code.replace(/(\d{4})(?=\d)/g, '$1 ') : c.code)}</span>
                   {c.notes && <span className="text-[12px] opacity-85 truncate max-w-[45%]">{c.notes}</span>}
                 </div>
               </div>

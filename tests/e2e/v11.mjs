@@ -3,7 +3,7 @@ const BR = process.env.BROWSER || 'chromium';
 import { unzipSync } from '/workspace/mypet-scan/node_modules/fflate/esm/index.mjs'; import fs from 'node:fs';
 const BASE = 'http://localhost:4125/'; const S = '/workspace/mypet-shots/'; const PW = process.env.TLAPKA_TEST_PW;
 const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' }); const errs = []; const R = {};
-const mk = async () => { const c = await b.newContext({ ...devices['iPhone 14'], acceptDownloads: true, permissions: BR === 'webkit' ? [] : ['clipboard-read', 'clipboard-write', 'notifications'] }); const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message)); return p; };
+const mk = async () => { const c = await b.newContext({ ...devices['iPhone 14'], locale: 'cs-CZ', acceptDownloads: true, permissions: BR === 'webkit' ? [] : ['clipboard-read', 'clipboard-write', 'notifications'] }); const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message)); return p; };
 const nav = async (p, l) => { if (await p.locator('[role=alertdialog]').count()) { console.log('DLG@' + l + ':', (await p.locator('[role=alertdialog]').innerText()).replace(/\n/g, ' ')); } await p.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: new RegExp('^' + l) }).click(); await p.waitForTimeout(500); };
 const hash = async (p, h) => { await p.evaluate((h) => { history.pushState(null, '', '#' + h); dispatchEvent(new PopStateEvent('popstate')); }, h); await p.waitForTimeout(600); };
 const dlg = async (p) => { const l = p.locator('[role=alertdialog]'); await l.waitFor({ timeout: 15000 }); const t = await l.innerText(); await p.getByRole('button', { name: 'Rozumím' }).click(); return t; };

@@ -116,7 +116,7 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
         <div className="min-w-0 flex-1">
           <p className="text-[11.5px] font-bold uppercase tracking-wide text-muted leading-snug"><span className="whitespace-nowrap">{label}</span> · <span className="whitespace-nowrap">péče {c.score} %</span></p>
           <button onClick={() => onOpen(pet.id)} className="text-left text-2xl font-bold leading-tight truncate max-w-full min-h-[44px]">{pet.name}</button>
-          <div className="mt-2 relative rounded-2xl rounded-tl-md bg-bg/90 dark:bg-white/[0.07] px-3 py-2 text-[14px] leading-snug ring-1 ring-ink/5 dark:ring-white/10 animate-fade" key={pet.id + c.mood}>{line(pet, c)}</div>
+          <div className="mt-2 relative rounded-2xl rounded-tl-md bg-bg/90 dark:bg-white/[0.07] px-3 py-2 text-[13px] leading-snug ring-1 ring-ink/5 dark:ring-white/10 animate-fade" key={pet.id + c.mood}>{line(pet, c)}</div>
         </div>
       </div>
       {n > 1 && (

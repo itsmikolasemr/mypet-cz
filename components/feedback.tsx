@@ -34,7 +34,7 @@ export function FeedbackHost() {
         <div role="status" aria-live="polite" className="fixed left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-32px)] max-w-[400px] flex items-center gap-3 rounded-2xl bg-[#1C222A] text-white px-4 py-2 shadow-float animate-up"
           style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + var(--banner, 0px) + 96px)' }}>
           <span className="dark shrink-0" key={t.id}><PawMark animate tile={false} className="w-6 h-6" /></span>
-          <span className="flex-1 text-[15px] py-2">{t.msg}</span>
+          <span className="flex-1 text-[14px] py-2">{t.msg}</span>
           {t.undo && <button onClick={() => { t.undo?.(); setT(null); toast('Vráceno zpět'); }} className="press min-h-[44px] px-3 -mr-2 font-bold text-[#9CC8F2]">Zpět</button>}
         </div>
       )}
@@ -43,7 +43,7 @@ export function FeedbackHost() {
           <div role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.key === 'Escape' && close(false)}
             className="w-full max-w-sm rounded-[28px] bg-surface dark:bg-surface-d p-5 shadow-float animate-up" style={{ marginBottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px))' }}>
             <p id="dlg-t" className="text-lg font-bold">{a.title}</p>
-            {a.text && <p className="text-[15px] text-muted mt-1.5">{a.text}</p>}
+            {a.text && <p className="text-[14px] text-muted mt-1.5">{a.text}</p>}
             <div className="flex gap-2 mt-5">
               {a.cancel !== null && <button onClick={() => close(false)} className="press flex-1 min-h-[48px] rounded-2xl font-semibold bg-ink/5 dark:bg-white/10">{a.cancel ?? 'Zrušit'}</button>}
               <button ref={okRef} onClick={() => close(true)} className={`press flex-1 min-h-[48px] rounded-2xl font-bold text-[#0F2540] ${a.danger ? 'bg-red-600' : 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]'}`}>{a.ok ?? 'OK'}</button>

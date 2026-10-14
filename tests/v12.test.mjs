@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { execSync } from 'node:child_process';
 import fs from 'node:fs'; import path from 'node:path'; import os from 'node:os';
 const out = fs.mkdtempSync(path.join(os.tmpdir(), 'v12-'));
-execSync(`npx tsc lib/today.ts lib/wrapped.ts lib/sample.ts lib/utils.ts lib/types.ts --outDir ${out} --module es2020 --target es2020 --moduleResolution node --skipLibCheck --esModuleInterop`, { stdio: 'inherit' });
-for (const f of fs.readdirSync(out)) { const p = path.join(out, f); fs.writeFileSync(p.replace(/\.js$/, '.mjs'), fs.readFileSync(p, 'utf8').replace(/from '\.\/(\w+)'/g, "from './$1.mjs'")); }
+execSync(`npx tsc lib/today.ts lib/wrapped.ts lib/sample.ts lib/utils.ts lib/types.ts lib/i18n.ts lib/i18n.en.ts --outDir ${out} --module es2020 --target es2020 --moduleResolution node --skipLibCheck --esModuleInterop`, { stdio: 'inherit' });
+for (const f of fs.readdirSync(out)) { const p = path.join(out, f); fs.writeFileSync(p.replace(/\.js$/, '.mjs'), fs.readFileSync(p, 'utf8').replace(/from '\.\/([\w.]+)'/g, "from './$1.mjs'")); }
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 const T = await import(path.join(out, 'today.mjs')); const W = await import(path.join(out, 'wrapped.mjs')); const S = await import(path.join(out, 'sample.mjs'));
 const data = { ...S.sampleData(), settings: { theme: 'light', onboarded: true, notify: false, notifyHour: 9 } };

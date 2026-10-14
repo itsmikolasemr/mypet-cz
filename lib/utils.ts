@@ -1,3 +1,4 @@
+import { loc } from './i18n';
 import type { Reminder, ReminderType, Species } from './types';
 
 export const uid = () =>
@@ -21,9 +22,9 @@ export const diffDays = (a: string, b: string) =>
   Math.round((parse(a).getTime() - parse(b).getTime()) / 86400000);
 
 export const fmtDate = (s: string) =>
-  s ? parse(s).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' }) : '';
+  s ? parse(s).toLocaleDateString(loc(), { day: 'numeric', month: 'numeric', year: 'numeric' }) : '';
 export const fmtShort = (s: string) =>
-  parse(s).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
+  parse(s).toLocaleDateString(loc(), { day: 'numeric', month: 'short' });
 
 export function plural(n: number, one: string, few: string, many: string) {
   const a = Math.abs(n);

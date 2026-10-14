@@ -8,9 +8,9 @@ export const COMPANY = {
 };
 export const LEGAL_UPDATED = '14. 10. 2026';
 const Ph = ({ children }: { children: React.ReactNode }) => <mark className="rounded px-1 bg-amber-100 text-amber-900 dark:bg-amber-400/20 dark:text-amber-100" data-placeholder>{children}</mark>;
-const H = ({ children }: { children: React.ReactNode }) => <h2 className="font-bold text-[17px] mt-6 mb-2">{children}</h2>;
+const H = ({ children }: { children: React.ReactNode }) => <h2 className="font-bold text-[16px] mt-6 mb-2">{children}</h2>;
 const Doc = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <article className="text-[15px] leading-relaxed [&_li]:ml-5 [&_li]:list-disc [&_p]:mb-2">
+  <article className="text-[14px] leading-relaxed [&_li]:ml-5 [&_li]:list-disc [&_p]:mb-2">
     <PageHeader title={title} sub={`Platné od ${LEGAL_UPDATED}`} />
     <Card className="p-4 mb-4 text-[13px]" ><p><b>Návrh dokumentu.</b> Údaje označené žlutě je nutné před vydáním doplnit a text nechat zkontrolovat právníkem.</p></Card>
     {children}
@@ -74,7 +74,7 @@ export function About({ open }: { open: (t: 'privacy' | 'terms') => void }) {
   return (
     <div>
       <PageHeader title="O aplikaci" />
-      <div className="text-center mb-5"><Logo animate className="h-14 mx-auto" /><p className="text-muted text-sm mt-2">Verze 1.1 · vyrobeno v Česku s láskou k tlapkám</p></div>
+      <div className="text-center mb-5"><Logo animate className="h-14 mx-auto" /><p className="text-muted text-sm mt-2">Verze 1.2 · vyrobeno v Česku s láskou k tlapkám</p></div>
       <Card className="divide-y divide-ink/5 dark:divide-white/5">
         {([['privacy', 'Ochrana osobních údajů'], ['terms', 'Podmínky užívání']] as const).map(([k, l]) => <button key={k} onClick={() => open(k)} className="press w-full text-left px-4 min-h-[52px] font-medium flex items-center justify-between">{l}<span aria-hidden className="text-muted">›</span></button>)}
         <a className="block px-4 py-3.5 font-medium" href={`mailto:${COMPANY.email.startsWith('[') ? 'podpora@example.com' : COMPANY.email}?subject=Tlapka%20–%20zpětná%20vazba`}>Napsat nám <span className="block text-[13px] text-muted"><Ph>{COMPANY.email}</Ph></span></a>

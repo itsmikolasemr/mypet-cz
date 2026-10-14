@@ -1,7 +1,7 @@
 import { chromium, webkit, devices } from 'playwright';
 const BR = process.env.BROWSER || 'chromium'; const BASE = 'http://localhost:4125/'; const S = '/workspace/mypet-shots/';
 const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' }); const errs = []; const R = {};
-const c = await b.newContext({ ...devices['iPhone 14'] }); const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message));
+const c = await b.newContext({ ...devices['iPhone 14'], locale: 'cs-CZ' }); const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message));
 const ean = (s) => { const d = [...s].map(Number); const sum = d.reduce((a, x, i) => a + x * (i % 2 ? 3 : 1), 0); return s + ((10 - (sum % 10)) % 10); };
 const E = ean('859123456789');
 const data = async () => JSON.parse(await p.evaluate(() => localStorage.getItem('tlapka:data:v1')));

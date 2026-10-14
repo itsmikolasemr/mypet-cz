@@ -1,3 +1,4 @@
+import { loc } from './i18n';
 /**
  * Tlapka Wrapped (v1.2): per-pet year recap („Rok 2026“) or year-to-date („Zatím letos“).
  * Pure function over AppData so it works offline, in tests and for PNG export.
@@ -61,7 +62,7 @@ export function wrapped(data: AppData, petId: string, year = new Date().getFullY
 }
 
 export type Slide = { key: string; kicker: string; big: string; unit?: string; line: string; foot?: string; dots?: number };
-const n = (x: number) => x.toLocaleString('cs-CZ');
+const n = (x: number) => x.toLocaleString(loc());
 export function slides(s: WrappedStats): Slide[] {
   const P = s.pet.name; const out: Slide[] = [];
   out.push({ key: 'intro', kicker: s.ytd ? 'Zatím letos' : `Rok ${s.year}`, big: P, line: s.ytd ? `Hlavní role: ${P}. Zatím ${s.days} dní společné péče.` : `Celý rok ${s.year}, hlavní role: ${P}.`, dots: 4 });

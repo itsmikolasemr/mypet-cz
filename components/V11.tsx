@@ -1,4 +1,5 @@
 'use client';
+import { loc } from '@/lib/i18n';
 import { Emo, GT } from './glyphs';
 // Tlapka v1.1 features: export ZIP, trash, battery guide, Druhý názor, AI scan, pass link + QR, travel checklist.
 import { useEffect, useRef, useState } from 'react';
@@ -43,14 +44,14 @@ export function TrashSection() {
     <Card className="p-4 space-y-2" >
       <div className="flex items-center gap-2"><p className="font-semibold flex-1 inline-flex items-center gap-1.5"><Emo e="🗑️" />Koš ({groups.length})</p>{!prem.isPremium && <PremiumBadge />}</div>
       <p className="text-[13px] text-muted">Smazané položky tu zůstávají {TRASH_DAYS} dní.</p>
-      {!groups.length && <p className="text-[14px] text-muted">Koš je prázdný.</p>}
+      {!groups.length && <p className="text-[13px] text-muted">Koš je prázdný.</p>}
       {groups.slice(0, 20).map((g) => (
         <div key={g[0].group} className="flex items-center gap-2" data-trash>
-          <p className="flex-1 min-w-0 text-[14px] break-words">{label(g)}<span className="block text-[12px] text-muted">ještě {left(g[0].at)} dní</span></p>
+          <p className="flex-1 min-w-0 text-[13px] break-words">{label(g)}<span className="block text-[12px] text-muted">ještě {left(g[0].at)} dní</span></p>
           <button className="press min-h-[44px] px-3 rounded-xl font-semibold bg-ink/5 dark:bg-white/10" onClick={() => { if (!prem.isPremium) return prem.openPaywall('kos'); restoreTrash(g[0].group); toast('Obnoveno'); }}>Obnovit</button>
         </div>
       ))}
-      {!!groups.length && <button className="press min-h-[44px] text-[14px] font-semibold text-red-600" onClick={() => { emptyTrash(); toast('Koš vysypán'); }}>Vysypat koš</button>}
+      {!!groups.length && <button className="press min-h-[44px] text-[13px] font-semibold text-red-600" onClick={() => { emptyTrash(); toast('Koš vysypán'); }}>Vysypat koš</button>}
     </Card>
   );
 }
@@ -79,7 +80,7 @@ export function BatteryGuide() {
       {list.map((g) => (
         <div key={g.b}>
           <button aria-expanded={open === g.b} className="press w-full min-h-[44px] flex items-center justify-between text-left font-medium" onClick={() => setOpen(open === g.b ? null : g.b)}>{g.b}<span aria-hidden>{open === g.b ? '−' : '+'}</span></button>
-          {open === g.b && <ol className="list-decimal pl-6 pb-2 text-[14px] space-y-1">{g.steps.map((s) => <li key={s}>{s}</li>)}</ol>}
+          {open === g.b && <ol className="list-decimal pl-6 pb-2 text-[13px] space-y-1">{g.steps.map((s) => <li key={s}>{s}</li>)}</ol>}
         </div>
       ))}
     </Card>
@@ -105,14 +106,14 @@ export function SecondOpinion() {
     <div>
       <PageHeader title="Druhý názor" sub="Aivet ti lidsky vysvětlí zprávu od veterináře" />
       <div className="space-y-4">
-        {!prem.isPremium && <Card className="p-4 flex items-center gap-3"><PremiumBadge /><p className="text-[14px] flex-1">Součást Premium. Vyzkoušej 14 dní zdarma.</p></Card>}
+        {!prem.isPremium && <Card className="p-4 flex items-center gap-3"><PremiumBadge /><p className="text-[13px] flex-1">Součást Premium. Vyzkoušej 14 dní zdarma.</p></Card>}
         {data.pets.length > 1 && <Field label="Mazlíček"><select className={inputCls} value={pet} onChange={(e) => setPet(e.target.value)}>{data.pets.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></Field>}
         <Field label="Text zprávy nebo výsledků"><textarea className={`${inputCls} min-h-[140px]`} value={text} onChange={(e) => setText(e.target.value)} placeholder="Vlož text zprávy, např. „ALT 180 U/l, mírně zvýšené…“" /></Field>
         <input ref={ref} type="file" accept="image/*" capture="environment" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) setImg(await imageToDataUrl(f)); }} />
         <button className={soft} onClick={() => ref.current?.click()}>{img ? <GT t="✅ Fotka přiložena – změnit" /> : <GT t="📷 Vyfotit nebo nahrát zprávu" />}</button>
         {img && <img src={img} alt="Náhled zprávy" className="rounded-2xl max-h-48 mx-auto" />}
         <button disabled={busy || (!text.trim() && !img)} className={primary} onClick={go}>{busy ? 'Aivet čte zprávu…' : 'Vysvětlit zprávu'}</button>
-        {reply && <Card className="p-4"><div className="whitespace-pre-wrap text-[15px] leading-relaxed" data-second-reply>{reply.replace(/\*\*/g, '')}</div></Card>}
+        {reply && <Card className="p-4"><div className="whitespace-pre-wrap text-[14px] leading-relaxed" data-second-reply>{reply.replace(/\*\*/g, '')}</div></Card>}
         <p className="text-[13px] text-muted">Aivet nenahrazuje veterináře. Při zhoršení stavu volej pohotovost – mapa nonstop klinik je vždy zdarma.</p>
       </div>
     </div>
@@ -173,7 +174,7 @@ export function ScanButton({ petId, className }: { petId?: string; className?: s
               <Field label="Typ"><select className={inputCls} value={r.reminderType ?? 'leky'} onChange={(e) => set('reminderType', e.target.value)}>{RTYPES.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}</select></Field>
               <Field label="Opakovat po (dní)"><input inputMode="numeric" className={inputCls} value={r.intervalDays ?? ''} onChange={(e) => set('intervalDays', e.target.value ? Number(e.target.value) : null)} /></Field>
             </div>
-            <fieldset className="space-y-1 text-[15px]"><legend className="font-semibold mb-1">Vytvořit</legend>
+            <fieldset className="space-y-1 text-[14px]"><legend className="font-semibold mb-1">Vytvořit</legend>
               {([['visit', 'Návštěvu s výdajem'], ['reminder', 'Připomínku dalšího termínu'], ['doc', 'Doklad (fotku)']] as const).map(([k, l]) => (
                 <label key={k} className="flex items-center gap-3 min-h-[44px]"><input type="checkbox" className="w-5 h-5 accent-[#7FB3E8]" checked={mk[k]} onChange={(e) => setMk({ ...mk, [k]: e.target.checked })} />{l}</label>))}
             </fieldset>
@@ -226,7 +227,7 @@ export function TravelChecklist({ pet }: { pet: Pet }) {
   const items: { ok: boolean | null; t: string; d?: string }[] = [
     { ok: !!pet.microchip, t: 'Čip ISO (15 číslic)', d: pet.microchip ? `Čip ${pet.microchip}` : 'Doplň číslo čipu v profilu. Čip musí být dřív než očkování proti vzteklině.' },
     { ok: null, t: 'Evropský pas zvířete (EU pet passport)', d: 'Vydává soukromý veterinář. Vezmi originál.' },
-    { ok: rabies.length ? rabiesValid && (daysSince == null || daysSince >= 21) : false, t: 'Platné očkování proti vzteklině', d: rabies.length ? `${lastRabies ? `Poslední ${new Date(lastRabies).toLocaleDateString('cs-CZ')}. ` : ''}${daysSince != null && daysSince < 21 ? 'Po prvním očkování musí uplynout 21 dní! ' : ''}${rabiesValid ? 'Platí v den odjezdu.' : 'V den odjezdu už neplatí – přeočkuj.'}` : 'V Tlapce nemáš připomínku vztekliny (typ Očkování, název „vzteklina“).' },
+    { ok: rabies.length ? rabiesValid && (daysSince == null || daysSince >= 21) : false, t: 'Platné očkování proti vzteklině', d: rabies.length ? `${lastRabies ? `Poslední ${new Date(lastRabies).toLocaleDateString(loc())}. ` : ''}${daysSince != null && daysSince < 21 ? 'Po prvním očkování musí uplynout 21 dní! ' : ''}${rabiesValid ? 'Platí v den odjezdu.' : 'V den odjezdu už neplatí – přeočkuj.'}` : 'V Tlapce nemáš připomínku vztekliny (typ Očkování, název „vzteklina“).' },
   ];
   if (dest === 'special') items.push({ ok: null, t: 'Odčervení proti tasemnici (psi)', d: 'Finsko, Irsko, Malta, Norsko, Severní Irsko: 24–120 h před vstupem, zapsané veterinářem v pasu.' });
   if (dest === 'uk') items.push({ ok: null, t: 'Animal Health Certificate', d: 'Vydá úřední veterinář max. 10 dní před cestou (pas z EU nestačí).' }, { ok: null, t: 'Odčervení proti tasemnici (psi)', d: '1–5 dní před příjezdem do Velké Británie.' });
@@ -259,11 +260,11 @@ export function PrnRow({ med }: { med: import('@/lib/types').Medication }) {
   const { saveMed } = useStore(); const cloud = useCloud();
   const [, tick] = useState(0); useEffect(() => { const t = setInterval(() => tick((x) => x + 1), 60000); return () => clearInterval(t); }, []);
   const st = prnStatus(med);
-  const hm = (t: number | string) => new Date(t).toLocaleString('cs-CZ', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+  const hm = (t: number | string) => new Date(t).toLocaleString(loc(), { weekday: 'short', hour: '2-digit', minute: '2-digit' });
   const give = async () => {
     if (!st.ok && !(await (await import('./feedback')).ask({ title: 'Ještě není bezpečné podat', text: `Podle nastavení až ${hm(st.nextAt!)}. Opravdu zapsat dávku?`, ok: 'Přesto zapsat', danger: true }))) return;
     const prev = med; saveMed({ ...med, given: [...(med.given ?? []), { at: new Date().toISOString(), by: cloud.name }].slice(-50) });
-    toast(`${med.name} – zapsáno ${new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}`, () => saveMed(prev));
+    toast(`${med.name} – zapsáno ${new Date().toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}`, () => saveMed(prev));
   };
   return (
     <div className="flex items-center gap-3 px-3 pb-2.5 -mt-1" data-prn={med.id}>
@@ -282,7 +283,7 @@ export function DoseRow({ med }: { med: import('@/lib/types').Medication }) {
   const n = dosesPerDay(med.frequency); if (!n) return null;
   const day = new Date().toISOString().slice(0, 10);
   const todays = (med.given ?? []).filter((g) => new Date(g.at).toLocaleDateString('sv') === new Date().toLocaleDateString('sv'));
-  const hm = (t: string) => new Date(t).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+  const hm = (t: string) => new Date(t).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' });
   const give = () => { const prev = med; saveMed({ ...med, given: [...(med.given ?? []), { at: new Date().toISOString(), by: cloud.name }].slice(-120) }); toast(`${med.name}: dávka zapsána ✓`, () => saveMed(prev)); };
   const streak = (() => { let s = 0; for (let i = 1; i < 60; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = d.toLocaleDateString('sv'); if ((med.given ?? []).filter((g) => new Date(g.at).toLocaleDateString('sv') === k).length >= n) s++; else break; } return s; })();
   return (

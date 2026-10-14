@@ -1,4 +1,5 @@
 'use client';
+import { loc } from '@/lib/i18n';
 /** v1.2 Tlapka Wrapped – IG-story style year recap per pet (in-app animated player + PNG export / share + invite QR). */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '@/lib/store';
@@ -20,18 +21,18 @@ function SlideView({ s, i, total, photo, qr }: { s: Slide; i: number; total: num
   const num = Number(s.big.replace(/\s/g, '').replace(',', '.'));
   const isNum = /^[\d\s]+(,\d+)?$/.test(s.big) && !Number.isNaN(num);
   const c = useCount(isNum ? Math.round(num) : 0, isNum && !s.big.includes(','));
-  const bigText = isNum && !s.big.includes(',') ? c.toLocaleString('cs-CZ') : s.big;
+  const bigText = isNum && !s.big.includes(',') ? c.toLocaleString(loc()) : s.big;
   return (
     <div key={s.key} className="absolute inset-0 flex flex-col items-center text-center px-7 pt-20 pb-10 overflow-hidden" style={{ background: `linear-gradient(165deg, ${th.bg[0]}, ${th.bg[1]})`, color: th.ink }} data-slide={s.key}>
       <div aria-hidden className="absolute inset-0 opacity-[.06]" style={{ backgroundImage: `radial-gradient(${th.ink} 2.2px, transparent 2.4px)`, backgroundSize: '26px 26px' }} />
       <div className="relative flex-1 flex flex-col items-center justify-center w-full wr-in">
         {s.key === 'intro' && (photo ? <img src={photo} alt="" className="w-36 h-36 rounded-full object-cover ring-[6px] ring-white mb-6 wr-pop" /> : <PawMark className="w-36 h-36 mb-6 wr-pop" animate tile={false} />)}
         {s.key === 'persona' && <PawMark className="w-28 h-28 mb-5 wr-pop" animate tile={false} />}
-        <p className="text-[15px] font-extrabold uppercase tracking-[.14em]" style={{ color: th.sub }}>{s.kicker}</p>
+        <p className="text-[14px] font-extrabold uppercase tracking-[.14em]" style={{ color: th.sub }}>{s.kicker}</p>
         <p className={`font-extrabold tracking-[-0.03em] leading-[0.95] mt-2 ${s.big.length > 12 ? 'text-[40px]' : s.big.length > 7 ? 'text-[56px]' : 'text-[84px]'}`}>{bigText}{s.unit && <span className="text-[0.42em] ml-2 tracking-normal">{s.unit}</span>}</p>
         <span aria-hidden className="block w-4 h-4 rounded-full my-5 wr-pop" style={{ background: th.dot, animationDelay: '.5s' }} />
-        <p className="text-[18px] font-semibold leading-snug max-w-[300px]">{s.line}</p>
-        {s.foot && <p className="text-[14px] font-semibold mt-3 max-w-[290px]" style={{ color: th.sub }}>{s.foot}</p>}
+        <p className="text-[17px] font-semibold leading-snug max-w-[300px]">{s.line}</p>
+        {s.foot && <p className="text-[13px] font-semibold mt-3 max-w-[290px]" style={{ color: th.sub }}>{s.foot}</p>}
         {s.key === 'invite' && qr && <img src={qr} alt="QR kód s pozvánkou do Tlapky" className="mt-6 w-40 h-40 rounded-2xl bg-white p-2.5 wr-pop" />}
         {s.dots && <div aria-hidden className="flex gap-3 mt-8">{Array.from({ length: 4 }, (_, k) => <span key={k} className="w-3.5 h-3.5 rounded-full wr-pop" style={{ background: k < s.dots! ? th.dot : th.sub, opacity: k < s.dots! ? 1 : 0.3, animationDelay: `${0.6 + k * 0.12}s` }} />)}</div>}
       </div>
@@ -101,12 +102,12 @@ export function WrappedCard({ compact = false }: { compact?: boolean }) {
       <button onClick={go} data-wrapped-card className={`press w-full text-left rounded-[22px] p-4 flex items-center gap-4 text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_14px_30px_-16px_rgba(127,179,232,.9)] relative overflow-hidden ${compact ? '' : 'min-h-[92px]'}`}>
         <span aria-hidden className="absolute inset-0 opacity-[.12]" style={{ backgroundImage: 'radial-gradient(#0F2540 1.6px, transparent 1.8px)', backgroundSize: '18px 18px' }} />
         <span className="relative w-14 h-14 shrink-0 rounded-2xl bg-white/45 flex items-center justify-center"><PawMark className="w-10 h-10" tile={false} /></span>
-        <span className="relative flex-1 min-w-0"><span className="block text-[12px] font-extrabold uppercase tracking-[.12em] opacity-75">Tlapka Wrapped</span><span className="block font-extrabold text-[18px] leading-tight">{late ? `Rok ${y} v příběhu` : 'Zatím letos'}</span><span className="block text-[13px] font-semibold opacity-80">Procházky, léky, zdraví – ke sdílení na Instagram</span></span>
+        <span className="relative flex-1 min-w-0"><span className="block text-[12px] font-extrabold uppercase tracking-[.12em] opacity-75">Tlapka Wrapped</span><span className="block font-extrabold text-[17px] leading-tight">{late ? `Rok ${y} v příběhu` : 'Zatím letos'}</span><span className="block text-[13px] font-semibold opacity-80">Procházky, léky, zdraví – ke sdílení na Instagram</span></span>
         <span className="relative text-2xl font-bold" aria-hidden>›</span>
       </button>
       {pick && <div role="dialog" aria-label="Čí příběh?" className="fixed inset-0 z-[70] bg-black/40 flex items-end" onClick={() => setPick(false)}><div className="w-full max-w-md mx-auto bg-surface dark:bg-surface-d rounded-t-[28px] p-5 pb-[calc(env(safe-area-inset-bottom)+20px)]" onClick={(e) => e.stopPropagation()}>
         <p className="font-bold text-lg mb-3">Čí příběh chceš vidět?</p>
-        <div className="grid grid-cols-2 gap-3">{data.pets.map((p) => <button key={p.id} onClick={() => { setPick(false); setOpen(p.id); }} className="press min-h-[64px] rounded-2xl bg-primary/10 font-bold text-[16px]">{p.name}</button>)}</div>
+        <div className="grid grid-cols-2 gap-3">{data.pets.map((p) => <button key={p.id} onClick={() => { setPick(false); setOpen(p.id); }} className="press min-h-[64px] rounded-2xl bg-primary/10 font-bold text-[15px]">{p.name}</button>)}</div>
       </div></div>}
       {open && <WrappedPlayer petId={open} onClose={() => setOpen(null)} />}
     </>

@@ -14,7 +14,7 @@ import { Button, Card, Field, Sheet, inputCls } from './ui';
 import { notice, toast } from './feedback';
 
 const uid = () => Math.random().toString(36).slice(2, 10);
-const soft = 'press min-h-[48px] rounded-2xl px-3 font-semibold text-[14px] bg-primary/10 text-primary';
+const soft = 'press min-h-[48px] rounded-2xl px-3 font-semibold text-[13px] bg-primary/10 text-primary';
 
 async function copy(t: string) {
   try { await navigator.clipboard.writeText(t); return true; } catch {
@@ -91,8 +91,8 @@ export function HandoverCard({ pet }: { pet: Pet }) {
     <Card className="p-4 space-y-3" >
       <div data-handover><p className="font-semibold"><GT t="🧳 Předávací karta pro hlídače" /></p>
         <p className="text-[13px] text-muted">Krmení, léky, alergie, zvyky, venčení a kontakty na jednom místě – pro hlídače, babičku nebo hlídací web.</p></div>
-      {has ? <ul className="text-[14px] space-y-1">{sections.filter((s) => ['feeding', 'meds', 'allergies', 'walks'].includes(s.key)).map((s) => <li key={s.key} className={s.alert ? 'text-red-700 dark:text-red-300 font-semibold' : ''}><b>{s.h.startsWith('⚠') ? <><Emo e="⚠️" /> {s.h.replace(/^⚠\uFE0F? /, '')}</> : s.h}:</b> {s.lines.join('; ')}</li>)}</ul>
-        : <p className="text-[14px]">Zatím nevyplněno. Léky a alergie se doplní samy z karty mazlíčka.</p>}
+      {has ? <ul className="text-[13px] space-y-1">{sections.filter((s) => ['feeding', 'meds', 'allergies', 'walks'].includes(s.key)).map((s) => <li key={s.key} className={s.alert ? 'text-red-700 dark:text-red-300 font-semibold' : ''}><b>{s.h.startsWith('⚠') ? <><Emo e="⚠️" /> {s.h.replace(/^⚠\uFE0F? /, '')}</> : s.h}:</b> {s.lines.join('; ')}</li>)}</ul>
+        : <p className="text-[13px]">Zatím nevyplněno. Léky a alergie se doplní samy z karty mazlíčka.</p>}
       <button className={has ? soft + ' w-full' : 'press w-full min-h-[48px] rounded-2xl font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_10px_24px_-12px_rgba(127,179,232,.8)]'} onClick={() => setEdit(true)} data-edit-care>{has ? <GT t="✎ Upravit kartu" /> : '＋ Vyplnit kartu (2 minuty)'}</button>
       <p className="text-[12px] font-bold uppercase tracking-wide text-muted pt-1">Poslat hlídači</p>
       <div className="grid grid-cols-2 gap-2">
@@ -120,7 +120,7 @@ export function SharedHandover({ pet, data }: { pet: Pet; data: Pick<import('@/l
   const s = handoverSections(pet, data).filter((x) => !['allergies', 'meds', 'about'].includes(x.key));
   return (
     <div className="space-y-2 pt-1" data-shared-handover>
-      {s.map((x) => <div key={x.key}><p className="text-[13px] font-bold text-muted uppercase tracking-wide">{x.h}</p>{x.lines.map((l, i) => <p key={i} className="text-[15px]">{l.split(/(\+?\d[\d\s]{7,}\d)/).map((part, j) => /^\+?\d[\d\s]{7,}\d$/.test(part) ? <a key={j} className="text-primary font-semibold" href={`tel:${part.replace(/\s/g, '')}`}>{part}</a> : part)}</p>)}</div>)}
+      {s.map((x) => <div key={x.key}><p className="text-[13px] font-bold text-muted uppercase tracking-wide">{x.h}</p>{x.lines.map((l, i) => <p key={i} className="text-[14px]">{l.split(/(\+?\d[\d\s]{7,}\d)/).map((part, j) => /^\+?\d[\d\s]{7,}\d$/.test(part) ? <a key={j} className="text-primary font-semibold" href={`tel:${part.replace(/\s/g, '')}`}>{part}</a> : part)}</p>)}</div>)}
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { tr, getLang } from './i18n';
+import { loc } from './i18n';
 // Premium: PDF health pass ("zdravotní pas") with QR summary. Lazy-loaded, fully on-device.
 import type { AppData, Pet } from './types';
 import type { PDFPage, rgb as RgbFn } from 'pdf-lib';
@@ -22,7 +24,7 @@ export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
   doc.registerFontkit(fontkit);
   const [reg, bold] = await Promise.all(['/fonts/LiberationSans-Regular.ttf', '/fonts/LiberationSans-Bold.ttf'].map((u) => fetch(u).then((r) => r.arrayBuffer())));
   const F = await doc.embedFont(reg, { subset: true }), B = await doc.embedFont(bold, { subset: true });
-  doc.setTitle(`Zdravotní pas – ${pet.name}`); doc.setCreator('Tlapka'); doc.setLanguage('cs');
+  doc.setTitle(`Zdravotní pas – ${pet.name}`); doc.setCreator('Tlapka'); doc.setLanguage(getLang());
   const W = 595, H = 842, M = 44;
   let page = doc.addPage([W, H]); let y = H - M;
   const ink = rgb(0.114, 0.118, 0.133), muted = rgb(0.337, 0.357, 0.388), brand = rgb(0.498, 0.702, 0.91), brandText = rgb(0.141, 0.376, 0.624), navy = rgb(0.059, 0.145, 0.251), red = rgb(0.75, 0.1, 0.1);
@@ -30,16 +32,16 @@ export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
   const wrap = (t: string, font = F, size = 10.5, maxW = W - 2 * M) => {
     const out: string[] = []; for (const para of t.split('\n')) { let line = ''; for (const w of para.split(' ')) { const tryL = line ? line + ' ' + w : w; if (font.widthOfTextAtSize(tryL, size) > maxW && line) { out.push(line); line = w; } else line = tryL; } out.push(line); } return out;
   };
-  const text = (t: string, o: { font?: typeof F; size?: number; color?: ReturnType<typeof rgb>; x?: number; maxW?: number } = {}) => {
+  const text = (t0: string, o: { font?: typeof F; size?: number; color?: ReturnType<typeof rgb>; x?: number; maxW?: number } = {}) => { const t = tr(t0);
     const size = o.size ?? 10.5; for (const l of wrap(t, o.font ?? F, size, o.maxW)) { ensure(size + 4); page.drawText(l, { x: o.x ?? M, y: y - size, size, font: o.font ?? F, color: o.color ?? ink }); y -= size + 4; }
   };
-  const h2 = (t: string) => { y -= 10; ensure(30); page.drawText(t, { x: M, y: y - 13, size: 13, font: B, color: brandText }); y -= 18; page.drawLine({ start: { x: M, y }, end: { x: W - M, y }, thickness: 0.6, color: rgb(0.85, 0.9, 0.96) }); y -= 6; };
+  const h2 = (t0: string) => { const t = tr(t0); y -= 10; ensure(30); page.drawText(t, { x: M, y: y - 13, size: 13, font: B, color: brandText }); y -= 18; page.drawLine({ start: { x: M, y }, end: { x: W - M, y }, thickness: 0.6, color: rgb(0.85, 0.9, 0.96) }); y -= 6; };
 
   // header band
   page.drawRectangle({ x: 0, y: H - 96, width: W, height: 96, color: brand });
   drawMark(page, rgb, W - M - 56, H - 76, 56);
-  page.drawText('Zdravotní pas', { x: M, y: H - 46, size: 24, font: B, color: navy });
-  page.drawText(`${pet.name} · vygenerováno v aplikaci Tlapka ${fmtDate(today())}`, { x: M, y: H - 70, size: 11, font: F, color: navy });
+  page.drawText(tr('Zdravotní pas'), { x: M, y: H - 46, size: 24, font: B, color: navy });
+  page.drawText(tr(`${pet.name} · vygenerováno v aplikaci Tlapka ${fmtDate(today())}`), { x: M, y: H - 70, size: 11, font: F, color: navy });
   y = H - 120;
 
   const meds = data.meds.filter((m) => m.petId === pet.id && (!m.end || m.end >= today()));
@@ -49,12 +51,12 @@ export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
   const qr = await doc.embedPng(await QR.toDataURL(summary, { margin: 1, width: 300, errorCorrectionLevel: 'M' }));
   const top = y;
   page.drawImage(qr, { x: W - M - 110, y: top - 110, width: 110, height: 110 });
-  page.drawText('QR: shrnutí pro veterináře', { x: W - M - 110, y: top - 122, size: 7.5, font: F, color: muted });
+  page.drawText(tr('QR: shrnutí pro veterináře'), { x: W - M - 110, y: top - 122, size: 7.5, font: F, color: muted });
   if (pet.photo && /^data:image\/(jpeg|jpg|png)/.test(pet.photo)) {
     try { const img = pet.photo.includes('png') ? await doc.embedPng(pet.photo) : await doc.embedJpg(pet.photo); page.drawImage(img, { x: M, y: top - 96, width: 96, height: 96 }); } catch {}
   }
   const col = pet.photo ? M + 112 : M;
-  const rows: [string, string][] = [['Jméno', pet.name], ['Druh / plemeno', `${speciesOf(pet.species).name}${pet.breed ? ' – ' + pet.breed : ''}`], ['Pohlaví', SEX[pet.sex] ?? ''], ['Narození', pet.birthDate ? `${fmtDate(pet.birthDate)} (${age(pet.birthDate)})` : 'neuvedeno'], ['Číslo čipu', pet.microchip || 'neuvedeno'], ['Barva', pet.color || '–'], ['Poslední váha', w ? `${w.kg.toLocaleString('cs-CZ')} kg (${fmtDate(w.date)})` : 'neuvedeno']];
+  const rows: [string, string][] = [['Jméno', pet.name], ['Druh / plemeno', `${speciesOf(pet.species).name}${pet.breed ? ' – ' + pet.breed : ''}`], ['Pohlaví', SEX[pet.sex] ?? ''], ['Narození', pet.birthDate ? `${fmtDate(pet.birthDate)} (${age(pet.birthDate)})` : 'neuvedeno'], ['Číslo čipu', pet.microchip || 'neuvedeno'], ['Barva', pet.color || '–'], ['Poslední váha', w ? `${w.kg.toLocaleString(loc())} kg (${fmtDate(w.date)})` : 'neuvedeno']];
   for (const [k, v] of rows) { page.drawText(k, { x: col, y: y - 10, size: 8.5, font: F, color: muted }); page.drawText(v, { x: col + 92, y: y - 10, size: 10.5, font: B, color: ink, maxWidth: W - M - 120 - col - 92 }); y -= 16; }
   y = Math.min(y, top - 132);
 
@@ -97,7 +99,7 @@ export async function simplePdf(title: string, subtitle: string, sections: { h: 
   const doc = await PDFDocument.create(); doc.registerFontkit(fontkit);
   const [reg, bold] = await Promise.all(['/fonts/LiberationSans-Regular.ttf', '/fonts/LiberationSans-Bold.ttf'].map((u) => fetch(u).then((r) => r.arrayBuffer())));
   const F = await doc.embedFont(reg, { subset: true }), B = await doc.embedFont(bold, { subset: true });
-  doc.setTitle(title); doc.setCreator('Tlapka'); doc.setLanguage('cs');
+  doc.setTitle(title); doc.setCreator('Tlapka'); doc.setLanguage(getLang());
   const W = 595, H = 842, M = 44; let page = doc.addPage([W, H]); let y = H - M;
   const ink = rgb(0.114, 0.118, 0.133), muted = rgb(0.337, 0.357, 0.388), navy = rgb(0.059, 0.145, 0.251), brandText = rgb(0.141, 0.376, 0.624), red = rgb(0.7, 0.08, 0.08);
   const ensure = (h: number) => { if (y - h < M) { page = doc.addPage([W, H]); y = H - M; } };

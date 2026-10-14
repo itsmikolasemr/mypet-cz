@@ -9,8 +9,8 @@ const Ph = ({ children }: { children: React.ReactNode }) => <mark data-placehold
 
 export default function DeleteAccountPage() {
   return (
-    <main className="max-w-xl mx-auto px-5 py-10 text-[16px] leading-relaxed text-ink">
-      <h1 className="text-[30px] font-bold tracking-tight mb-1">Smazání účtu Tlapka</h1>
+    <main className="max-w-xl mx-auto px-5 py-10 text-[15px] leading-relaxed text-ink">
+      <h1 className="text-[26px] font-bold tracking-tight mb-1">Smazání účtu Tlapka</h1>
       <p className="text-muted mb-6">Aplikace Tlapka, provozovatel <Ph>{NAME}</Ph></p>
       <h2 className="font-bold text-lg mt-6 mb-2">Přímo v aplikaci (nejrychlejší)</h2>
       <ol className="list-decimal ml-5 space-y-1">

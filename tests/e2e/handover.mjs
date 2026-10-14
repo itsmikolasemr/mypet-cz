@@ -1,7 +1,7 @@
 import { chromium, webkit, devices } from 'playwright'; import fs from 'node:fs'; import { execSync } from 'node:child_process';
 const BR = process.env.BROWSER || 'chromium'; const BASE = 'http://localhost:4125/'; const S = '/workspace/mypet-shots/'; const SHARE = process.env.SHARE_URL;
 const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' }); const errs = []; const R = {};
-const c = await b.newContext({ ...devices['iPhone 14'], acceptDownloads: true, geolocation: { latitude: 50.0755, longitude: 14.4378 }, permissions: ['geolocation'] });
+const c = await b.newContext({ ...devices['iPhone 14'], locale: 'cs-CZ', acceptDownloads: true, geolocation: { latitude: 50.0755, longitude: 14.4378 }, permissions: ['geolocation'] });
 await c.addInitScript(() => { window.__copied = []; Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t) => { window.__copied.push(t); } }, configurable: true }); window.print = () => { window.__printed = document.getElementById('print-area')?.innerText || 'EMPTY'; }; });
 const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message));
 await p.goto(BASE); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(600);

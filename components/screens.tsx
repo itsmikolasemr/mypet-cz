@@ -1,4 +1,5 @@
 'use client';
+import { loc } from '@/lib/i18n';
 import { TodayCard } from './Today';
 import { WrappedCard } from './Wrapped';
 import { Emo, GT } from './glyphs';
@@ -22,6 +23,7 @@ import { Companion } from './Companion';
 import { useAmbient } from './ambient';
 import { usePremium } from '@/lib/premium';
 import { AdSlot, PremiumBadge } from './Premium';
+import { LangPicker } from './LangPicker';
 
 const sortRem = (a: Reminder, b: Reminder) => a.dueDate.localeCompare(b.dueDate);
 const greeting = () => { const h = new Date().getHours(); return h < 10 ? 'Dobré ráno' : h < 18 ? 'Ahoj' : 'Dobrý večer'; };
@@ -44,7 +46,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
   const pet = (id: string) => data.pets.find((p) => p.id === id);
   return (
     <div>
-      <PageHeader sub={new Date().toLocaleDateString('cs-CZ', { weekday: 'long', day: 'numeric', month: 'long' })} title={greeting()} action={<Logo className="h-8 text-ink dark:text-white" />} />
+      <PageHeader sub={new Date().toLocaleDateString(loc(), { weekday: 'long', day: 'numeric', month: 'long' })} title={greeting()} action={<Logo className="h-8 text-ink dark:text-white" />} />
       {!data.pets.length ? (
         <Empty emoji="🐾" title="Zatím tu nikdo není" text="Přidej svého prvního mazlíčka a Tlapka ti pohlídá odčervení, očkování i veterinu." action={<Button onClick={() => setNewPet(true)}><Icon name="plus" /> Přidat mazlíčka</Button>} />
       ) : (
@@ -65,9 +67,9 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
           <section>
             <h2 className="font-semibold text-lg mb-2">Přidat</h2>
             <div className="grid grid-cols-3 gap-2.5">
-              <button onClick={() => setNewRem(true)} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg"><Emo e="🔔" className="w-6 h-6" /></span>Připomínku</button>
-              <button onClick={() => (data.pets.length > 1 ? setPickDoc(true) : openDocs(data.pets[0].id))} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg"><Emo e="📎" className="w-6 h-6" /></span>Dokument</button>
-              <ScanButton className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight" />
+              <button onClick={() => setNewRem(true)} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[13px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg"><Emo e="🔔" className="w-6 h-6" /></span>Připomínku</button>
+              <button onClick={() => (data.pets.length > 1 ? setPickDoc(true) : openDocs(data.pets[0].id))} className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[13px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight"><span className="text-lg"><Emo e="📎" className="w-6 h-6" /></span>Dokument</button>
+              <ScanButton className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[13px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight" />
             </div>
           </section>
           <WrappedCard />
@@ -76,27 +78,27 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             <div className="grid grid-cols-2 gap-2.5">
             <Card onClick={() => go('ai')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="stetho" /></div>
-              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Aivet</span><span className="block text-[12px] text-muted leading-snug">Poradí, co dělat</span></span>
+              <span className="min-w-0"><span className="font-semibold text-[14px] flex items-center gap-1.5 leading-tight">Aivet</span><span className="block text-[12px] text-muted leading-snug">Poradí, co dělat</span></span>
             </Card>
             <Card onClick={() => go('map')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="map" /></div>
-              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Mapa</span><span className="block text-[12px] text-muted leading-snug">Veteriny, výběhy, zverimexy</span></span>
+              <span className="min-w-0"><span className="font-semibold text-[14px] flex items-center gap-1.5 leading-tight">Mapa</span><span className="block text-[12px] text-muted leading-snug">Veteriny, výběhy, zverimexy</span></span>
             </Card>
             <Card onClick={() => go('cards')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="card" /></div>
-              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Věrnostní karty</span><span className="block text-[12px] text-muted leading-snug">{data.cards.length ? `${data.cards.length} v kapse` : 'Zverimexy v kapse'}</span></span>
+              <span className="min-w-0"><span className="font-semibold text-[14px] flex items-center gap-1.5 leading-tight">Věrnostní karty</span><span className="block text-[12px] text-muted leading-snug">{data.cards.length ? `${data.cards.length} v kapse` : 'Zverimexy v kapse'}</span></span>
             </Card>
             <Card onClick={() => go('expenses')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="coins" /></div>
-              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Výdaje</span><span className="block text-[12px] text-muted leading-snug">Kolik stojí péče{!prem.isPremium && ' · ✦ Premium'}</span></span>
+              <span className="min-w-0"><span className="font-semibold text-[14px] flex items-center gap-1.5 leading-tight">Výdaje</span><span className="block text-[12px] text-muted leading-snug">Kolik stojí péče{!prem.isPremium && ' · ✦ Premium'}</span></span>
             </Card>
             <Card onClick={() => go('second')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="doc" /></div>
-              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Druhý názor</span><span className="block text-[12px] text-muted leading-snug">Vysvětlí zprávu od vety</span></span>
+              <span className="min-w-0"><span className="font-semibold text-[14px] flex items-center gap-1.5 leading-tight">Druhý názor</span><span className="block text-[12px] text-muted leading-snug">Vysvětlí zprávu od vety</span></span>
             </Card>
             <Card onClick={() => { sessionStorage.setItem('tlapka:petTab', 'sdilet'); openPet(data.pets[0].id); }} className="p-3.5 flex items-center gap-3 min-h-[72px]">
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center"><Emo e="🧳" className="w-6 h-6" /></div>
-              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Pro hlídače</span><span className="block text-[12px] text-muted leading-snug">Karta: krmení, léky, kontakty</span></span>
+              <span className="min-w-0"><span className="font-semibold text-[14px] flex items-center gap-1.5 leading-tight">Pro hlídače</span><span className="block text-[12px] text-muted leading-snug">Karta: krmení, léky, kontakty</span></span>
             </Card>
             </div>
           </section>
@@ -124,7 +126,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
       <ReminderForm open={!!edit || newRem} reminder={edit ?? undefined} onClose={() => { setEdit(null); setNewRem(false); }} />
       <PetForm open={newPet} onClose={() => setNewPet(false)} />
       {pickDoc && createPortal(<Sheet open={pickDoc} onClose={() => setPickDoc(false)} title="Ke komu dokument patří?">
-        <p className="text-[14px] text-muted -mt-1 mb-4">Vyber mazlíčka – otevřou se jeho Doklady, kam fakturu, zprávu nebo RTG nahraješ.</p>
+        <p className="text-[13px] text-muted -mt-1 mb-4">Vyber mazlíčka – otevřou se jeho Doklady, kam fakturu, zprávu nebo RTG nahraješ.</p>
         <div className="grid grid-cols-3 gap-3" data-doc-picker>
           {data.pets.map((p) => (
             <button key={p.id} onClick={() => openDocs(p.id)} className="press rounded-2xl p-3 text-center bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 min-h-[44px]">
@@ -157,7 +159,7 @@ export function PetsList({ openPet }: { openPet: (id: string) => void }) {
               <Avatar pet={p} size="w-16 h-16" text="text-3xl" />
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-lg leading-tight flex items-center gap-2">{p.name}{data.allergies.some((a) => a.petId === p.id) && <span className="text-[12px] font-bold rounded-full px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400"><GT t="⚠️ Alergie" /></span>}</p>
-                <p className="text-[13px] text-muted truncate">{[p.breed || speciesOf(p.species).name, age(p.birthDate), w && `${w.kg.toLocaleString('cs-CZ')} kg`].filter(Boolean).join(' · ')}</p>
+                <p className="text-[13px] text-muted truncate">{[p.breed || speciesOf(p.species).name, age(p.birthDate), w && `${w.kg.toLocaleString(loc())} kg`].filter(Boolean).join(' · ')}</p>
                 {next && <p className={`text-[13px] mt-0.5 font-medium ${status(next) === 'overdue' ? 'text-red-600 dark:text-red-400' : 'text-primary'}`}>{next.title} · {fmtDate(next.dueDate)}</p>}
               </div>
               <Icon name="chev" className="w-4 h-4 text-muted" />
@@ -199,7 +201,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
       <div className="flex items-center gap-4 mb-4">
         <Avatar pet={pet} size="w-24 h-24 shadow-float dark:shadow-float-d" text="text-5xl" />
         <div className="min-w-0">
-          <h1 className="text-[28px] font-bold leading-tight break-words">{pet.name}</h1>
+          <h1 className="text-[24px] font-bold leading-tight break-words">{pet.name}</h1>
           <p className="text-muted">{[pet.breed || speciesOf(pet.species).name, age(pet.birthDate)].filter(Boolean).join(' · ')}</p>
           {allergies.length > 0 && <button onClick={() => setTab('zdravi')} className="mt-1.5 min-h-[44px] text-[13px] font-bold rounded-full px-3.5 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400 inline-flex items-center gap-1.5"><Emo e="⚠️" />Alergie: {allergies.map((a) => a.allergen).join(', ')}</button>}
         </div>
@@ -277,7 +279,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
             {[...pet.weights].reverse().map((w) => (
               <div key={w.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
                 <span className="text-muted">{fmtDate(w.date)}</span>
-                <span className="font-semibold tabular-nums ml-auto mr-3">{w.kg.toLocaleString('cs-CZ')} kg</span>
+                <span className="font-semibold tabular-nums ml-auto mr-3">{w.kg.toLocaleString(loc())} kg</span>
                 <button aria-label="Smazat" onClick={() => { const prev = w; deleteWeight(pet.id, w.id); toast('Záznam váhy smazán', () => addWeight(pet.id, prev.kg, prev.date)); }} className="text-muted p-1"><Icon name="x" className="w-4 h-4" /></button>
               </div>
             ))}
@@ -371,13 +373,13 @@ export function CalendarScreen() {
     <div>
       <PageHeader title="Kalendář" fab={data.pets.length ? <Fab label="Nová návštěva" onClick={() => setEdit('new')} /> : undefined} />
       <Segmented value={mode} onChange={setMode} options={[{ v: 'mesic', l: 'Kalendář' }, { v: 'seznam', l: 'Historie návštěv' }]} />
-      {(data.reminders.length > 0 || data.visits.length > 0) && <button data-ics onClick={async () => { const { exportIcs } = await import('@/lib/ics'); const r = await exportIcs(data, data.settings.notifyHour); toast(r === 'shared' ? 'Kalendář odeslán' : 'Soubor tlapka-kalendar.ics stažen – otevři ho a přidej do kalendáře'); }} className="press mt-2 w-full min-h-[44px] rounded-2xl text-[14px] font-semibold text-primary bg-primary/10"><GT t="📅 Přidat do kalendáře v telefonu (Apple, Google)" /></button>}
+      {(data.reminders.length > 0 || data.visits.length > 0) && <button data-ics onClick={async () => { const { exportIcs } = await import('@/lib/ics'); const r = await exportIcs(data, data.settings.notifyHour); toast(r === 'shared' ? 'Kalendář odeslán' : 'Soubor tlapka-kalendar.ics stažen – otevři ho a přidej do kalendáře'); }} className="press mt-2 w-full min-h-[44px] rounded-2xl text-[13px] font-semibold text-primary bg-primary/10"><GT t="📅 Přidat do kalendáře v telefonu (Apple, Google)" /></button>}
       {mode === 'mesic' ? (
         <div className="animate-screen">
           <Card className="p-3 mt-4">
             <div className="flex items-center justify-between px-1 mb-2">
               <button aria-label="Předchozí měsíc" className="press w-11 h-11 flex items-center justify-center rounded-full" onClick={() => shift(-1)}><Icon name="back" /></button>
-              <p className="font-semibold capitalize">{month.toLocaleDateString('cs-CZ', { month: 'long', year: 'numeric' })}</p>
+              <p className="font-semibold capitalize">{month.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</p>
               <button aria-label="Další měsíc" className="press w-11 h-11 flex items-center justify-center rounded-full" onClick={() => shift(1)}><Icon name="chev" /></button>
             </div>
             <div className="grid grid-cols-7 text-center text-[12px] font-semibold text-muted mb-1">{WD.map((d) => <div key={d}>{d}</div>)}</div>
@@ -413,7 +415,7 @@ export function CalendarScreen() {
           {!allVisits.length && <Empty emoji="🩺" title="Žádné návštěvy" text="Zapisuj návštěvy veterináře – důvod, diagnózu i cenu." action={data.pets.length ? <Button onClick={() => setEdit('new')}>Zapsat návštěvu</Button> : undefined} />}
           {upcomingV.length > 0 && <section className="space-y-2.5"><h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Naplánované</h2>{upcomingV.map((v) => <VisitRow key={v.id} v={v} pet={pet(v.petId)} onClick={() => setEdit(v)} />)}</section>}
           {pastV.length > 0 && <section className="space-y-2.5"><h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Historie</h2>{pastV.map((v) => <VisitRow key={v.id} v={v} pet={pet(v.petId)} onClick={() => setEdit(v)} />)}</section>}
-          {pastV.some((v) => v.cost) && <p className="text-sm text-muted text-center">Celkem utraceno: <b>{pastV.reduce((s, v) => s + (v.cost ?? 0), 0).toLocaleString('cs-CZ')} Kč</b></p>}
+          {pastV.some((v) => v.cost) && <p className="text-sm text-muted text-center">Celkem utraceno: <b>{pastV.reduce((s, v) => s + (v.cost ?? 0), 0).toLocaleString(loc())} Kč</b></p>}
         </div>
       )}
       <VisitForm open={edit !== null} visit={edit && edit !== 'new' ? edit : undefined} date={sel} onClose={() => setEdit(null)} />
@@ -466,7 +468,7 @@ export function Settings() {
       </div>
       <div className="space-y-7 stagger">
         <section aria-labelledby="ucet-h"><h2 id="ucet-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Účet a záloha</h2>
-          <Card><Row icon="👤" title={cloud.session ? (cloud.name || cloud.session.user.email || 'Přihlášen') : 'Nepřihlášen'} sub={cloud.session ? (cloud.last ? `Zálohováno ${new Date(cloud.last).toLocaleString('cs-CZ', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })} · rodina, hlídač, smazání účtu` : 'Záloha, rodina, hlídač, smazání účtu') : 'Zálohuj data a sdílej péči s rodinou – volitelné'} right={<span className="text-sm font-bold text-primary whitespace-nowrap">{cloud.session ? 'Spravovat' : 'Přihlásit'} ›</span>} onClick={() => setAcct(true)} /></Card>
+          <Card><Row icon="👤" title={cloud.session ? (cloud.name || cloud.session.user.email || 'Přihlášen') : 'Nepřihlášen'} sub={cloud.session ? (cloud.last ? `Zálohováno ${new Date(cloud.last).toLocaleString(loc(), { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })} · rodina, hlídač, smazání účtu` : 'Záloha, rodina, hlídač, smazání účtu') : 'Zálohuj data a sdílej péči s rodinou – volitelné'} right={<span className="text-sm font-bold text-primary whitespace-nowrap">{cloud.session ? 'Spravovat' : 'Přihlásit'} ›</span>} onClick={() => setAcct(true)} /></Card>
           {acct && createPortal(<Sheet open={acct} onClose={() => setAcct(false)} title="Účet a záloha"><Account /></Sheet>, document.body)}
         </section>
         <section aria-labelledby="vzhled-h"><h2 id="vzhled-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Vzhled</h2>
@@ -489,6 +491,7 @@ export function Settings() {
             </div>
             <p className="text-[12px] text-muted mt-2 px-1">{THEMES.find((t) => t.v === data.settings.theme)?.d}</p>
           </Card>
+          <LangPicker />
         </section>
         <section aria-labelledby="predplatne-h"><h2 id="predplatne-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1 scroll-mt-4">Předplatné</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
@@ -536,7 +539,7 @@ export function Settings() {
         </section>
         <div className="text-center pt-4 pb-2 text-muted text-sm">
           <Logo className="h-9 mx-auto text-ink dark:text-white mb-2" />
-          Verze 1.1 · bez účtu data zůstávají jen v tomto zařízení
+          Verze 1.2 · bez účtu data zůstávají jen v tomto zařízení
         </div>
       </div>
       {msg && <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(env(safe-area-inset-bottom)+var(--badge,0px)+100px)] z-50 rounded-full bg-ink text-white dark:bg-white dark:text-ink px-4 py-2 text-sm shadow-lg animate-fade">{msg}</div>}
@@ -557,7 +560,7 @@ function PassButton({ pet }: { pet: Pet }) {
   return (
     <button onClick={run} disabled={busy} className="press w-full mb-3 flex items-center gap-3 rounded-[22px] p-3.5 text-left bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 disabled:opacity-60">
       <span className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-xl"><Emo e="📄" className="w-6 h-6" /></span>
-      <span className="flex-1"><b className="flex items-center gap-2">Zdravotní pas (PDF + QR) {!prem.isPremium && <PremiumBadge small />}</b><span className="text-sm text-muted">{busy ? 'Připravuji…' : 'Očkování, léky a alergie pro veterináře'}</span></span>
+      <span className="flex-1"><b className="block">Zdravotní pas (PDF&nbsp;+&nbsp;QR){!prem.isPremium && <> <PremiumBadge small /></>}</b><span className="text-sm text-muted">{busy ? 'Připravuji…' : 'Očkování, léky a alergie pro veterináře'}</span></span>
       <Icon name="chev" className="w-4 h-4" />
     </button>
   );
@@ -595,11 +598,11 @@ export function Onboarding() {
     <div data-onboarding={step} style={{ paddingBottom: "calc(max(env(safe-area-inset-bottom), 16px) + var(--badge, 0px))" }} className="min-h-[100dvh] flex flex-col px-6 pt-safe bg-gradient-to-b from-[#DCEBFA] to-bg dark:from-[#1E2733] dark:to-bg-d">
       <div className="pt-10 flex items-center justify-between"><Logo className="h-10 text-ink dark:text-white" /><span className="text-sm text-muted" aria-live="polite">{step + 1} / {steps}</span></div>
       <div className="flex-1 flex flex-col justify-center animate-screen py-6" key={step}>
-        {step === 0 && <><div className="w-28 h-28 mb-7 drop-shadow-xl"><PawMark animate className="w-full h-full" label="Tlapka" /></div><h1 className="text-[34px] leading-tight font-bold tracking-tight">Vítej v Tlapce</h1><p className="text-lg text-muted mt-3">Odčervení, klíšťata, očkování i léky – Tlapka ti včas připomene. Nastavíme to spolu za minutu.</p></>}
+        {step === 0 && <><div className="w-28 h-28 mb-7 drop-shadow-xl"><PawMark animate className="w-full h-full" label="Tlapka" /></div><h1 className="text-[30px] leading-tight font-bold tracking-tight">Vítej v Tlapce</h1><p className="text-lg text-muted mt-3">Odčervení, klíšťata, očkování i léky – Tlapka ti včas připomene. Nastavíme to spolu za minutu.</p></>}
         {step === 1 && <>
-          <h1 className="text-[28px] leading-tight font-bold tracking-tight mb-5">Kdo je tvůj mazlíček?</h1>
+          <h1 className="text-[24px] leading-tight font-bold tracking-tight mb-5">Kdo je tvůj mazlíček?</h1>
           <label className="block text-sm font-semibold mb-1.5" htmlFor="ob-name">Jméno</label>
-          <input id="ob-name" name="obName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Např. Max" autoComplete="off" className="w-full rounded-2xl px-4 py-3.5 text-[17px] bg-surface dark:bg-surface-d ring-1 ring-ink/10 dark:ring-white/10 outline-none focus:ring-2 focus:ring-primary mb-5" />
+          <input id="ob-name" name="obName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Např. Max" autoComplete="off" className="w-full rounded-2xl px-4 py-3.5 text-[16px] bg-surface dark:bg-surface-d ring-1 ring-ink/10 dark:ring-white/10 outline-none focus:ring-2 focus:ring-primary mb-5" />
           <p className="text-sm font-semibold mb-1.5" id="ob-sp">Druh</p>
           <div role="radiogroup" aria-labelledby="ob-sp" className="grid grid-cols-4 gap-2 mb-5">
             {SPECIES.map((x) => <button key={x.id} role="radio" aria-checked={species === x.id} data-species={x.id} onClick={() => { setSpecies(x.id); setPicked({}); }} className={`press rounded-2xl py-2.5 flex flex-col items-center gap-1 text-[12px] font-semibold ring-2 ${species === x.id ? 'ring-primary bg-primary/15 text-[#1A4F86] dark:text-primary' : 'ring-transparent bg-surface dark:bg-surface-d'}`}><Glyph name={SPECIES_GLYPH[x.id]} className="w-7 h-7" />{x.name}</button>)}
@@ -608,13 +611,13 @@ export function Onboarding() {
           <DateInput value={birth} onChange={setBirth} max={today()} label="Datum narození" />
         </>}
         {step === 2 && <>
-          <h1 className="text-[28px] leading-tight font-bold tracking-tight">Co ti mám hlídat?</h1>
+          <h1 className="text-[24px] leading-tight font-bold tracking-tight">Co ti mám hlídat?</h1>
           <p className="text-muted mt-2 mb-5">Doporučení pro {speciesOf(species).name.toLowerCase()}. Termíny si pak upravíš podle veterináře.</p>
           <div className="space-y-2.5">{sugg.map((x) => <button key={x.title} role="checkbox" aria-checked={on(x.title)} data-suggest onClick={() => setPicked({ ...picked, [x.title]: !on(x.title) })} className={`press w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left ring-2 ${on(x.title) ? 'ring-primary bg-primary/10' : 'ring-ink/10 dark:ring-white/10 bg-surface dark:bg-surface-d'}`}>
             <span className={`w-6 h-6 rounded-lg flex items-center justify-center ${on(x.title) ? 'bg-primary text-[#0F2540]' : 'ring-2 ring-ink/25 dark:ring-white/30'}`}>{on(x.title) && <Icon name="check" className="w-4 h-4" />}</span>
-            <span className="flex-1"><b className="block">{x.title}</b><span className="text-[13px] text-muted">{x.days >= 365 ? 'jednou ročně' : x.days >= 84 ? `každé ${Math.round(x.days / 28)} měsíce` : x.days >= 60 ? 'každé 2 měsíce' : 'každý měsíc'} · první {new Date(addDays(today(), x.first)).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' })}</span></span></button>)}</div>
+            <span className="flex-1"><b className="block">{x.title}</b><span className="text-[13px] text-muted">{x.days >= 365 ? 'jednou ročně' : x.days >= 84 ? `každé ${Math.round(x.days / 28)} měsíce` : x.days >= 60 ? 'každé 2 měsíce' : 'každý měsíc'} · první {new Date(addDays(today(), x.first)).toLocaleDateString(loc(), { day: 'numeric', month: 'numeric' })}</span></span></button>)}</div>
         </>}
-        {step === 3 && <>{glyphBox('bell')}<h1 className="text-[30px] leading-tight font-bold tracking-tight">Mám ti dát vědět?</h1><p className="text-lg text-muted mt-3">Upozorním tě den předem a v den termínu v 9:00. V neděli večer pošlu krátký přehled týdne. Nic jiného.</p></>}
+        {step === 3 && <>{glyphBox('bell')}<h1 className="text-[26px] leading-tight font-bold tracking-tight">Mám ti dát vědět?</h1><p className="text-lg text-muted mt-3">Upozorním tě den předem a v den termínu v 9:00. V neděli večer pošlu krátký přehled týdne. Nic jiného.</p></>}
       </div>
       <div className="flex gap-1.5 mb-6" aria-hidden>{Array.from({ length: steps }, (_, i) => <span key={i} className={`h-1.5 rounded-full transition-all ${i === step ? 'w-6 bg-primary' : 'w-1.5 bg-ink/15 dark:bg-white/20'}`} />)}</div>
       {step === 0 && <div className="space-y-3"><Button className="w-full py-4" onClick={() => setStep(1)}>Začít</Button><Button variant="ghost" className="w-full" onClick={() => finishOnboarding(true)}>Vyzkoušet s ukázkovými daty</Button></div>}

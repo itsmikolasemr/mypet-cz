@@ -138,7 +138,7 @@ export default async (req, context) => {
   const primary = env('AIVET_MODEL') || DEFAULT_MODEL;
   const fallbacks = (env('AIVET_FALLBACK_MODELS') || (env('AIVET_BASE_URL') ? '' : DEFAULT_FALLBACKS)).split(',').map((x) => x.trim()).filter(Boolean);
   const models = [primary, ...fallbacks.filter((m) => m !== primary)];
-  const chat = [{ role: 'system', content: SYSTEM + '\n\n' + profileText(body.pet) }, ...messages];
+  const chat = [{ role: 'system', content: SYSTEM + '\n\n' + profileText(body.pet) + (body.lang === 'en' ? '\n\nIMPORTANT: The user chose English. Reply in clear, natural English (keep the same safety rules and structure).' : '') }, ...messages];
   const started = Date.now();
   let lastStatus = 0;
   for (const model of models) {

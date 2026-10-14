@@ -13,6 +13,7 @@ const Wallet = dynamic(() => import('./Wallet').then((m) => m.Wallet), { ssr: fa
 import { BannerSlot, Expenses, Paywall } from './Premium';
 import { FeedbackHost } from './feedback';
 import { TodayScreen } from './Today';
+import { startI18n } from '@/lib/i18n';
 const Privacy = dynamic(() => import('./Legal').then((m) => m.Privacy));
 const Terms = dynamic(() => import('./Legal').then((m) => m.Terms));
 const About = dynamic(() => import('./Legal').then((m) => m.About));
@@ -25,6 +26,16 @@ const FROM_SETTINGS: Tab[] = ['privacy', 'terms', 'about'];
 const TABS: { id: Tab; l: string; i: 'home' | 'paw' | 'bell' | 'heart' | 'cog' }[] = [
   { id: 'home', l: 'Přehled', i: 'home' }, { id: 'pets', l: 'Mazlíčci', i: 'paw' }, { id: 'reminders', l: 'Připomínky', i: 'bell' }, { id: 'calendar', l: 'Kalendář', i: 'heart' }, { id: 'settings', l: 'Nastavení', i: 'cog' },
 ];
+
+/** Polštářek mark as a nav glyph – single colour (currentColor) so it reads on the active pill. */
+function NavPaw() {
+  return (
+    <svg viewBox="0 0 1024 1024" className="w-6 h-6" aria-hidden data-navpaw>
+      {[[255, 424.7, -56], [411.1, 304.9, -19], [612.9, 304.9, 19], [769, 424.7, 56]].map(([cx, cy, r], i) => <ellipse key={i} cx={cx} cy={cy} rx="70" ry="92" transform={`rotate(${r} ${cx} ${cy})`} fill="currentColor" />)}
+      <circle cx="512" cy="610" r="215" fill="currentColor" />
+    </svg>
+  );
+}
 
 function Shell() {
   const { data, ready } = useStore();
@@ -80,10 +91,10 @@ function Shell() {
           {TABS.map((t) => {
             const a = tab === t.id || (t.id === 'home' && EXTRA.includes(tab) && !FROM_SETTINGS.includes(tab)) || (t.id === 'settings' && FROM_SETTINGS.includes(tab));
             return (
-              <button key={t.id} onClick={() => nav(t.id)} aria-current={a ? 'page' : undefined}
-                className={`relative z-10 h-14 flex flex-col items-center justify-center gap-0.5 rounded-[24px] transition-colors duration-300 ${a ? 'text-white' : 'text-muted hover:text-ink dark:hover:text-white'}`}>
-                <span className={`transition-transform duration-300 ease-spring ${a ? 'scale-110 -translate-y-px' : 'scale-100'}`}>{t.id === 'calendar' ? <CalIcon /> : <Icon name={t.i} fill={a && t.i !== 'cog'} className="w-6 h-6" />}</span>
-                <span className="text-[12px] font-semibold leading-none tracking-tight">{t.l}</span>
+              <button key={t.id} onClick={() => nav(t.id)} aria-label={t.l} title={t.l} aria-current={a ? 'page' : undefined}
+                className={`relative z-10 h-12 min-w-[44px] flex flex-col items-center justify-center rounded-[24px] transition-colors duration-300 ${a ? 'text-white' : 'text-muted hover:text-ink dark:hover:text-white'}`}>
+                <span className={`transition-transform duration-300 ease-spring ${a ? 'scale-110 -translate-y-px' : 'scale-100'}`}>{t.id === 'calendar' ? <CalIcon /> : t.id === 'pets' ? <NavPaw /> : <Icon name={t.i} fill={a && t.i !== 'cog'} className="w-6 h-6" />}</span>
+                {a && <span aria-hidden className="absolute bottom-1.5 h-1 w-1 rounded-full bg-white/90" />}
                 {t.id === 'reminders' && overdue > 0 && <span className="absolute top-0.5 right-1.5 min-w-[20px] h-[20px] px-1 rounded-full bg-red-500 text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-surface dark:ring-surface-d">{overdue}</span>}
               </button>
             );
@@ -96,5 +107,6 @@ function Shell() {
 const CalIcon = () => (<svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3" /><path d="M8 3v4M16 3v4M3.5 10h17" /><circle cx="12" cy="15" r="1.4" fill="currentColor" /></svg>);
 
 export default function App() {
+  useEffect(() => { startI18n(); }, []);
   return <StoreProvider><PremiumProvider><CloudProvider><Shell /><Paywall /><FeedbackHost /></CloudProvider></PremiumProvider></StoreProvider>;
 }

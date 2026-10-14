@@ -98,7 +98,7 @@ export function Empty({ emoji, title, text, action }: { emoji: string; title: st
     <div className="text-center py-12 px-6 animate-fade">
       <div className="mx-auto w-24 h-24 rounded-[30px] bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d flex items-center justify-center text-5xl text-primary-d dark:text-primary mb-5 animate-float">{EMOJI_GLYPH[emoji] ? <Glyph name={EMOJI_GLYPH[emoji]} className="w-12 h-12" /> : <span aria-hidden>{emoji}</span>}</div>
       <h3 className="font-semibold text-lg">{title}</h3>
-      <p className="text-muted mt-1 text-[15px]">{text}</p>
+      <p className="text-muted mt-1 text-[14px]">{text}</p>
       {action && <div className="mt-5">{action}</div>}
     </div>
   );
@@ -139,7 +139,7 @@ export function PageHeader({ title, sub, action, fab }: { title: string; sub?: s
         <div className={`flex items-center justify-between gap-3 rounded-[26px] px-4 transition-all duration-300 ${scrolled ? 'py-2.5 bg-surface/70 dark:bg-surface-d/70 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-ink/5 dark:ring-white/10 shadow-float dark:shadow-float-d' : 'py-2'}`}>
           <div className="min-w-0">
             {sub && <p className={`text-sm text-muted first-letter:uppercase transition-all duration-300 ${scrolled ? 'h-0 opacity-0' : 'h-5 opacity-100'} overflow-hidden`}>{sub}</p>}
-            <h1 className={`font-bold tracking-tight truncate transition-all duration-300 ${scrolled ? 'text-lg' : 'text-[30px] leading-tight'}`}>{title}</h1>
+            <h1 className={`font-bold tracking-tight truncate transition-all duration-300 ${scrolled ? 'text-lg' : 'text-[26px] leading-tight'}`}>{title}</h1>
           </div>
           <div className="flex items-center gap-2 shrink-0">{action}{fab}</div>
         </div>
@@ -199,7 +199,7 @@ export function DateInput({ value, onChange, min, max, required, label }: { valu
     const n = { ...part, [k]: v }; if (n.d && Number(n.d) > (n.y && n.m ? new Date(Number(n.y), Number(n.m), 0).getDate() : 31)) n.d = '';
     setPart(n); if (n.y && n.m && n.d) onChange(`${n.y}-${n.m}-${n.d}`); else if (!n.y && !n.m && !n.d) onChange('');
   };
-  const sel = 'min-h-[48px] rounded-2xl px-2 bg-ink/5 dark:bg-white/10 text-[16px] font-medium appearance-none text-center';
+  const sel = 'min-h-[48px] rounded-2xl px-2 bg-ink/5 dark:bg-white/10 text-[15px] font-medium appearance-none text-center';
   return (
     <span className="grid grid-cols-[1fr_2fr_1.4fr] gap-2" role="group" aria-label={label ?? 'Datum'} data-date-input>
       <select aria-label="Den" required={required} className={sel} value={part.d} onChange={(e) => upd('d', e.target.value)}><option value="">den</option>{Array.from({ length: dim }, (_, i) => String(i + 1).padStart(2, '0')).map((v) => <option key={v} value={v}>{Number(v)}.</option>)}</select>

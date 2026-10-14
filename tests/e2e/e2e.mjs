@@ -2,7 +2,7 @@ import { chromium, webkit, devices } from 'playwright';
 const BR = process.env.BROWSER || 'chromium';
 const BASE = 'http://localhost:4125/'; const S = '/workspace/mypet-shots/'; const PW = process.env.TLAPKA_TEST_PW;
 const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' }); const errs = []; const R = {};
-const mk = async () => { const c = await b.newContext({ ...devices['iPhone 14'], permissions: BR === 'webkit' ? [] : ['clipboard-read', 'clipboard-write'] }); const p = await c.newPage(); p.on('console', (m) => m.text().includes('SYNCERR') && console.log(m.text())); p.on('pageerror', (e) => errs.push(e.message));  return p; };
+const mk = async () => { const c = await b.newContext({ ...devices['iPhone 14'], locale: 'cs-CZ', permissions: BR === 'webkit' ? [] : ['clipboard-read', 'clipboard-write'] }); const p = await c.newPage(); p.on('console', (m) => m.text().includes('SYNCERR') && console.log(m.text())); p.on('pageerror', (e) => errs.push(e.message));  return p; };
 const login = async (p, email) => { 
   await p.locator('nav[aria-label="Hlavní navigace"]').waitFor({ timeout: 20000 });
   await p.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: /^Nastavení/ }).click();

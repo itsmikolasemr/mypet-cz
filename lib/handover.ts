@@ -1,3 +1,4 @@
+import { loc } from './i18n';
 // Předávací karta pro hlídače: one source of truth for the shared page, PDF, print and copy/export text.
 import type { AppData, Pet, PetCare } from './types';
 import { age, fmtDate, speciesOf, today } from './utils';
@@ -14,7 +15,7 @@ export function handoverSections(pet: Pet, data: Pick<AppData, 'meds' | 'allergi
   const meds = data.meds.filter((m) => m.petId === pet.id && (!m.end || m.end >= today()));
   const al = data.allergies.filter((a) => a.petId === pet.id);
   const w = pet.weights?.[pet.weights.length - 1];
-  const about = [`${speciesOf(pet.species).name}${pet.breed ? ', ' + pet.breed : ''}${pet.birthDate ? `, ${age(pet.birthDate)}` : ''}${w ? `, ${w.kg.toLocaleString('cs-CZ')} kg` : ''}`];
+  const about = [`${speciesOf(pet.species).name}${pet.breed ? ', ' + pet.breed : ''}${pet.birthDate ? `, ${age(pet.birthDate)}` : ''}${w ? `, ${w.kg.toLocaleString(loc())} kg` : ''}`];
   const S: HSection[] = [
     { key: 'about', h: 'Základní info', lines: about },
     { key: 'allergies', h: '⚠ Alergie', alert: true, lines: al.map((a) => `${a.allergen}${a.reaction ? ' – ' + a.reaction : ''}`) },

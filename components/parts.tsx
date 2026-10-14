@@ -1,4 +1,5 @@
 'use client';
+import { loc } from '@/lib/i18n';
 import { Emo, GT } from './glyphs';
 import { ask, notice, toast } from './feedback';
 import { useEffect, useRef, useState } from 'react';
@@ -25,7 +26,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true, hint = false }: { 
     setPop(true);
     try { navigator.vibrate?.([12, 30, 18]); } catch {}
     const prev = r;
-    setTimeout(() => { completeReminder(r.id); setPop(false); setDx(0); toast(r.intervalDays > 0 ? `${r.title} ✓ · další ${new Date(addDays(today(), r.intervalDays)).toLocaleDateString('cs-CZ')} (počítáno od dneška)` : `${r.title} – hotovo ✓`, () => saveReminder(prev)); }, 380);
+    setTimeout(() => { completeReminder(r.id); setPop(false); setDx(0); toast(r.intervalDays > 0 ? `${r.title} ✓ · další ${new Date(addDays(today(), r.intervalDays)).toLocaleDateString(loc())} (počítáno od dneška)` : `${r.title} – hotovo ✓`, () => saveReminder(prev)); }, 380);
   };
   const can = s !== 'done';
   const onDown = (e: React.PointerEvent) => {
@@ -100,11 +101,11 @@ export function VisitRow({ v, pet, onClick }: { v: Visit; pet?: Pet; onClick: ()
     <Card onClick={onClick} className="p-4 flex gap-3.5 items-start">
       <div className="w-12 shrink-0 text-center rounded-xl bg-secondary/20 py-1.5">
         <div className="text-lg font-bold leading-none">{Number(v.date.slice(8))}</div>
-        <div className="text-[12px] uppercase text-muted">{parse(v.date).toLocaleDateString('cs-CZ', { month: 'short' })}</div>
+        <div className="text-[12px] uppercase text-muted">{parse(v.date).toLocaleDateString(loc(), { month: 'short' })}</div>
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{v.reason}</p>
-        <p className="text-[13px] text-muted">{[pet?.name, v.clinic, v.cost != null ? `${v.cost.toLocaleString('cs-CZ')} Kč` : ''].filter(Boolean).join(' · ')}</p>
+        <p className="text-[13px] text-muted">{[pet?.name, v.clinic, v.cost != null ? `${v.cost.toLocaleString(loc())} Kč` : ''].filter(Boolean).join(' · ')}</p>
         {v.notes && <p className="text-[13px] mt-1 line-clamp-2">{v.notes}</p>}
       </div>
     </Card>
@@ -113,7 +114,7 @@ export function VisitRow({ v, pet, onClick }: { v: Visit; pet?: Pet; onClick: ()
 
 export function WeightChart({ pet }: { pet: Pet }) {
   const w = pet.weights;
-  if (w.length < 2) return <p className="text-sm text-muted py-6 text-center">{w.length ? `Zatím jeden záznam: ${w[0].kg.toLocaleString('cs-CZ')} kg. Přidej další pro graf.` : 'Zatím žádná váha.'}</p>;
+  if (w.length < 2) return <p className="text-sm text-muted py-6 text-center">{w.length ? `Zatím jeden záznam: ${w[0].kg.toLocaleString(loc())} kg. Přidej další pro graf.` : 'Zatím žádná váha.'}</p>;
   const W = 320, H = 150, px = 28, py = 18;
   const t0 = parse(w[0].date).getTime(), t1 = parse(w[w.length - 1].date).getTime();
   const ks = w.map((x) => x.kg);
@@ -128,8 +129,8 @@ export function WeightChart({ pet }: { pet: Pet }) {
   return (
     <div>
       <div className="flex items-baseline gap-2 mb-1">
-        <span className="text-3xl font-bold tabular-nums">{last.kg.toLocaleString('cs-CZ')}</span><span className="text-muted">kg</span>
-        <span className={`text-sm font-semibold ml-auto ${delta > 0 ? 'text-warning' : delta < 0 ? 'text-primary' : 'text-muted'}`}>{delta > 0 ? '+' : ''}{delta.toLocaleString('cs-CZ')} kg</span>
+        <span className="text-3xl font-bold tabular-nums">{last.kg.toLocaleString(loc())}</span><span className="text-muted">kg</span>
+        <span className={`text-sm font-semibold ml-auto ${delta > 0 ? 'text-warning' : delta < 0 ? 'text-primary' : 'text-muted'}`}>{delta > 0 ? '+' : ''}{delta.toLocaleString(loc())} kg</span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Graf váhy">
         <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7FB3E8" stopOpacity=".28" /><stop offset="1" stopColor="#7FB3E8" stopOpacity="0" /></linearGradient></defs>
