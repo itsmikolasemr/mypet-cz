@@ -1,6 +1,6 @@
 # MyPet CZ — Status
 
-Poslední aktualizace: 2026-10-14 01:15
+Poslední aktualizace: 2026-10-14 02:15
 
 ## Hotovo
 - Repo vytvořeno (itsmikolasemr/mypet-cz)
@@ -14,7 +14,7 @@ Poslední aktualizace: 2026-10-14 01:15
 - **EmergencyVets** (filtr podle města, call tlačítka)
 - **EmergencyCard** (pohotovostní karta mazlíčka — QR placeholder)
 - SEO.md (rozšířeno), QA.md
-- Sample SEO obsah: content/pruvodce-odcerveni.md
+- Sample SEO obsah: content/pruvodce-odcerveni.md + **content/pruvodce-ockovani.md**
 - Next.js scaffold + plný CRUD profily mazlíčků s localStorage
 - CRUD zdravotních záznamů (návštěvy, odčervení, očkování) + timeline
 - Plné UI připomínek (přidávání, označení hotovo)
@@ -23,11 +23,12 @@ Poslední aktualizace: 2026-10-14 01:15
 - UI emergency karta (klik na mazlíčka)
 
 ## Běží
-- SEO obsahové stránky (sample průvodce přidán)
+- SEO obsahové stránky (sample průvodce přidány)
 - Reálná mapa (Leaflet/Mapbox) + aktuální data klinik
 - Skutečný QR generátor
 - Export PDF profilu
 - OCR dokumentů
+- Affiliate ověření
 
 ## Otevřené otázky
 - Finální název a doména (kandidáti v DESIGN.md — doporučení Mazlík / Mazel)
@@ -38,7 +39,7 @@ Poslední aktualizace: 2026-10-14 01:15
 ## HOTOVO K TESTOVÁNÍ
 MVP (profily, zdravotní záznamy, připomínky, základní dokumenty) + seznam non-stop veterin a emergency karta je vizuálně a funkčně připravené k lokálnímu testování. 
 
-**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm run dev`). Nic není nasazeno veřejně. Klikni na mazlíčka pro emergency kartu, dole je seznam pohotovostních klinik. Nově rozšířen katalog plemen a přidán sample průvodce odčervení.
+**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm run dev`). Nic není nasazeno veřejně. Klikni na mazlíčka pro emergency kartu, dole je seznam pohotovostních klinik. Nově přidán průvodce očkování a připraveny issues pro QR, mapu a PDF.
 
 ## Další krok
-Reálná interaktivní mapa, generování QR kódu, PDF export. Issues připraveny k vytvoření.
+Reálná interaktivní mapa, generování QR kódu, PDF export. Issues vytvořeny / připraveny k potvrzení.
