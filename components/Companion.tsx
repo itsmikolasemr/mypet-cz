@@ -106,7 +106,7 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
                 {c.mood === 'happy' && (<><circle cx="42" cy="62" r="4" fill="#FF8A7A" opacity=".45" /><circle cx="78" cy="62" r="4" fill="#FF8A7A" opacity=".45" /></>)}
               </g>
             </g>
-            {bump > 0 && <g className="c-hearts">{[[30, 30, 1], [78, 24, .8], [56, 16, .9]].map(([x, y, k]) => <path key={x} transform={`translate(${x - 7 * k} ${y - 12 * k}) scale(${k * .6})`} d="M12 21S3 16 3 9.5A4.5 4.5 0 0 1 12 7.5a4.5 4.5 0 0 1 9 2C21 16 12 21 12 21Z" fill="#7FB3E8" />)}</g>}
+            {bump > 0 && <g className="c-hearts">{[[30, 26, 4], [78, 20, 3.2], [56, 12, 3.6], [44, 8, 2.6]].map(([x, y, r]) => <circle key={x} cx={x} cy={y} r={r} fill="#7FB3E8" />)}</g>}
           </svg>
           {!pet.photo && !['pes', 'kocka'].includes(pet.species) && <span aria-hidden className="absolute -right-1 -bottom-1 w-9 h-9 rounded-full bg-surface dark:bg-surface-d shadow-card flex items-center justify-center text-primary-d dark:text-primary"><Emo e={speciesOf(pet.species).emoji} className="w-5 h-5" /></span>}
           {pet.photo && (

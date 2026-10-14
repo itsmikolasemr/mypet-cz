@@ -69,7 +69,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
       if (r.status === 402) { prem.setTrialLeft(0); throw new Error(`Zkušební dotazy jsou vyčerpané. Tvoje otázka zůstala uložená – s Premium (14 dní zdarma, tlačítko nahoře) ti Aivet odpoví hned. Když jde o akutní stav, otevři Mapu → 🚨 Nonstop, ta je vždy zdarma.`); }
       if (!r.ok) throw new Error(j.error === 'rate_limited_client' ? `Dosáhl jsi limitu dotazů (${j.window === 'den' ? 'denní' : 'na 10 minut'}). Zkus to za ${Math.max(1, Math.round((j.retryAfter ?? 60) / 60))} min.` : j.error === 'rate_limited' ? 'Aivet je teď přetížený, zkus to za chvíli.' : j.error === 'not_configured' ? 'Aivet ještě není nastavený.' : 'Odpověď se nepodařilo získat.');
       setMsgs([...next, { role: 'assistant', content: j.reply, emergency: !!j.emergency || local }]);
-    } catch (e) { setErr(e instanceof Error ? e.message : 'Chyba spojení.'); }
+    } catch (e) { setMsgs(msgs); setInput(q); setErr(e instanceof Error ? e.message : 'Chyba spojení.'); }
     finally { setBusy(false); }
   };
 
@@ -138,7 +138,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
               </div>
             ))}
             {busy && <div className="flex"><div className="rounded-[22px] rounded-bl-md bg-surface dark:bg-surface-d shadow-card px-4 py-3.5 flex gap-1.5">{[0, 1, 2].map((i) => <span key={i} className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />)}</div></div>}
-            {err && <p className="text-center text-sm text-red-600 dark:text-red-400">{err}</p>}
+            {err && <div role="alert" className="text-center text-sm text-red-600 dark:text-red-400 space-y-2"><p>{err}</p><p className="text-muted">Otázka zůstala v poli níže.</p><button data-retry onClick={() => send(input)} className="press min-h-[44px] px-5 rounded-full font-semibold bg-primary/10 text-primary">Zkusit znovu</button></div>}
             <div ref={end} className="scroll-mb-48" />
           </div>
           <p className="text-[13px] text-muted text-center mt-4">Aivet je AI a může se mýlit. Nenahrazuje vyšetření veterinářem.</p>

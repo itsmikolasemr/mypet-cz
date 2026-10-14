@@ -30,7 +30,7 @@ export function PetForm({ open, onClose, pet, onDelete }: { open: boolean; onClo
         <div className="flex justify-center">
           <button type="button" onClick={() => fileRef.current?.click()} className="press relative w-24 h-24 rounded-3xl bg-secondary/20 overflow-hidden flex items-center justify-center text-4xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {f.photo ? <img src={f.photo} alt="Fotka mazlíčka" className="w-full h-full object-cover" /> : SPECIES.find((s) => s.id === f.species)?.emoji}
+            {f.photo ? <img src={f.photo} alt="Fotka mazlíčka" className="w-full h-full object-cover" /> : <span className="text-primary-d dark:text-primary"><Emo e={SPECIES.find((s) => s.id === f.species)?.emoji ?? '🐾'} className="w-12 h-12" /></span>}
             <span className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-primary text-[#0F2540] flex items-center justify-center shadow"><Icon name="camera" className="w-4 h-4" /></span>
           </button>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={async (e) => { const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try { set('photo', await resizeImage(file)); } catch { notice('Fotku se nepodařilo načíst', 'Zkus formát JPG nebo PNG.'); } }} />
@@ -51,7 +51,7 @@ export function PetForm({ open, onClose, pet, onDelete }: { open: boolean; onClo
           <input className={inputCls} list="breeds" value={f.breed} onChange={(e) => set('breed', e.target.value)} placeholder="Vyber nebo napiš" />
           <datalist id="breeds">{(BREEDS[f.species] ?? []).map((b) => <option key={b} value={b} />)}</datalist>
         </Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <Field label="Datum narození"><DateInput value={f.birthDate} max={today()} onChange={(v) => set('birthDate', v)} /></Field>
           <Field label="Pohlaví">
             <select className={inputCls} value={f.sex} onChange={(e) => set('sex', e.target.value as Sex)}>

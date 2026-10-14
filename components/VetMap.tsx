@@ -220,7 +220,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
             className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${parksOn ? 'bg-[#2F7D4A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
             <GT t="🌳 Výběhy" /></button>
           <button onClick={toggleShops} aria-pressed={shopsOn} data-filter="shops"
-            className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${shopsOn ? 'bg-[#3A4150] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${shopsOn ? 'bg-[#3A3D43] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
             <GT t="🛍️ Zverimexy" /></button>
         </div>
         {state === 'loading' && <div className="absolute inset-x-0 bottom-3 z-[500] mx-auto w-max rounded-full bg-surface/90 dark:bg-surface-d/90 backdrop-blur px-4 py-2 text-sm shadow-card animate-fade"><PawLoader label="Hledám veteriny…" className="w-5 h-5" /></div>}
@@ -237,7 +237,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         )}
         {shown.slice(0, 30).map((v) => (
           <Card key={v.id} onClick={() => focus(v)} className="p-4 flex items-center gap-3.5">
-            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.shop ? 'bg-[#3A4150]/12 dark:bg-[#C9D2DE]/15' : v.park ? 'bg-[#2F7D4A]/12 dark:bg-[#5FBF7F]/15' : v.nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] font-bold text-sm' : 'bg-primary/10'}`}>{v.shop ? <Emo e="🛍️" className="w-6 h-6" /> : v.park ? <Emo e="🌳" className="w-6 h-6" /> : v.nonstop ? '24/7' : <Emo e="🩺" className="w-6 h-6" />}</div>
+            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.shop ? 'bg-[#3A3D43]/12 dark:bg-[#C9D2DE]/15' : v.park ? 'bg-[#2F7D4A]/12 dark:bg-[#5FBF7F]/15' : v.nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] font-bold text-sm' : 'bg-primary/10'}`}>{v.shop ? <Emo e="🛍️" className="w-6 h-6" /> : v.park ? <Emo e="🌳" className="w-6 h-6" /> : v.nonstop ? '24/7' : <Emo e="🩺" className="w-6 h-6" />}</div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold truncate">{v.name}</p>
               {!v.park && (() => { const o = openNow(v.tags); return o == null ? null : <p data-open={o ? 'yes' : 'no'} className={`text-[12px] font-bold ${o ? 'text-[#1F7A43] dark:text-[#6FD39A]' : 'text-muted'}`}>{o ? (v.nonstop ? 'Otevřeno teď · nonstop' : 'Otevřeno teď') : 'Teď zavřeno'}</p>; })()}
@@ -251,7 +251,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         {sel && (
           <div className="space-y-3">
             {sel.shop && (() => { const card = data.cards.find((c) => c.store === (sel.tags.chain as CardStore)); return (<>
-              {sel.tags.chain && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold bg-[#3A4150]/12 text-[#6B3A0E] dark:text-[#F0B880]">Řetězec {CHAIN_NAME[sel.tags.chain] ?? sel.tags.chain}</span>}
+              {sel.tags.chain && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold bg-[#3A3D43]/12 text-[#6B3A0E] dark:text-[#F0B880]">Řetězec {CHAIN_NAME[sel.tags.chain] ?? sel.tags.chain}</span>}
               {card && <Card className="p-4 flex items-center gap-3">
                 <span className="text-2xl" data-shop-card><Emo e="💳" className="w-6 h-6" /></span><span className="flex-1"><b className="block">Máš tu věrnostní kartu</b><span className="text-sm text-muted">{card.name} – ukaž ji u pokladny</span></span>
                 <button className="press rounded-2xl px-3.5 min-h-[44px] font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]" onClick={() => { sessionStorage.setItem('tlapka:openCard', card.id); history.pushState(null, '', '#cards'); dispatchEvent(new PopStateEvent('popstate')); }} data-open-card>Ukázat</button>
@@ -263,7 +263,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
               <p><span className="text-muted text-xs block">Otevírací doba</span>{t.opening_hours ? czHours(t.opening_hours).map((l, i) => <span key={i} className="block">{l}</span>) : 'Neuvedena v OSM'}</p>
               {(t.phone || t['contact:phone']) && <p><span className="text-muted text-xs block">Telefon</span><a className="text-primary font-semibold" href={`tel:${(t.phone || t['contact:phone']).split(';')[0].replace(/\s/g, '')}`}>{t.phone || t['contact:phone']}</a></p>}
               {(t.website || t['contact:website']) && <p className="truncate"><span className="text-muted text-xs block">Web</span><a className="text-primary" target="_blank" rel="noreferrer" href={t.website || t['contact:website']}>{(t.website || t['contact:website']).replace(/^https?:\/\//, '')}</a></p>}
-              <p className="text-muted text-sm">{sel.dist.toFixed(1).replace('.', ',')} km od {locNote ? 'centra Brna' : 'tebe'}</p>
+              <p className="text-muted text-sm">{sel.dist.toFixed(1).replace('.', ',')} km od {locNote ? `středu mapy (${/Prah/.test(locNote) ? 'Praha' : locNote.replace(/^Zobrazuji /, '')})` : 'tebe'}</p>
             </Card>
             <div className="grid grid-cols-2 gap-2">
               <a className="press inline-flex items-center justify-center rounded-2xl px-4 py-3.5 font-semibold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]" target="_blank" rel="noreferrer" href={`https://mapy.cz/fnc/v1/route?end=${sel.lon},${sel.lat}&routeType=${sel.park ? 'foot_fast' : 'car_fast'}`}>Navigovat (Mapy.cz)</a>
