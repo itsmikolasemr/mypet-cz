@@ -58,7 +58,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true, hint = false }: { 
   return (
     <div className="relative">
       {can && (
-        <div aria-hidden className="absolute inset-0 rounded-[22px] overflow-hidden flex items-center pl-5 font-bold text-white bg-gradient-to-r from-[#FF9A5A] to-[#E8553A]" style={{ opacity: dx ? 0.35 + progress * 0.65 : hinting ? 0.9 : 0 }}>
+        <div aria-hidden className="absolute inset-0 rounded-[22px] overflow-hidden flex items-center pl-5 font-bold text-[#0F2540] bg-gradient-to-r from-[#A9CEF3] to-[#7FB3E8]" style={{ opacity: dx ? 0.35 + progress * 0.65 : hinting ? 0.9 : 0 }}>
           <span style={{ transform: `scale(${0.8 + progress * 0.3})` }} className="transition-transform">✓ Hotovo</span>
         </div>
       )}
@@ -84,7 +84,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true, hint = false }: { 
             <button onClick={() => reopenReminder(r.id)} className="press text-sm font-semibold text-muted px-3 min-h-[44px]">Obnovit</button>
           ) : (
             <button aria-label="Označit jako hotové" onClick={done}
-              className={`press w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all shrink-0 ${pop ? 'bg-primary border-primary text-white scale-110' : 'border-primary/40 text-primary'}`}>
+              className={`press w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all shrink-0 ${pop ? 'bg-primary border-primary text-[#0F2540] scale-110' : 'border-primary/40 text-primary'}`}>
               <Icon name="check" className="w-5 h-5" />
             </button>
           )}
@@ -131,11 +131,11 @@ export function WeightChart({ pet }: { pet: Pet }) {
         <span className={`text-sm font-semibold ml-auto ${delta > 0 ? 'text-warning' : delta < 0 ? 'text-primary' : 'text-muted'}`}>{delta > 0 ? '+' : ''}{delta.toLocaleString('cs-CZ')} kg</span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Graf váhy">
-        <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#E8553A" stopOpacity=".28" /><stop offset="1" stopColor="#E8553A" stopOpacity="0" /></linearGradient></defs>
+        <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7FB3E8" stopOpacity=".28" /><stop offset="1" stopColor="#7FB3E8" stopOpacity="0" /></linearGradient></defs>
         {[0, 0.5, 1].map((f) => { const k = lo + (hi - lo) * f; return <g key={f}><line x1={px} x2={W - px} y1={Y(k)} y2={Y(k)} className="stroke-ink/10 dark:stroke-white/10" strokeDasharray="3 4" /><text x={2} y={Y(k) + 3} className="fill-muted" fontSize="9">{k.toFixed(1)}</text></g>; })}
         <polygon points={`${X(w[0].date)},${H - py} ${pts} ${X(last.date, w.length - 1)},${H - py}`} fill="url(#g)" />
-        <polyline points={pts} fill="none" stroke="#E8553A" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="draw" />
-        {w.map((x, i) => <circle key={x.id} cx={X(x.date, i)} cy={Y(x.kg)} r="3.5" fill="#E8553A" className="stroke-surface dark:stroke-surface-d" strokeWidth="2" />)}
+        <polyline points={pts} fill="none" stroke="#7FB3E8" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="draw" />
+        {w.map((x, i) => <circle key={x.id} cx={X(x.date, i)} cy={Y(x.kg)} r="3.5" fill="#7FB3E8" className="stroke-surface dark:stroke-surface-d" strokeWidth="2" />)}
         <text x={px} y={H - 2} fontSize="9" className="fill-muted">{fmtShort(w[0].date)}</text>
         <text x={W - px} y={H - 2} fontSize="9" textAnchor="end" className="fill-muted">{fmtShort(last.date)}</text>
       </svg>

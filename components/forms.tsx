@@ -30,7 +30,7 @@ export function PetForm({ open, onClose, pet }: { open: boolean; onClose: () => 
           <button type="button" onClick={() => fileRef.current?.click()} className="press relative w-24 h-24 rounded-3xl bg-secondary/20 overflow-hidden flex items-center justify-center text-4xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {f.photo ? <img src={f.photo} alt="" className="w-full h-full object-cover" /> : SPECIES.find((s) => s.id === f.species)?.emoji}
-            <span className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center shadow"><Icon name="camera" className="w-4 h-4" /></span>
+            <span className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-primary text-[#0F2540] flex items-center justify-center shadow"><Icon name="camera" className="w-4 h-4" /></span>
           </button>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={async (e) => { const file = e.target.files?.[0]; e.target.value = ''; if (!file) return; try { set('photo', await resizeImage(file)); } catch { notice('Fotku se nepodařilo načíst', 'Zkus formát JPG nebo PNG.'); } }} />
         </div>
@@ -210,7 +210,7 @@ export function MedForm({ open, onClose, med, petId }: { open: boolean; onClose:
         </div>
         <Field label="Poznámka"><textarea rows={2} className={inputCls} value={f.notes} onChange={(e) => set('notes', e.target.value)} placeholder="např. podávat s jídlem" /></Field>
         <label className="flex items-center gap-3 rounded-2xl bg-primary/5 px-4 py-3">
-          <input type="checkbox" className="w-5 h-5 accent-[#E8553A]" checked={remind} onChange={(e) => setRemind(e.target.checked)} />
+          <input type="checkbox" className="w-5 h-5 accent-[#7FB3E8]" checked={remind} onChange={(e) => setRemind(e.target.checked)} />
           <span className="text-sm"><b>Vytvořit připomínku</b><br /><span className="text-muted">{interval ? `Opakovat každých ${interval} ${interval === 1 ? 'den' : 'dní'}` : 'Jednorázově'}</span></span>
         </label>
         <Button type="submit" className="w-full">Uložit</Button>

@@ -41,7 +41,7 @@ export function SharedPage({ token }: { token: string }) {
                 return (
                   <div key={x.k} className="flex items-center gap-3">
                     <div className="flex-1 min-w-0"><p className="font-medium break-words">{x.title}</p><p className="text-[13px] text-muted">{d ? `✓ podal(a) ${d.by ?? '—'} v ${t(d.given_at)}` : x.sub}</p></div>
-                    {v.scope === 'today' && <button onClick={() => give(p.id, x.rem, x.med)} className="press min-h-[44px] px-4 rounded-2xl font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]">Podáno</button>}
+                    {v.scope === 'today' && <button onClick={() => give(p.id, x.rem, x.med)} className="press min-h-[44px] px-4 rounded-2xl font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">Podáno</button>}
                   </div>
                 );
               })}

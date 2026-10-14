@@ -59,13 +59,13 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
       onClickCapture={(e) => { if (swiped.current) { e.stopPropagation(); e.preventDefault(); swiped.current = false; } }}
       onKeyDown={(e) => { if (e.key === 'ArrowRight') go(1); if (e.key === 'ArrowLeft') go(-1); }}
       style={{ touchAction: 'pan-y' }} data-pet={pet.id} className="companion-card select-none relative rounded-[30px] p-5 pb-4 overflow-hidden bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d ring-1 ring-ink/5 dark:ring-white/10">
-      <div aria-hidden className="absolute inset-0 opacity-60 dark:opacity-40 transition-colors duration-700" style={{ background: `radial-gradient(120% 90% at 20% 0%, ${fur}55, transparent 60%), radial-gradient(90% 80% at 100% 100%, ${c.mood === 'sad' ? '#7aa2c855' : '#FF9A5A44'}, transparent 60%)` }} />
+      <div aria-hidden className="absolute inset-0 opacity-60 dark:opacity-40 transition-colors duration-700" style={{ background: `radial-gradient(120% 90% at 20% 0%, ${fur}55, transparent 60%), radial-gradient(90% 80% at 100% 100%, ${c.mood === 'sad' ? '#7aa2c855' : '#A9CEF344'}, transparent 60%)` }} />
       <div onAnimationEnd={() => { setPeek(false); localStorage.setItem('tlapka:hint:peek', '1'); }} className={`relative flex items-center gap-4 transition-transform duration-200 ${peek ? 'peek-hint' : ''}`} style={{ transform: dx ? `translateX(${dx * 0.35}px)` : undefined }} key={pet.id}>
         <button onClick={pet_} aria-label={`Pohladit ${pet.name}`} className={`companion mood-${c.mood} relative w-[132px] h-[132px] shrink-0`} key={bump}>
           <svg viewBox="0 0 120 120" className="absolute inset-0 -rotate-90" aria-hidden>
             <circle cx="60" cy="60" r={R} fill="none" strokeWidth="6" className="stroke-ink/10 dark:stroke-white/10" />
             <circle cx="60" cy="60" r={R} fill="none" strokeWidth="6" strokeLinecap="round" stroke="url(#ring)" strokeDasharray={C} strokeDashoffset={C * (1 - c.score / 100)} style={{ transition: 'stroke-dashoffset 1s cubic-bezier(.3,1.2,.5,1)' }} />
-            <defs><linearGradient id="ring"><stop offset="0" stopColor={c.mood === 'sad' ? '#7aa2c8' : '#FF9A5A'} /><stop offset="1" stopColor={c.mood === 'sad' ? '#4f7bb0' : '#E8553A'} /></linearGradient></defs>
+            <defs><linearGradient id="ring"><stop offset="0" stopColor={c.mood === 'sad' ? '#7aa2c8' : '#A9CEF3'} /><stop offset="1" stopColor={c.mood === 'sad' ? '#4f7bb0' : '#7FB3E8'} /></linearGradient></defs>
           </svg>
           <svg viewBox="0 0 120 120" className="relative w-full h-full" aria-hidden>
             <g className="c-body">
@@ -73,7 +73,7 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
               <path className="c-tail" d={cat ? 'M86 86 C 104 84, 108 64, 98 56' : 'M84 84 C 98 82, 102 70, 100 62'} fill="none" stroke={fur} strokeWidth={cat ? 6 : 8} strokeLinecap="round" />
               {/* body */}
               <ellipse cx="60" cy="86" rx="26" ry="18" fill={fur} />
-              <ellipse cx="60" cy="90" rx="14" ry="10" fill="#FFF8F0" opacity=".55" />
+              <ellipse cx="60" cy="90" rx="14" ry="10" fill="#E4E5E8" opacity=".55" />
               {/* head */}
               <g className="c-head">
                 {pet.species === 'kralik' ? (<>
@@ -87,21 +87,21 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
                   <ellipse className="c-ear r" cx="84" cy="50" rx="8" ry="15" fill={fur} style={{ filter: 'brightness(.82)' }} />
                 </>)}
                 <circle cx="60" cy="54" r="24" fill={fur} />
-                <ellipse cx="60" cy="63" rx="12" ry="9" fill="#FFF8F0" opacity=".7" />
+                <ellipse cx="60" cy="63" rx="12" ry="9" fill="#E4E5E8" opacity=".7" />
                 {/* eyes */}
                 <g className="c-eyes">
                   {c.mood === 'happy' ? (<>
-                    <path d="M46 52 q4 -5 8 0" stroke="#3B2A24" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-                    <path d="M66 52 q4 -5 8 0" stroke="#3B2A24" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+                    <path d="M46 52 q4 -5 8 0" stroke="#1D1E22" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+                    <path d="M66 52 q4 -5 8 0" stroke="#1D1E22" strokeWidth="2.6" fill="none" strokeLinecap="round" />
                   </>) : (<>
-                    <circle cx="50" cy="52" r="3.4" fill="#3B2A24" /><circle cx="70" cy="52" r="3.4" fill="#3B2A24" />
+                    <circle cx="50" cy="52" r="3.4" fill="#1D1E22" /><circle cx="70" cy="52" r="3.4" fill="#1D1E22" />
                     <circle cx="51" cy="51" r="1" fill="#fff" /><circle cx="71" cy="51" r="1" fill="#fff" />
                   </>)}
-                  {c.mood === 'sad' && (<><path d="M45 47 l9 -3" stroke="#3B2A24" strokeWidth="2" strokeLinecap="round" /><path d="M75 47 l-9 -3" stroke="#3B2A24" strokeWidth="2" strokeLinecap="round" /></>)}
+                  {c.mood === 'sad' && (<><path d="M45 47 l9 -3" stroke="#1D1E22" strokeWidth="2" strokeLinecap="round" /><path d="M75 47 l-9 -3" stroke="#1D1E22" strokeWidth="2" strokeLinecap="round" /></>)}
                 </g>
                 {c.mood === 'sad' && <path className="c-tear" d="M48 57 q-2 4 0 6 q2 -2 0 -6z" fill="#7aa2c8" />}
-                <ellipse cx="60" cy="60" rx="3.4" ry="2.4" fill="#3B2A24" />
-                <path d={c.mood === 'sad' ? 'M54 68 q6 -4 12 0' : c.mood === 'happy' ? 'M53 64 q7 8 14 0' : 'M55 65 q5 3 10 0'} stroke="#3B2A24" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+                <ellipse cx="60" cy="60" rx="3.4" ry="2.4" fill="#1D1E22" />
+                <path d={c.mood === 'sad' ? 'M54 68 q6 -4 12 0' : c.mood === 'happy' ? 'M53 64 q7 8 14 0' : 'M55 65 q5 3 10 0'} stroke="#1D1E22" strokeWidth="2.2" fill="none" strokeLinecap="round" />
                 {c.mood === 'happy' && (<><circle cx="42" cy="62" r="4" fill="#FF8A7A" opacity=".45" /><circle cx="78" cy="62" r="4" fill="#FF8A7A" opacity=".45" /></>)}
               </g>
             </g>

@@ -53,11 +53,12 @@ export interface AppData {
   docs: DocMeta[];
   meds: Medication[];
   allergies: Allergy[];
+  cards: LoyaltyCard[];
   trash?: TrashItem[];
   settings: { theme: Theme; onboarded: boolean; notify: boolean; notifyHour: number };
 }
 
-export type TrashColl = 'pets' | 'reminders' | 'visits' | 'docs' | 'meds' | 'allergies';
+export type TrashColl = 'pets' | 'reminders' | 'visits' | 'docs' | 'meds' | 'allergies' | 'cards';
 export interface TrashItem { coll: TrashColl; item: { id: string } & Record<string, unknown>; at: string; group: string }
 
 export interface DocMeta {
@@ -92,4 +93,20 @@ export interface Allergy {
   allergen: string;
   reaction: string;
   severity: Severity;
+}
+
+export type CardStore = 'superzoo' | 'zoobonus' | 'petcenter' | 'fressnapf' | 'hulin' | 'custom';
+export type CardFormat = 'EAN13' | 'CODE128' | 'QR';
+/** Věrnostní karta: shared within the household (tl_loyalty_cards) */
+export interface LoyaltyCard {
+  id: string;
+  store: CardStore;
+  name: string;
+  code: string;
+  format: CardFormat;
+  color?: string;
+  notes: string;
+  uses: number;
+  lastUsed?: string;
+  created: string;
 }

@@ -1,0 +1,24 @@
+// node tests/cards.db.test.mjs – live RLS checks for tl_loyalty_cards (test users, TLAPKA_TEST_PW)
+import { createClient } from '@supabase/supabase-js';
+const URL = 'https://owveqkchmcutoqlsjlyb.supabase.co', KEY = 'sb_publishable_EDy4Im3JrXxTsRYd62GY1A_J3gw_tcY', PW = process.env.TLAPKA_TEST_PW;
+const mk = (dev) => createClient(URL, KEY, { global: { headers: { 'x-tlapka-device': dev } }, auth: { persistSession: false }, realtime: { transport: class { close() {} } } });
+const as = async (e, dev) => { const c = mk(dev); let r = await c.auth.signInWithPassword({ email: e, password: PW }); if (r.error) { r = await c.auth.signUp({ email: e, password: PW }); if (r.error) throw r.error; if (!r.data.session) throw new Error('signup needs confirmation: ' + e); } return c; };
+const R = {};
+const A = await as('tlapka-e2e-a@example.com', 'dev-a-0123456789'), B = await as('tlapka-e2e-b@example.com', 'dev-b-0123456789');
+const hh = (await A.rpc('tl_create_household', { p_name: 'Karty', p_display: 'Jana' })).data;
+await A.rpc('tl_claim_backup_device', { p_device: 'dev-a-0123456789' });
+const card = { id: 'c1', store: 'superzoo', name: '', code: '8591234567892', format: 'EAN13', notes: '', uses: 0, created: new Date().toISOString() };
+R.aInsert = (await A.from('tl_loyalty_cards').upsert({ household_id: hh, id: 'c1', data: card })).error?.message ?? 'ok';
+R.bReadOutsider = (await B.from('tl_loyalty_cards').select('id').eq('household_id', hh)).data?.length;
+R.bInsertOutsider = (await B.from('tl_loyalty_cards').insert({ household_id: hh, id: 'x', data: {} })).error?.code ?? 'ALLOWED!';
+R.anonRead = (await mk('anon').from('tl_loyalty_cards').select('id')).data?.length ?? 'denied';
+const code = (await A.from('tl_invites').insert({ household_id: hh }).select('code').single()).data.code;
+R.bJoin = (await B.rpc('tl_join', { p_code: code, p_display: 'Petr' })).error?.message ?? 'ok';
+await B.rpc('tl_claim_backup_device', { p_device: 'dev-b-0123456789' });
+R.bReadMember = (await B.from('tl_loyalty_cards').select('data').eq('household_id', hh)).data?.map((x) => x.data.code);
+R.bUpdateMember = (await B.from('tl_loyalty_cards').upsert({ household_id: hh, id: 'c1', data: { ...card, uses: 3 } })).error?.message ?? 'ok';
+R.aSeesUpdate = (await A.from('tl_loyalty_cards').select('data').eq('id', 'c1').single()).data?.data.uses;
+R.deleteBlocked = ((await A.from('tl_loyalty_cards').delete().eq('id', 'c1').select()).data ?? []).length === 0;
+console.log(R);
+const ok = R.aInsert === 'ok' && R.bReadOutsider === 0 && R.bInsertOutsider === '42501' && R.bJoin === 'ok' && R.bReadMember?.[0] === card.code && R.bUpdateMember === 'ok' && R.aSeesUpdate === 3 && R.deleteBlocked;
+console.log(ok ? 'PASS' : 'FAIL'); process.exit(ok ? 0 : 1);

@@ -1,14 +1,14 @@
 'use client';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { TrashColl, TrashItem } from './types';
-import type { Allergy, AppData, DocMeta, Medication, Pet, Reminder, Visit } from './types';
+import type { Allergy, AppData, LoyaltyCard, DocMeta, Medication, Pet, Reminder, Visit } from './types';
 import { deleteBlob, loadBlob } from './docs';
 import { syncNotifications } from './notify';
 import { addDays, today, uid } from './utils';
 import { sampleData } from './sample';
 
 const KEY = 'tlapka:data:v1';
-const empty = (): AppData => ({ version: 1, pets: [], reminders: [], visits: [], docs: [], meds: [], allergies: [], settings: { theme: 'system', onboarded: false, notify: false, notifyHour: 9 } });
+const empty = (): AppData => ({ version: 1, pets: [], reminders: [], visits: [], docs: [], meds: [], allergies: [], cards: [], settings: { theme: 'system', onboarded: false, notify: false, notifyHour: 9 } });
 
 export function validate(x: unknown): AppData | null {
   if (!x || typeof x !== 'object') return null;
@@ -22,12 +22,13 @@ export function validate(x: unknown): AppData | null {
     docs: Array.isArray(d.docs) ? d.docs : [],
     meds: Array.isArray(d.meds) ? d.meds : [],
     allergies: Array.isArray(d.allergies) ? d.allergies : [],
+    cards: Array.isArray(d.cards) ? d.cards : [],
     trash: Array.isArray(d.trash) ? d.trash : [],
     settings: { theme: d.settings?.theme ?? 'system', onboarded: true, notify: !!d.settings?.notify, notifyHour: d.settings?.notifyHour ?? 9 },
   };
 }
 
-const TRASH_COLLS: TrashColl[] = ['pets', 'reminders', 'visits', 'docs', 'meds', 'allergies'];
+const TRASH_COLLS: TrashColl[] = ['pets', 'reminders', 'visits', 'docs', 'meds', 'allergies', 'cards'];
 export const TRASH_DAYS = 30;
 function withTrash(prev: AppData, next: AppData): AppData {
   if (prev === next) return next;
@@ -99,6 +100,9 @@ function useStoreImpl() {
     deleteMed: (id: string) => upd((d) => ({ ...d, meds: d.meds.filter((x) => x.id !== id) })),
     saveAllergy: (a: Allergy) => upd((d) => ({ ...d, allergies: d.allergies.some((x) => x.id === a.id) ? d.allergies.map((x) => (x.id === a.id ? a : x)) : [...d.allergies, a] })),
     deleteAllergy: (id: string) => upd((d) => ({ ...d, allergies: d.allergies.filter((x) => x.id !== id) })),
+    saveCard: (c: LoyaltyCard) => upd((d) => ({ ...d, cards: d.cards.some((x) => x.id === c.id) ? d.cards.map((x) => (x.id === c.id ? c : x)) : [...d.cards, c] })),
+    markCardUsed: (id: string) => upd((d) => ({ ...d, cards: d.cards.map((x) => (x.id === id ? { ...x, uses: (x.uses || 0) + 1, lastUsed: new Date().toISOString() } : x)) })),
+    deleteCard: (id: string) => upd((d) => ({ ...d, cards: d.cards.filter((x) => x.id !== id) })),
     addDoc: (m: DocMeta) => upd((d) => ({ ...d, docs: [...d.docs, m] })),
     deleteDoc: (id: string) => { upd((d) => ({ ...d, docs: d.docs.filter((x) => x.id !== id) })); },
     setNotify: (notify: boolean, notifyHour?: number) => upd((d) => ({ ...d, settings: { ...d.settings, notify, notifyHour: notifyHour ?? d.settings.notifyHour } })),
@@ -120,7 +124,7 @@ function useStoreImpl() {
     saveVisit: (v: Visit) => upd((d) => ({ ...d, visits: d.visits.some((x) => x.id === v.id) ? d.visits.map((x) => (x.id === v.id ? v : x)) : [...d.visits, v] })),
     deleteVisit: (id: string) => upd((d) => ({ ...d, visits: d.visits.filter((v) => v.id !== id) })),
     setTheme: (theme: AppData['settings']['theme']) => upd((d) => ({ ...d, settings: { ...d.settings, theme } })),
-    finishOnboarding: (withSample: boolean) => upd((d) => ({ ...(withSample ? sampleData() : { version: 1 as const, pets: [], reminders: [], visits: [], docs: [], meds: [], allergies: [] }), settings: { ...d.settings, onboarded: true } })),
+    finishOnboarding: (withSample: boolean) => upd((d) => ({ ...(withSample ? sampleData() : { version: 1 as const, pets: [], reminders: [], visits: [], docs: [], meds: [], allergies: [], cards: d.cards }), settings: { ...d.settings, onboarded: true } })),
     importData: async (x: AppData) => {
       // backups carry no files: keep only document records whose file still exists on this device
       const docs = (await Promise.all(x.docs.map(async (d) => ((await loadBlob(d.id, d.mime).catch(() => null)) ? d : null)))).filter((d): d is DocMeta => !!d);

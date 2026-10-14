@@ -35,9 +35,9 @@ export function Account() {
       <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); if (mode === 'magic') run(() => auth.magicLink(email), 'Poslali jsme ti odkaz pro přihlášení. Zkontroluj e-mail.'); else run(() => auth.signIn(email, pw)); }}>
         <label className="block"><span className="sr-only">E-mail</span><input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tvuj@email.cz" className="w-full min-h-[48px] rounded-2xl px-4 bg-ink/5 dark:bg-white/10" /></label>
         {mode === 'password' && <label className="block"><span className="sr-only">Heslo</span><input type="password" required minLength={8} autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Heslo (min. 8 znaků)" className="w-full min-h-[48px] rounded-2xl px-4 bg-ink/5 dark:bg-white/10" /></label>}
-        <button disabled={busy} className={`${btn} text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]`}>{mode === 'magic' ? 'Poslat přihlašovací odkaz' : 'Přihlásit se'}</button>
+        <button disabled={busy} className={`${btn} text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]`}>{mode === 'magic' ? 'Poslat přihlašovací odkaz' : 'Přihlásit se'}</button>
       </form>
-      <div className="flex flex-wrap gap-x-4 text-[14px] font-semibold text-[#C2410C] dark:text-[#FFB48A]">
+      <div className="flex flex-wrap gap-x-4 text-[14px] font-semibold text-[#C2410C] dark:text-[#9CC8F2]">
         <button className="min-h-[44px]" onClick={() => setMode(mode === 'magic' ? 'password' : 'magic')}>{mode === 'magic' ? 'Přihlásit heslem' : 'Raději odkazem e-mailem'}</button>
         {mode === 'password' && <button className="min-h-[44px]" disabled={busy} onClick={() => run(() => auth.signUp(email, pw), 'Účet vytvořen. Potvrď e-mail odkazem, který ti přišel.')}>Vytvořit účet</button>}
         {mode === 'password' && <button className="min-h-[44px]" disabled={busy || !email} onClick={() => run(() => auth.resetPassword(email), 'Poslali jsme odkaz pro obnovu hesla.')}>Zapomenuté heslo</button>}
@@ -59,7 +59,7 @@ export function Account() {
         <form className="space-y-3" onSubmit={async (e) => { e.preventDefault(); try { setHh(await joinHousehold(join!, name)); setJoin(null); toast('Připojeno k domácnosti'); } catch (er) { const m = String((er as Error).message); notice(m.includes('tl_limit_members') ? 'Domácnost je plná' : 'Kód neplatí', m.includes('tl_limit_members') ? 'Zdarma lze sdílet s 1 partnerem. Pro celou rodinu je potřeba Premium.' : 'Vypršel nebo už byl použit. Požádej o novou pozvánku.'); } }}>
           <label className="block"><span className="text-[14px] font-semibold">Kód pozvánky</span>
             <input autoFocus required name="invite" value={join ?? ''} onChange={(e) => setJoin(e.target.value)} autoCapitalize="off" autoComplete="off" spellCheck={false} className="mt-1 w-full min-h-[48px] rounded-2xl px-4 font-mono bg-ink/5 dark:bg-white/10" /></label>
-          <button className={`${btn} text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]`}>Připojit</button>
+          <button className={`${btn} text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]`}>Připojit</button>
         </form>
       </Sheet>
       {!!doses.length && <div className="pt-1"><p className="text-[13px] font-semibold text-muted mb-1">Poslední podání</p>{doses.slice(0, 5).map((d, i) => <p key={i} className="text-[14px]" data-dose>{(data.reminders.find((r) => r.id === d.reminder_id)?.title ?? data.meds.find((m) => m.id === d.med_id)?.name ?? 'Dávka')} · {data.pets.find((p) => p.id === d.pet_id)?.name ?? ''} – podal(a) {d.given_by_name ?? '—'} {new Date(d.given_at).toLocaleString('cs-CZ', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>)}</div>}

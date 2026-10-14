@@ -9,12 +9,13 @@ import { PremiumProvider } from '@/lib/premium';
 import { CloudProvider } from '@/lib/cloudsync';
 import { SharedPage } from './Shared';
 import { SecondOpinion } from './V11';
+import { Wallet } from './Wallet';
 import { BannerSlot, Expenses, Paywall } from './Premium';
 import { FeedbackHost } from './feedback';
 import { CalendarScreen, Dashboard, Onboarding, PetDetail, PetsList, Reminders, Settings, type Tab } from './screens';
 
 const VetMap = dynamic(() => import('./VetMap'), { ssr: false, loading: () => <div className="h-[46dvh] rounded-[26px] bg-ink/5 animate-pulse mt-20" /> });
-const EXTRA: Tab[] = ['map', 'ai', 'expenses', 'second'];
+const EXTRA: Tab[] = ['map', 'ai', 'expenses', 'second', 'cards'];
 
 const TABS: { id: Tab; l: string; i: 'home' | 'paw' | 'bell' | 'heart' | 'cog' }[] = [
   { id: 'home', l: 'Přehled', i: 'home' }, { id: 'pets', l: 'Mazlíčci', i: 'paw' }, { id: 'reminders', l: 'Připomínky', i: 'bell' }, { id: 'calendar', l: 'Kalendář', i: 'heart' }, { id: 'settings', l: 'Nastavení', i: 'cog' },
@@ -58,12 +59,13 @@ function Shell() {
           {tab === 'settings' && <Settings />}
           {tab === 'expenses' && <Expenses />}
           {tab === 'second' && <SecondOpinion />}
+          {tab === 'cards' && <Wallet />}
         </div>
       </main>
       {tab !== 'map' && tab !== 'ai' && petId !== 'nonstop' && <BannerSlot />}
       <nav aria-label="Hlavní navigace" className="fixed inset-x-0 z-40 flex justify-center px-5 pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + 12px)' }}>
-        <div className="pointer-events-auto relative w-full max-w-[400px] grid grid-cols-5 p-1.5 rounded-[30px] bg-surface/70 dark:bg-[#2a201b]/70 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-ink/[0.06] dark:ring-white/10 shadow-float dark:shadow-float-d">
-          <span aria-hidden className="absolute top-1.5 bottom-1.5 left-1.5 rounded-[24px] bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_6px_16px_-4px_rgba(232,85,58,.55)] transition-[transform,opacity] duration-500 ease-spring"
+        <div className="pointer-events-auto relative w-full max-w-[400px] grid grid-cols-5 p-1.5 rounded-[30px] bg-surface/70 dark:bg-[#1C222A]/70 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-ink/[0.06] dark:ring-white/10 shadow-float dark:shadow-float-d">
+          <span aria-hidden className="absolute top-1.5 bottom-1.5 left-1.5 rounded-[24px] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_6px_16px_-4px_rgba(127,179,232,.55)] transition-[transform,opacity] duration-500 ease-spring"
             style={{ width: 'calc((100% - 12px) / 5)', transform: `translateX(${Math.max(0, TABS.findIndex((t) => t.id === tab)) * 100}%)`, opacity: TABS.some((t) => t.id === tab) ? 1 : 0 }} />
           {TABS.map((t) => {
             const a = tab === t.id;

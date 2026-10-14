@@ -107,7 +107,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
       ))}
       {status === 'off' ? (
         <Card className="p-6 text-center">
-          <div className="mx-auto w-20 h-20 rounded-[26px] bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-4xl flex items-center justify-center shadow-float mb-4 animate-float">🩺</div>
+          <div className="mx-auto w-20 h-20 rounded-[26px] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-4xl flex items-center justify-center shadow-float mb-4 animate-float">🩺</div>
           <h2 className="text-lg font-bold">Aivet se teprve chystá</h2>
           <p className="text-muted mt-1.5 text-[15px]">{status === 'off' ? 'Poradce zatím není zapnutý – brzy tu bude. Do té doby se při potížích obrať na svého veterináře.' : 'Poradce je teď nedostupný (offline nebo lokální verze). Zkus to později.'}</p>
           <button onClick={openMap} className="press mt-5 w-full rounded-2xl py-3 font-semibold bg-primary/10 text-primary">🗺️ Veteriny v okolí</button>
@@ -130,7 +130,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
             )}
             {msgs.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-screen`}>
-                <div className={`max-w-[85%] rounded-[22px] px-4 py-3 text-[15px] leading-relaxed space-y-0.5 ${m.role === 'user' ? 'bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white rounded-br-md shadow-[0_8px_20px_-10px_rgba(232,85,58,.7)]' : 'bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 rounded-bl-md'}`}>
+                <div className={`max-w-[85%] rounded-[22px] px-4 py-3 text-[15px] leading-relaxed space-y-0.5 ${m.role === 'user' ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] rounded-br-md shadow-[0_8px_20px_-10px_rgba(127,179,232,.7)]' : 'bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 rounded-bl-md'}`}>
                   {m.role === 'assistant' ? render(m.content) : m.content}
                   {m.role === 'assistant' && m.emergency && <button onClick={openMap} className="press mt-2 w-full rounded-2xl bg-red-600 text-white font-bold py-2.5">🚨 Najít nonstop veterinu</button>}
                 </div>
@@ -142,12 +142,12 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
           </div>
           <p className="text-[13px] text-muted text-center mt-4">Aivet je AI a může se mýlit. Nenahrazuje vyšetření veterinářem.</p>
           <form onSubmit={(e) => { e.preventDefault(); send(input); }}
-            className="fixed z-40 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[420px] flex items-end gap-2 p-1.5 rounded-[26px] bg-surface/80 dark:bg-[#2a201b]/80 backdrop-blur-2xl ring-1 ring-ink/[0.06] dark:ring-white/10 shadow-float dark:shadow-float-d"
+            className="fixed z-40 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[420px] flex items-end gap-2 p-1.5 rounded-[26px] bg-surface/80 dark:bg-[#1C222A]/80 backdrop-blur-2xl ring-1 ring-ink/[0.06] dark:ring-white/10 shadow-float dark:shadow-float-d"
             style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + 86px)' }}>
             <textarea rows={1} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input); } }}
               placeholder={status === 'checking' ? 'Připojuji…' : 'Napiš Aivetovi…'} disabled={status === 'checking'} aria-label="Dotaz pro Aiveta"
               className="flex-1 resize-none bg-transparent px-3 py-2.5 outline-none max-h-32 text-base" />
-            <button type="submit" aria-label="Odeslat" disabled={!input.trim() || busy || status === 'checking'} className="press w-11 h-11 shrink-0 rounded-full text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] disabled:opacity-40 flex items-center justify-center"><Icon name="upload" className="w-5 h-5" /></button>
+            <button type="submit" aria-label="Odeslat" disabled={!input.trim() || busy || status === 'checking'} className="press w-11 h-11 shrink-0 rounded-full text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] disabled:opacity-40 flex items-center justify-center"><Icon name="upload" className="w-5 h-5" /></button>
           </form>
           <div className="h-28" />
         </>

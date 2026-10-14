@@ -17,7 +17,7 @@ import { notice, toast } from './feedback';
 import { PremiumBadge } from './Premium';
 
 const soft = 'press min-h-[48px] w-full rounded-2xl font-semibold flex items-center justify-center gap-2 bg-ink/5 dark:bg-white/10';
-const primary = 'press min-h-[48px] w-full rounded-2xl font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] disabled:opacity-60';
+const primary = 'press min-h-[48px] w-full rounded-2xl font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] disabled:opacity-60';
 
 async function aiCall(headers: Record<string, string>, body: unknown) {
   const r = await fetch(`${API_BASE}/api/ai`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
@@ -36,7 +36,7 @@ export function ExportAll() {
 export function TrashSection() {
   const { data, restoreTrash, emptyTrash } = useStore(); const prem = usePremium();
   const groups = Object.values((data.trash ?? []).reduce<Record<string, NonNullable<typeof data.trash>>>((a, t) => ((a[t.group] ||= []).push(t), a), {}));
-  const label = (g: NonNullable<typeof data.trash>) => { const m = g.find((t) => t.coll === 'pets') ?? g[0]; const it = m.item as Record<string, string>; const kind = { pets: 'Mazlíček', reminders: 'Připomínka', visits: 'Návštěva', docs: 'Dokument', meds: 'Lék', allergies: 'Alergie' }[m.coll]; return `${kind}: ${it.name || it.title || it.allergen || it.reason || it.clinic || '—'}${g.length > 1 ? ` (+${g.length - 1})` : ''}`; };
+  const label = (g: NonNullable<typeof data.trash>) => { const m = g.find((t) => t.coll === 'pets') ?? g[0]; const it = m.item as Record<string, string>; const kind = { pets: 'Mazlíček', reminders: 'Připomínka', visits: 'Návštěva', docs: 'Dokument', meds: 'Lék', allergies: 'Alergie', cards: 'Věrnostní karta' }[m.coll]; return `${kind}: ${it.name || it.title || it.allergen || it.reason || it.clinic || '—'}${g.length > 1 ? ` (+${g.length - 1})` : ''}`; };
   const left = (at: string) => Math.max(0, Math.ceil((Date.parse(at) + TRASH_DAYS * 864e5 - Date.now()) / 864e5));
   return (
     <Card className="p-4 space-y-2" >
@@ -169,7 +169,7 @@ export function ScanButton({ petId, className }: { petId?: string; className?: s
             </div>
             <fieldset className="space-y-1 text-[15px]"><legend className="font-semibold mb-1">Vytvořit</legend>
               {([['visit', 'Návštěvu s výdajem'], ['reminder', 'Připomínku dalšího termínu'], ['doc', 'Doklad (fotku)']] as const).map(([k, l]) => (
-                <label key={k} className="flex items-center gap-3 min-h-[44px]"><input type="checkbox" className="w-5 h-5 accent-[#E8553A]" checked={mk[k]} onChange={(e) => setMk({ ...mk, [k]: e.target.checked })} />{l}</label>))}
+                <label key={k} className="flex items-center gap-3 min-h-[44px]"><input type="checkbox" className="w-5 h-5 accent-[#7FB3E8]" checked={mk[k]} onChange={(e) => setMk({ ...mk, [k]: e.target.checked })} />{l}</label>))}
             </fieldset>
             {r.confidence != null && r.confidence < 0.6 && <p className="text-[13px] text-amber-700 dark:text-amber-300">Fotka nebyla úplně čitelná – zkontroluj údaje.</p>}
             <Button type="submit" className="w-full">Uložit</Button>
@@ -264,7 +264,7 @@ export function PrnRow({ med }: { med: import('@/lib/types').Medication }) {
       <p className={`flex-1 text-[13px] ${st.ok ? 'text-muted' : 'text-amber-700 dark:text-amber-300 font-semibold'}`}>
         {st.last ? <>Naposledy {hm(st.last.at)}{st.last.by ? ` (${st.last.by})` : ''} · {st.ok ? 'lze znovu podat' : `bezpečně znovu po ${hm(st.nextAt!)}`}</> : med.minHours ? `Dle potřeby, nejdřív po ${med.minHours} h` : 'Dle potřeby'}
       </p>
-      <button onClick={give} className="press min-h-[44px] px-3 rounded-xl font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]">Podáno teď</button>
+      <button onClick={give} className="press min-h-[44px] px-3 rounded-xl font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">Podáno teď</button>
     </div>
   );
 }

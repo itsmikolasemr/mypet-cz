@@ -30,10 +30,10 @@ export function FeedbackHost() {
   return (
     <>
       {t && (
-        <div role="status" aria-live="polite" className="fixed left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-32px)] max-w-[400px] flex items-center gap-3 rounded-2xl bg-[#2B201C] text-white px-4 py-2 shadow-float animate-up"
+        <div role="status" aria-live="polite" className="fixed left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-32px)] max-w-[400px] flex items-center gap-3 rounded-2xl bg-[#1C222A] text-white px-4 py-2 shadow-float animate-up"
           style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + var(--banner, 0px) + 96px)' }}>
           <span className="flex-1 text-[15px] py-2">{t.msg}</span>
-          {t.undo && <button onClick={() => { t.undo?.(); setT(null); toast('Vráceno zpět'); }} className="press min-h-[44px] px-3 -mr-2 font-bold text-[#FFB48A]">Zpět</button>}
+          {t.undo && <button onClick={() => { t.undo?.(); setT(null); toast('Vráceno zpět'); }} className="press min-h-[44px] px-3 -mr-2 font-bold text-[#9CC8F2]">Zpět</button>}
         </div>
       )}
       {a && (
@@ -44,7 +44,7 @@ export function FeedbackHost() {
             {a.text && <p className="text-[15px] text-muted mt-1.5">{a.text}</p>}
             <div className="flex gap-2 mt-5">
               {a.cancel !== null && <button onClick={() => close(false)} className="press flex-1 min-h-[48px] rounded-2xl font-semibold bg-ink/5 dark:bg-white/10">{a.cancel ?? 'Zrušit'}</button>}
-              <button ref={okRef} onClick={() => close(true)} className={`press flex-1 min-h-[48px] rounded-2xl font-bold text-white ${a.danger ? 'bg-red-600' : 'bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]'}`}>{a.ok ?? 'OK'}</button>
+              <button ref={okRef} onClick={() => close(true)} className={`press flex-1 min-h-[48px] rounded-2xl font-bold text-[#0F2540] ${a.danger ? 'bg-red-600' : 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]'}`}>{a.ok ?? 'OK'}</button>
             </div>
           </div>
         </div>

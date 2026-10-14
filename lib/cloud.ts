@@ -74,13 +74,13 @@ export const sharedView = (token: string) => cloud().rpc('tl_shared_view', { p_t
 export const sharedLogDose = (token: string, pet: string, reminder: string | null, med: string | null, name: string) => cloud().rpc('tl_shared_log_dose', { p_token: token, p_pet: pet, p_reminder: reminder, p_med: med, p_name: name });
 
 // ---------- Sync ----------
-type Coll = 'pets' | 'reminders' | 'visits' | 'meds' | 'allergies' | 'docs';
-const TABLE: Record<Coll, string> = { pets: 'tl_pets', reminders: 'tl_reminders', visits: 'tl_visits', meds: 'tl_meds', allergies: 'tl_allergies', docs: 'tl_documents' };
+type Coll = 'pets' | 'reminders' | 'visits' | 'meds' | 'allergies' | 'docs' | 'cards';
+const TABLE: Record<Coll, string> = { pets: 'tl_pets', reminders: 'tl_reminders', visits: 'tl_visits', meds: 'tl_meds', allergies: 'tl_allergies', docs: 'tl_documents', cards: 'tl_loyalty_cards' };
 const COLLS = Object.keys(TABLE) as Coll[];
 const SNAP = 'tlapka:sync:snap', CURSOR = 'tlapka:sync:cursor';
 type Rec = { id: string; petId?: string; history?: string[] };
 type Snap = Record<Coll, Record<string, string>>; // id -> JSON of last synced version
-const emptySnap = (): Snap => ({ pets: {}, reminders: {}, visits: {}, meds: {}, allergies: {}, docs: {} });
+const emptySnap = (): Snap => ({ pets: {}, reminders: {}, visits: {}, meds: {}, allergies: {}, docs: {}, cards: {} });
 const stable = (o: unknown) => JSON.stringify(o);
 
 export type SyncResult = { pushed: number; pulled: number; doses: number; at: string; uploaded: number; downloaded: number; pendingFiles: number };

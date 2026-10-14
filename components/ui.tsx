@@ -78,7 +78,7 @@ export const inputCls = 'w-full rounded-2xl bg-bg dark:bg-white/5 text-ink dark:
 
 export function Button({ children, variant = 'primary', className = '', ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' | 'danger' | 'soft' }) {
   const v = {
-    primary: 'bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white shadow-[0_8px_20px_-8px_rgba(232,85,58,.6)]',
+    primary: 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] shadow-[0_8px_20px_-8px_rgba(127,179,232,.6)]',
     ghost: 'border border-ink/10 dark:border-white/15 text-ink dark:text-white',
     soft: 'bg-primary/10 text-primary dark:text-primary-l',
     danger: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
@@ -150,23 +150,20 @@ export function Fab({ onClick, label }: { onClick: () => void; label: string }) 
   // Lives in the page header (not floating) so it never covers list actions or the bottom nav.
   return (
     <button onClick={onClick} aria-label={label}
-      className="fab shrink-0 w-12 h-12 rounded-full text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_10px_24px_-8px_rgba(232,85,58,.6)] flex items-center justify-center">
+      className="fab shrink-0 w-12 h-12 rounded-full text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_10px_24px_-8px_rgba(127,179,232,.6)] flex items-center justify-center">
       <Icon name="plus" className="w-6 h-6" />
     </button>
   );
 }
 
 export function Logo({ className = 'h-8' }: { className?: string }) {
+  // Final brand logo (dark grey paw tile + baby-blue dot); dark variant swaps the wordmark to light grey.
   return (
-    <svg viewBox="80 80 1820 640" className={className} role="img" aria-label="Tlapka">
-      <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FF9A5A" /><stop offset="1" stopColor="#E8553A" /></linearGradient></defs>
-      <g transform="translate(80 80) scale(0.625)">
-        <rect width="1024" height="1024" rx="230" fill="url(#lg)" />
-        <g fill="#FFF8F0"><ellipse cx="512" cy="640" rx="190" ry="160" /><ellipse cx="300" cy="430" rx="72" ry="96" transform="rotate(-25 300 430)" /><ellipse cx="430" cy="320" rx="76" ry="102" transform="rotate(-8 430 320)" /><ellipse cx="594" cy="320" rx="76" ry="102" transform="rotate(8 594 320)" /><ellipse cx="724" cy="430" rx="72" ry="96" transform="rotate(25 724 430)" /></g>
-        <path d="M512 700c-30-34-92-50-92-102 0-30 24-52 50-52 18 0 32 10 42 24 10-14 24-24 42-24 26 0 50 22 50 52 0 52-62 68-92 102z" fill="#F26B3A" />
-      </g>
-      <text x="820" y="510" fontFamily="var(--font), system-ui, sans-serif" fontWeight="700" fontSize="300" fill="currentColor" letterSpacing="-6">tlapka</text>
-      <circle cx="1810" cy="488" r="26" fill="#F26B3A" />
-    </svg>
+    <span className={`inline-flex ${className}`} role="img" aria-label="Tlapka">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/logo-light.svg" alt="" className="h-full w-auto dark:hidden" draggable={false} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/logo-dark.svg" alt="" className="h-full w-auto hidden dark:block" draggable={false} />
+    </span>
   );
 }

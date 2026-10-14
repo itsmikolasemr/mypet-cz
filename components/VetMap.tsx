@@ -145,7 +145,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         <div ref={el} className="h-[46dvh] w-full bg-ink/5" data-testid="map" />
         <div className="absolute left-3 top-3 z-[500] flex gap-2">
           <button onClick={() => setNonstop(!nonstop)} aria-pressed={nonstop}
-            className={`press rounded-full px-4 min-h-[44px] text-sm font-bold backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            className={`press rounded-full px-4 min-h-[44px] text-sm font-bold backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
             🚨 Nonstop pohotovost
           </button>
         </div>
@@ -164,7 +164,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         )}
         {shown.slice(0, 30).map((v) => (
           <Card key={v.id} onClick={() => focus(v)} className="p-4 flex items-center gap-3.5">
-            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.nonstop ? 'bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white font-bold text-sm' : 'bg-primary/10'}`}>{v.nonstop ? '24/7' : '🩺'}</div>
+            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] font-bold text-sm' : 'bg-primary/10'}`}>{v.nonstop ? '24/7' : '🩺'}</div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold truncate">{v.name}</p>
               <p className="text-[13px] text-muted truncate">{[v.dist < 1 ? `${Math.round(v.dist * 1000)} m` : `${v.dist.toFixed(1).replace('.', ',')} km`, address(v.tags)].filter(Boolean).join(' · ')}</p>
@@ -176,7 +176,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
       <Sheet open={!!sel} onClose={() => setSel(null)} title={sel?.name ?? ''}>
         {sel && (
           <div className="space-y-3">
-            {sel.nonstop && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]">{sel.tags['source:ns'] ? 'Nonstop 24/7 (ověřeno na webu kliniky)' : 'Nonstop 24/7 (dle OSM)'}</span>}
+            {sel.nonstop && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">{sel.tags['source:ns'] ? 'Nonstop 24/7 (ověřeno na webu kliniky)' : 'Nonstop 24/7 (dle OSM)'}</span>}
             <Card className="p-4 space-y-2.5 text-[15px]">
               <p><span className="text-muted text-xs block">Adresa</span>{address(t) || 'Neuvedena'}</p>
               <p><span className="text-muted text-xs block">Otevírací doba</span>{t.opening_hours ? <code className="text-sm">{t.opening_hours}</code> : 'Neuvedena v OSM'}</p>
@@ -185,7 +185,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
               <p className="text-muted text-sm">{sel.dist.toFixed(1).replace('.', ',')} km od {locNote ? 'centra Brna' : 'tebe'}</p>
             </Card>
             <div className="grid grid-cols-2 gap-2">
-              <a className="press inline-flex items-center justify-center rounded-2xl px-4 py-3.5 font-semibold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]" target="_blank" rel="noreferrer" href={`https://mapy.cz/fnc/v1/route?end=${sel.lon},${sel.lat}&routeType=car_fast`}>Navigovat (Mapy.cz)</a>
+              <a className="press inline-flex items-center justify-center rounded-2xl px-4 py-3.5 font-semibold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]" target="_blank" rel="noreferrer" href={`https://mapy.cz/fnc/v1/route?end=${sel.lon},${sel.lat}&routeType=car_fast`}>Navigovat (Mapy.cz)</a>
               <a className="press inline-flex items-center justify-center rounded-2xl px-4 py-3.5 font-semibold ring-1 ring-ink/10 dark:ring-white/15" target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&destination=${sel.lat},${sel.lon}`}>Google Maps</a>
             </div>
             {(t.phone || t['contact:phone']) && <a className="press flex items-center justify-center rounded-2xl px-4 py-3.5 font-semibold bg-primary/10 text-primary" href={`tel:${(t.phone || t['contact:phone']).split(';')[0].replace(/\s/g, '')}`}>📞 Zavolat</a>}

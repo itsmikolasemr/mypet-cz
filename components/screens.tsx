@@ -54,12 +54,17 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Card onClick={() => go('ai')} className="p-4">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-white text-xl flex items-center justify-center shadow-[0_8px_18px_-8px_rgba(232,85,58,.7)] mb-3">🩺</div>
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] text-xl flex items-center justify-center shadow-[0_8px_18px_-8px_rgba(127,179,232,.7)] mb-3">🩺</div>
               <p className="font-semibold">Aivet</p><p className="text-[13px] text-muted">Poradí, co dělat</p>
             </Card>
             <Card onClick={() => go('map')} className="p-4">
               <div className="w-11 h-11 rounded-2xl bg-primary/10 text-xl flex items-center justify-center mb-3">🗺️</div>
               <p className="font-semibold">Veteriny</p><p className="text-[13px] text-muted">V okolí i nonstop</p>
+            </Card>
+            <Card onClick={() => go('cards')} className="p-4 col-span-2 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">💳</div>
+              <span className="flex-1"><span className="font-semibold">Věrnostní karty</span><span className="block text-[13px] text-muted">{data.cards.length ? `${data.cards.length} v peněžence · ukaž u pokladny` : 'Super zoo, Zoo Bonus, Fressnapf…'}</span></span>
+              <Icon name="chev" className="w-4 h-4 text-muted" />
             </Card>
             <Card onClick={() => go('expenses')} className="p-4 col-span-2 flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">💰</div>
@@ -176,7 +181,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
       )}
       <PassButton pet={pet} />
       <div className="space-y-3 mt-3"><PassShare pet={pet} /><TravelChecklist pet={pet} /></div>
-      {ask && <button onClick={ask} className="press w-full mb-4 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_14px_30px_-14px_rgba(232,85,58,.7)]">
+      {ask && <button onClick={ask} className="press w-full mb-4 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_14px_30px_-14px_rgba(127,179,232,.7)]">
         <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">🩺</span>
         <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-white/85">Zná profil, léky i alergie – {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
       </button>}
@@ -350,7 +355,7 @@ export function CalendarScreen() {
               {days.map((d) => {
                 const inM = parse(d).getMonth() === mv, isSel = d === sel, isT = d === today(), m = byDay[d];
                 return (
-                  <button key={d} onClick={() => setSel(d)} className={`relative h-11 mx-0.5 rounded-xl text-sm font-medium transition ${isSel ? 'bg-primary-d text-white' : isT ? 'bg-primary/10 text-primary' : inM ? '' : 'text-muted'}`}>
+                  <button key={d} onClick={() => setSel(d)} className={`relative h-11 mx-0.5 rounded-xl text-sm font-medium transition ${isSel ? 'bg-primary-d text-[#0F2540]' : isT ? 'bg-primary/10 text-primary' : inM ? '' : 'text-muted'}`}>
                     {Number(d.slice(8))}
                     {m && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">{m.v > 0 && <i className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white' : 'bg-primary'}`} />}{m.r > 0 && <i className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white/70' : 'bg-amber-500'}`} />}</span>}
                   </button>
@@ -382,9 +387,9 @@ export function CalendarScreen() {
 
 /* ---------------- Settings ---------------- */
 const THEMES: { v: 'system' | 'light' | 'dark' | 'glass'; l: string; d: string; bg: string; pane: string; edge?: string; split?: boolean }[] = [
-  { v: 'system', l: 'Auto', d: 'Podle nastavení telefonu – ve dne světlý, v noci tmavý.', bg: '#FFF8F0', pane: '#FFFFFF', split: true },
-  { v: 'light', l: 'Světlý', d: 'Teplý světlý vzhled.', bg: '#FFF1E6', pane: '#FFFFFF', edge: '0 2px 6px rgba(59,42,36,.12)' },
-  { v: 'dark', l: 'Tmavý', d: 'Šetří oči i baterii v noci.', bg: '#17110E', pane: '#2a201b' },
+  { v: 'system', l: 'Auto', d: 'Podle nastavení telefonu – ve dne světlý, v noci tmavý.', bg: '#E4E5E8', pane: '#FFFFFF', split: true },
+  { v: 'light', l: 'Světlý', d: 'Teplý světlý vzhled.', bg: '#EAF3FC', pane: '#FFFFFF', edge: '0 2px 6px rgba(29,30,34,.12)' },
+  { v: 'dark', l: 'Tmavý', d: 'Šetří oči i baterii v noci.', bg: '#141518', pane: '#1C222A' },
   { v: 'glass', l: 'Sklo', d: 'Matné sklo ve stylu iOS – průsvitné vrstvy nad šedým pozadím.', bg: 'linear-gradient(180deg,#F2F3F5,#DCDFE4)', pane: 'rgba(255,255,255,.7)', edge: 'inset 0 1px 0 #fff, 0 0 0 .5px rgba(60,64,72,.18)' },
 ];
 
@@ -423,10 +428,10 @@ export function Settings() {
                 return (
                   <button key={t.v} role="radio" aria-checked={on} aria-label={`Motiv ${t.l}`} onClick={() => setTheme(t.v)} className={`press rounded-2xl p-1.5 text-center ring-2 transition ${on ? 'ring-primary' : 'ring-transparent'}`}>
                     <span aria-hidden className="relative block h-[72px] rounded-xl overflow-hidden" style={{ background: t.bg, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.08)' }}>
-                      {t.split && <span className="absolute inset-y-0 right-0 w-1/2" style={{ background: '#17110E' }} />}
+                      {t.split && <span className="absolute inset-y-0 right-0 w-1/2" style={{ background: '#141518' }} />}
                       <span className="absolute left-2 right-2 top-2 h-5 rounded-md" style={{ background: t.pane, boxShadow: t.edge }} />
                       <span className="absolute left-2 w-2/3 top-9 h-5 rounded-md" style={{ background: t.pane, boxShadow: t.edge }} />
-                      <span className="absolute right-2 bottom-2 w-3 h-3 rounded-full bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]" />
+                      <span className="absolute right-2 bottom-2 w-3 h-3 rounded-full bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]" />
                     </span>
                     <span className={`block mt-1.5 text-[13px] font-semibold ${on ? '' : 'text-muted'}`}>{t.l}</span>
                   </button>
@@ -511,10 +516,10 @@ export function Onboarding() {
   ];
   const s = slides[step];
   return (
-    <div style={{ paddingBottom: "calc(max(env(safe-area-inset-bottom), 16px) + var(--badge, 0px))" }} className="min-h-[100dvh] flex flex-col px-6 pt-safe bg-gradient-to-b from-[#FFE6D3] to-bg dark:from-[#3a2219] dark:to-bg-d">
+    <div style={{ paddingBottom: "calc(max(env(safe-area-inset-bottom), 16px) + var(--badge, 0px))" }} className="min-h-[100dvh] flex flex-col px-6 pt-safe bg-gradient-to-b from-[#DCEBFA] to-bg dark:from-[#1E2733] dark:to-bg-d">
       <div className="pt-10"><Logo className="h-10 text-ink dark:text-white" /></div>
       <div className="flex-1 flex flex-col justify-center animate-screen" key={step}>
-        <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] text-6xl flex items-center justify-center shadow-xl shadow-primary/30 mb-8">{s.e}</div>
+        <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-6xl flex items-center justify-center shadow-xl shadow-primary/30 mb-8">{s.e}</div>
         <h1 className="text-[34px] leading-tight font-bold tracking-tight">{s.t}</h1>
         <p className="text-lg text-muted mt-3">{s.d}</p>
       </div>
@@ -528,5 +533,5 @@ export function Onboarding() {
   );
 }
 
-export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses' | 'second';
+export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses' | 'second' | 'cards';
 export type { Pet };

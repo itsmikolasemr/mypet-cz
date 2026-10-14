@@ -5,6 +5,7 @@ export function sampleData(): Omit<AppData, 'settings'> {
   const t = today();
   return {
     version: 1,
+    cards: [],
     pets: [
       {
         id: 'max', name: 'Max', species: 'pes', breed: 'Labrador retriever', sex: 'samec',
