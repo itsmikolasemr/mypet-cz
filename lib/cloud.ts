@@ -74,13 +74,16 @@ export const sharedView = (token: string) => cloud().rpc('tl_shared_view', { p_t
 export const sharedLogDose = (token: string, pet: string, reminder: string | null, med: string | null, name: string) => cloud().rpc('tl_shared_log_dose', { p_token: token, p_pet: pet, p_reminder: reminder, p_med: med, p_name: name });
 
 // ---------- Sync ----------
-type Coll = 'pets' | 'reminders' | 'visits' | 'meds' | 'allergies' | 'docs' | 'cards';
-const TABLE: Record<Coll, string> = { pets: 'tl_pets', reminders: 'tl_reminders', visits: 'tl_visits', meds: 'tl_meds', allergies: 'tl_allergies', docs: 'tl_documents', cards: 'tl_loyalty_cards' };
+type Coll = 'pets' | 'reminders' | 'visits' | 'meds' | 'allergies' | 'docs' | 'cards' | 'daily';
+const TABLE: Record<Coll, string> = { pets: 'tl_pets', reminders: 'tl_reminders', visits: 'tl_visits', meds: 'tl_meds', allergies: 'tl_allergies', docs: 'tl_documents', cards: 'tl_loyalty_cards', daily: 'tl_daily' };
+/** v1.2 tables may not exist yet on an older backend – those collections are skipped instead of failing the whole sync. */
+const OPTIONAL = new Set<Coll>(['daily']);
+const missingTable = (e: { code?: string; message?: string } | null) => !!e && (e.code === '42P01' || e.code === 'PGRST205' || /does not exist|schema cache/i.test(e.message ?? ''));
 const COLLS = Object.keys(TABLE) as Coll[];
 const SNAP = 'tlapka:sync:snap', CURSOR = 'tlapka:sync:cursor';
 type Rec = { id: string; petId?: string; history?: string[] };
 type Snap = Record<Coll, Record<string, string>>; // id -> JSON of last synced version
-const emptySnap = (): Snap => ({ pets: {}, reminders: {}, visits: {}, meds: {}, allergies: {}, docs: {}, cards: {} });
+const emptySnap = (): Snap => ({ pets: {}, reminders: {}, visits: {}, meds: {}, allergies: {}, docs: {}, cards: {}, daily: {} });
 const stable = (o: unknown) => JSON.stringify(o);
 
 export type SyncResult = { pushed: number; pulled: number; doses: number; at: string; uploaded: number; downloaded: number; pendingFiles: number };
@@ -114,7 +117,8 @@ export async function syncNow(hh: string, data: AppData, apply: (f: (d: AppData)
   let pushed = 0, doses = 0;
   // 1) push (skipped when this device is not the free backup device)
   for (const k of opts.push === false ? [] : COLLS) {
-    const cur = new Map((data[k] as Rec[]).map((r) => [r.id, r]));
+    snap[k] ??= {};
+    const cur = new Map(((data[k] ?? []) as Rec[]).map((r) => [r.id, r]));
     const rows: Record<string, unknown>[] = [];
     for (const [id, r] of cur) {
       const s = stable(r);
@@ -135,7 +139,7 @@ export async function syncNow(hh: string, data: AppData, apply: (f: (d: AppData)
       }
     }
     for (const id of Object.keys(snap[k])) if (!cur.has(id)) rows.push({ household_id: hh, id, pet_id: null, data: JSON.parse(snap[k][id]), deleted: true });
-    if (rows.length) { const r = await c.from(TABLE[k]).upsert(rows, { onConflict: 'household_id,id' }); if (r.error) throw r.error; pushed += rows.length; }
+    if (rows.length) { const r = await c.from(TABLE[k]).upsert(rows, { onConflict: 'household_id,id' }); if (r.error) { if (OPTIONAL.has(k) && missingTable(r.error)) continue; throw r.error; } pushed += rows.length; }
     snap[k] = Object.fromEntries([...cur].map(([id, r]) => [id, stable(r)]));
   }
   // 2) pull
@@ -144,18 +148,18 @@ export async function syncNow(hh: string, data: AppData, apply: (f: (d: AppData)
   const remote: Partial<Record<Coll, { id: string; data: Rec; deleted: boolean }[]>> = {};
   for (const k of COLLS) {
     const r = await c.from(TABLE[k]).select('id,data,deleted,updated_at,updated_by').eq('household_id', hh).gt('updated_at', cursor).order('updated_at').limit(1000);
-    if (r.error) throw r.error;
+    if (r.error) { if (OPTIONAL.has(k) && missingTable(r.error)) continue; throw r.error; }
     const mine = (await c.auth.getUser()).data.user?.id;
     const rows = (r.data ?? []).filter((x) => x.updated_by !== mine || cursor === '1970-01-01T00:00:00Z');
     for (const x of r.data ?? []) if (x.updated_at > max) max = x.updated_at;
     if (rows.length) remote[k] = rows; pulled += rows.length;
   }
-  for (const k of COLLS) for (const x of remote[k] ?? []) { if (x.deleted) delete snap[k][x.id]; else snap[k][x.id] = stable(x.data); }
+  for (const k of COLLS) for (const x of remote[k] ?? []) { snap[k] ??= {}; if (x.deleted) delete snap[k][x.id]; else snap[k][x.id] = stable(x.data); }
   if (pulled) apply((d) => {
     const n = { ...d } as AppData & Record<Coll, Rec[]>;
     for (const k of COLLS) {
       const rows = remote[k]; if (!rows) continue;
-      const m = new Map((n[k] as Rec[]).map((r) => [r.id, r]));
+      const m = new Map(((n[k] ?? []) as Rec[]).map((r) => [r.id, r]));
       for (const x of rows) { if (x.deleted) m.delete(x.id); else m.set(x.id, x.data); }
       (n as Record<Coll, Rec[]>)[k] = [...m.values()];
     }

@@ -1,0 +1,92 @@
+-- Local verification of the v1.2 growth migration (run on a scratch Postgres with Supabase auth stubs; see docs/GROWTH.md).
+\set ON_ERROR_STOP 1
+insert into auth.users(id, email, created_at, email_confirmed_at) values
+ ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','owner@x', now() - interval '30 days', now()),
+ ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb','partner@x', now() - interval '1 day', now()),
+ ('cccccccc-cccc-cccc-cccc-cccccccccccc','stranger@x', now() - interval '1 day', now());
+create or replace function pg_temp.as_user(u uuid) returns void language plpgsql as $$ begin perform set_config('request.jwt.claim.sub', u::text, false); end $$;
+grant usage on schema tl_private to authenticated;
+-- owner creates household + pet with chip
+select pg_temp.as_user('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+set role authenticated;
+select public.tl_create_household('Domácnost', 'Majitel') as hh \gset
+insert into public.tl_pets(household_id, id, pet_id, data) values (:'hh', 'max', 'max', '{"name":"Max","microchip":"203 098 100 123 456"}');
+reset role;
+
+-- 1) chip match: stranger asks with the same chip – learns nothing, only a pending request is created
+select pg_temp.as_user('cccccccc-cccc-cccc-cccc-cccccccccccc'); set role authenticated;
+select public.tl_chip_request('203098100123456', 'Jana') as r1 \gset
+select public.tl_chip_request('999999999999999', 'Jana') as r2 \gset
+select count(*) as visible_pets from public.tl_pets \gset
+reset role;
+select case when :'r1' = 'requested' and :'r2' = 'requested' and :visible_pets = 0 then 'ok chip: same answer, no data' else 'FAIL chip' end;
+-- stranger cannot approve own request
+select pg_temp.as_user('cccccccc-cccc-cccc-cccc-cccccccccccc'); set role authenticated;
+select id as req from public.tl_pet_link_requests limit 1 \gset
+do $$ begin perform public.tl_pet_link_decide((select id from public.tl_pet_link_requests limit 1), true); raise exception 'FAIL self-approve'; exception when others then if sqlerrm like 'FAIL%' then raise; end if; end $$;
+reset role;
+-- owner approves → stranger becomes editor and can read the pet
+select pg_temp.as_user('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'); set role authenticated;
+select public.tl_pet_link_decide(:'req', true);
+reset role;
+select pg_temp.as_user('cccccccc-cccc-cccc-cccc-cccccccccccc'); set role authenticated;
+select case when count(*) = 1 then 'ok chip: approved co-owner sees pet' else 'FAIL approve' end from public.tl_pets;
+reset role;
+
+-- 3) challenge: create, join, report clamps
+select pg_temp.as_user('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'); set role authenticated;
+select (public.tl_challenge_create('5 procházek týdně', 5, 'Majitel'))->>'code' as code, (public.tl_challenge_create('x2', 3))->>'id' as cid2 \gset
+select id as cid from public.tl_challenges where code = :'code' \gset
+select public.tl_challenge_report(:'cid', 99) as clamped \gset
+reset role;
+select case when :clamped <= 21 and :clamped = least(21, 3 * extract(isodow from now() at time zone 'Europe/Prague')::int) then 'ok challenge clamp ' || :clamped else 'FAIL clamp' end;
+select pg_temp.as_user('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'); set role authenticated;
+select count(*) as before_join from public.tl_challenges \gset
+select public.tl_challenge_join(upper(:'code'), 'Partner');
+select count(*) as members from public.tl_challenge_members where challenge_id = :'cid' \gset
+reset role;
+select case when :before_join = 0 and :members = 2 then 'ok challenge join/visibility' else 'FAIL join' end;
+
+-- 4) promo: service role creates code, user redeems once, second time refused, usage cap
+insert into public.tl_promo_codes(code, creator, days, max_uses) values ('ANNA30', '@anna.a.rex', 30, 1);
+select pg_temp.as_user('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'); set role authenticated;
+select public.tl_redeem_promo('anna30')->>'ok' as p1, public.tl_redeem_promo('ANNA30')->>'reason' as p2 \gset
+reset role;
+select pg_temp.as_user('cccccccc-cccc-cccc-cccc-cccccccccccc'); set role authenticated;
+select public.tl_redeem_promo('ANNA30')->>'reason' as p3 \gset
+reset role;
+select case when :'p1' = 'true' and :'p2' = 'already' and :'p3' = 'exhausted' then 'ok promo' else 'FAIL promo ' || :'p1' || :'p2' || :'p3' end;
+select case when premium_until > now() + interval '29 days' then 'ok promo premium 30 d' else 'FAIL promo days' end from public.tl_profiles where id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+select redemptions from tl_private.promo_stats where code = 'ANNA30';
+
+-- 8) referral: fresh account claims owner's code → +14 d now; inviter rewarded only after 7 active days
+select pg_temp.as_user('cccccccc-cccc-cccc-cccc-cccccccccccc'); set role authenticated;
+select public.tl_referral_claim('aaaaaaaaaa')->>'ok' as rc, public.tl_referral_claim('aaaaaaaaaa')->>'reason' as rc2 \gset
+reset role;
+select case when :'rc' = 'true' and :'rc2' = 'already' then 'ok referral claim' else 'FAIL referral ' || :'rc' || :'rc2' end;
+select public.tl_referral_settle() as settled_early \gset
+-- age the invitee: account 8 days old, own household with a pet updated after day 6
+update auth.users set created_at = now() - interval '8 days' where id = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+update public.tl_referrals set created_at = now() - interval '8 days';
+insert into public.tl_households(id, name, created_by) values ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'H2', 'cccccccc-cccc-cccc-cccc-cccccccccccc');
+insert into public.tl_household_members values ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'owner', 'J', now());
+insert into public.tl_pets(household_id, id, data) values ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'bara', '{"name":"Bára"}');
+select public.tl_referral_settle() as settled \gset
+select case when :settled_early = 0 and :settled = 1 then 'ok referral settles after 7 active days' else 'FAIL settle ' || :settled_early || '/' || :settled end;
+select case when sum(days) = 30 then 'ok inviter +30 d' else 'FAIL inviter days' end from public.tl_reward_ledger where user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+
+-- cap: rewards (non-promo) never exceed 60 days / year
+select tl_private.grant_days('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'referral', 'r2', 30) as g2, tl_private.grant_days('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'referral', 'r3', 30) as g3,
+       tl_private.grant_days('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'referral', 'r3', 30) as g3again \gset
+select case when :g2 = 30 and :g3 = 0 and :g3again = 0 then 'ok 60-day cap + idempotent' else 'FAIL cap ' || :g2 || '/' || :g3 end;
+
+-- 7) badges: family is verified from server data (owner has an editor) → no reward for Tečka; unknown evidence → cosmetic only
+select pg_temp.as_user('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'); set role authenticated;
+select public.tl_claim_badge('family')->>'verified' as fam, public.tl_claim_badge('party3')->>'verified' as party \gset
+reset role;
+select case when :'fam' = 'true' and :'party' = 'false' then 'ok badges server-verified' else 'FAIL badges' end;
+-- anon can't call anything
+set role anon;
+do $$ begin perform public.tl_redeem_promo('X'); raise exception 'FAIL anon'; exception when insufficient_privilege then null; end $$;
+reset role;
+select 'ok anon blocked';

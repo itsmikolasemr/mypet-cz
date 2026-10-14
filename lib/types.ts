@@ -18,6 +18,8 @@ export interface Pet {
   createdAt: string;
   /** Předávací karta pro hlídače */
   care?: PetCare;
+  /** v1.2: vzpomínkový režim – mazlíček zemřel; odznaky, série a výzvy se zastaví, sbírka zůstane */
+  memorial?: string;
 }
 
 export interface Feeding { id: string; what: string; amount: string; timesPerDay: number; times: string; notes?: string }
@@ -76,7 +78,15 @@ export interface AppData {
   trash?: TrashItem[];
   /** v1.2: denní deník (krmení, venčení) – zdroj pro Tlapka Den a Wrapped */
   daily?: DailyEntry[];
-  settings: { theme: Theme; onboarded: boolean; notify: boolean; notifyHour: number; dayBefore?: boolean; weekly?: boolean };
+  /** v1.2: odemčené odznaky (zdroj pravdy pro odměny je server – tl_claim_badge) */
+  badges?: EarnedBadge[];
+  /** v1.2: kamarádi mazlíčků přidaní přes QR ve výběhu */
+  friends?: PetFriend[];
+  /** v1.2: check-iny ve výbězích (GPS ≤ 100 m, max 1 / výběh / den) */
+  checkins?: ParkCheckin[];
+  /** v1.2: drobné příznaky pro odznaky (sdílený Wrapped, sbalený kufr, výlet do zahraničí, plán na Silvestr…) */
+  flags?: Record<string, string>;
+  settings: { theme: Theme; onboarded: boolean; notify: boolean; notifyHour: number; dayBefore?: boolean; weekly?: boolean; badges?: boolean; myName?: string };
 }
 
 export type TrashColl = 'pets' | 'reminders' | 'visits' | 'docs' | 'meds' | 'allergies' | 'cards';
@@ -135,3 +145,7 @@ export interface LoyaltyCard {
 /** v1.2 – one ticked daily task (feeding / walk). Meds keep using Medication.given. */
 export type DailyKind = 'feed' | 'walk';
 export interface DailyEntry { id: string; petId: string; kind: DailyKind; day: string; slot: number; at: string; minutes?: number; place?: string; by?: string }
+
+export interface EarnedBadge { id: string; petId: string; at: string; seen?: boolean }
+export interface PetFriend { id: string; name: string; species: Species; birthDate?: string; owner?: string; badges?: string[]; avatar?: string; addedAt: string; place?: string }
+export interface ParkCheckin { id: string; petId: string; parkId: string; name: string; lat: number; lon: number; region?: string; at: string }

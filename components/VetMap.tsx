@@ -6,9 +6,10 @@ import 'leaflet/dist/leaflet.css';
 import { Button, Card, Icon, PageHeader, PawLoader, Sheet } from './ui';
 import { API_BASE } from '@/lib/api';
 import { useStore } from '@/lib/store';
+import { getLang } from '@/lib/i18n';
 import type { CardStore } from '@/lib/types';
 
-type Vet = { id: string; lat: number; lon: number; name: string; tags: Record<string, string>; dist: number; nonstop: boolean; park?: boolean; shop?: boolean };
+type Vet = { id: string; lat: number; lon: number; name: string; tags: Record<string, string>; dist: number; nonstop: boolean; park?: boolean; shop?: boolean; friendly?: boolean };
 const SVG = {"shop": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3.5 9.5 5 4.5h14l1.5 5M3.5 9.5a2.8 2.8 0 0 0 5.6 0 2.8 2.8 0 0 0 5.8 0 2.8 2.8 0 0 0 5.6 0M5 11.5V20h14v-8.5M10 20v-5h4v5\"/></svg>", "park": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3.5 17 11h-2.5l3.5 5H6l3.5-5H7ZM12 16v4.5\"/></svg>", "vet": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 3.5H5v5a4 4 0 0 0 8 0v-5h-1M9 12.5v2a5 5 0 0 0 10 0M17 14.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z\"/></svg>"} as const;
 const PRAHA = { lat: 50.0755, lon: 14.4378 };
 const ENDPOINTS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
@@ -48,7 +49,7 @@ export async function searchCity(q: string): Promise<{ name: string; lat: number
   const local = CITIES.filter(([n]) => fold(n).startsWith(f) || fold(n).includes(' ' + f)).slice(0, 6).map(([name, lat, lon]) => ({ name, lat, lon }));
   if (local.length) return local;
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=cz&limit=5&accept-language=cs&q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(6000) });
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=${getLang()}&q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(6000) });
     return ((await r.json()) as { display_name: string; lat: string; lon: string }[]).map((x) => ({ name: x.display_name.split(',').slice(0, 2).join(','), lat: +x.lat, lon: +x.lon }));
   } catch { return []; }
 }
@@ -86,6 +87,31 @@ export const czHours = (oh: string) => oh === '24/7' ? ['Nonstop 24/7'] : oh.spl
 export const CHAIN_NAME: Record<string, string> = { superzoo: 'Super zoo', petcenter: 'Pet Center', fressnapf: 'Fressnapf / Maxi Zoo', zoobonus: 'Zoo Bonus', hulin: 'Krmiva Hulín' };
 export const parkFacts = (t: Record<string, string>) => [...new Set(PARK_FACTS.map(([k, f]) => (t[k] ? f(t[k]) : '')).filter(Boolean))];
 
+/** Rough CZ bounding box – outside it the map switches to Cestovní režim (live OSM worldwide, no bundled CZ lists). */
+export const inCZ = (c: { lat: number; lon: number }) => c.lat > 48.55 && c.lat < 51.06 && c.lon > 12.09 && c.lon < 18.86;
+const FRIENDLY_KIND: Record<string, string> = { cafe: 'Kavárna', restaurant: 'Restaurace', bar: 'Bar', pub: 'Hospoda', biergarten: 'Zahrádka', fast_food: 'Bistro', hotel: 'Hotel', guest_house: 'Penzion', hostel: 'Hostel', apartment: 'Apartmán', motel: 'Motel', camp_site: 'Kemp' };
+export const friendlyKind = (t: Record<string, string>) => FRIENDLY_KIND[t.amenity ?? t.tourism ?? ''] ?? 'Místo';
+export const friendlyRule = (t: Record<string, string>) => (t['source:tlapka'] ? 'Ověřeno Tlapkou' : t.dog === 'leashed' ? 'Pes na vodítku' : t.dog === 'outside' ? 'Pes jen venku / na zahrádce' : 'Psi vítáni');
+let curatedP: Promise<[number, number, Record<string, string>, string][]> | null = null;
+/** Pet-friendly places: OSM dog=yes|leashed|outside on cafés, restaurants, pubs and accommodation + curated list (public/petfriendly-curated.json). */
+async function liveFriendly(c: { lat: number; lon: number }, radius: number): Promise<Vet[]> {
+  const q = `[out:json][timeout:25];(nwr["dog"~"^(yes|leashed|outside)$"]["amenity"~"^(cafe|restaurant|bar|pub|biergarten|fast_food)$"](around:${radius},${c.lat},${c.lon});nwr["dog"~"^(yes|leashed)$"]["tourism"~"^(hotel|guest_house|hostel|apartment|motel|camp_site)$"](around:${radius},${c.lat},${c.lon}););out center tags 200;`;
+  curatedP ??= fetch('/petfriendly-curated.json').then((r) => (r.ok ? r.json() : [])).catch(() => []);
+  const curated = (await curatedP).map(([lat, lon, tags, id]) => ({ id, lat, lon, tags: { ...tags, 'source:tlapka': '1' }, name: tags.name ?? 'Místo', dist: km(c, { lat, lon }), nonstop: false, friendly: true })).filter((v) => v.dist * 1000 <= radius);
+  let live: Vet[] = [];
+  for (const ep of ENDPOINTS) {
+    try {
+      const r = await fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: AbortSignal.timeout(15000) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = (await r.json()) as Raw;
+      live = j.elements.flatMap((e) => { const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon, tags = e.tags ?? {}; return lat == null || lon == null || !tags.name ? [] : [{ id: `${e.type}/${e.id}`, lat, lon, tags, name: tags.name, dist: km(c, { lat, lon }), nonstop: false, friendly: true }]; });
+      break;
+    } catch { /* next endpoint */ }
+  }
+  const ids = new Set(curated.map((v) => v.id));
+  return [...curated, ...live.filter((v) => !ids.has(v.id))].sort((a, b) => a.dist - b.dist);
+}
+
 /** Live refresh: browser → Overpass (de, kumi), then optional /api/vets proxy. */
 async function liveVets(c: { lat: number; lon: number }, radius: number): Promise<Vet[]> {
   const q = `[out:json][timeout:25];nwr["amenity"="veterinary"](around:${radius},${c.lat},${c.lon});out center tags;`;
@@ -118,11 +144,15 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   const [parksOn, setParksOn] = useState(false);
   const [parks, setParks] = useState<Vet[]>([]);
   const [shopsOn, setShopsOn] = useState(false);
+  const [friendlyOn, setFriendlyOn] = useState(false);
+  const [friendly, setFriendly] = useState<Vet[] | null>(null);
   const [shops, setShops] = useState<Vet[]>([]);
   const { data } = useStore();
-  const setNonstop = (v: boolean) => { setNonstopRaw(v); if (v) { setParksOn(false); setShopsOn(false); } };
-  const toggleParks = () => { setParksOn((x) => !x); setNonstopRaw(false); setShopsOn(false); };
-  const toggleShops = () => { setShopsOn((x) => !x); setNonstopRaw(false); setParksOn(false); };
+  const setNonstop = (v: boolean) => { setNonstopRaw(v); if (v) { setParksOn(false); setShopsOn(false); setFriendlyOn(false); } };
+  const toggleParks = () => { setParksOn((x) => !x); setNonstopRaw(false); setShopsOn(false); setFriendlyOn(false); };
+  const toggleShops = () => { setShopsOn((x) => !x); setNonstopRaw(false); setParksOn(false); setFriendlyOn(false); };
+  const toggleFriendly = () => { setFriendlyOn((x) => !x); setNonstopRaw(false); setParksOn(false); setShopsOn(false); };
+  const abroad = !!center && !inCZ(center);
   const [sel, setSel] = useState<Vet | null>(null);
   const [stale, setStale] = useState(false);
 
@@ -139,12 +169,19 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   const [allNs, setAllNs] = useState<Vet[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const shown = useMemo(() => {
+    if (friendlyOn) return (friendly ?? []).slice(0, 40);
     if (shopsOn) { const near = shops.filter((v) => v.dist <= 10); return near.length >= 3 ? near : shops.slice(0, 10); }
     if (parksOn) { const near = parks.filter((v) => v.dist <= 15); return near.length >= 3 ? near : parks.slice(0, 10); }
     if (!nonstop) return vets;
     const m = new Map([...allNs, ...vets.filter((v) => v.nonstop)].map((v) => [v.id, v]));
     return [...m.values()].sort((a, b) => a.dist - b.dist).slice(0, 15);
-  }, [vets, nonstop, allNs, parksOn, parks, shopsOn, shops]);
+  }, [vets, nonstop, allNs, parksOn, parks, shopsOn, shops, friendlyOn, friendly]);
+  useEffect(() => {
+    if (!friendlyOn || !center || friendly != null) return;
+    let off = false;
+    (async () => { let x = await liveFriendly(center, 3000).catch(() => [] as Vet[]); if (x.length < 3) x = await liveFriendly(center, 8000).catch(() => x); if (!off) setFriendly(x); })();
+    return () => { off = true; };
+  }, [friendlyOn, center, friendly]);
   useEffect(() => { if (shopsOn && center && !shops.length) bundledShops(center).then(setShops).catch(() => {}); }, [shopsOn, center, shops.length]);
   useEffect(() => { if (parksOn && center && !parks.length) bundledParks(center).then(setParks).catch(() => {}); }, [parksOn, center, parks.length]);
   const load = useCallback(async (c: { lat: number; lon: number }) => {
@@ -181,7 +218,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
       }
     })();
     if (map.current) map.current.setView([center.lat, center.lon], 13);
-    setShops([]); setParks([]);
+    setShops([]); setParks([]); setFriendly(null);
     load(center);
     return () => { cancelled = true; };
   }, [center, load]);
@@ -194,34 +231,38 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
       const L = (await import('leaflet')).default;
       layer.current.clearLayers();
       shown.forEach((v) => {
-        L.marker([v.lat, v.lon], { icon: L.divIcon({ className: '', html: v.shop ? `<div class="shop-pin${v.tags.chain ? ' chain' : ''}">${SVG.shop}</div>` : v.park ? `<div class="park-pin">${SVG.park}</div>` : `<div class="vet-pin ${v.nonstop ? 'ns' : ''}">${v.nonstop ? '<span>24</span>' : SVG.vet}</div>`, iconSize: [44, 44], iconAnchor: [22, 44] }) })
+        L.marker([v.lat, v.lon], { icon: L.divIcon({ className: '', html: v.friendly ? `<div class="friendly-pin">${SVG.shop}</div>` : v.shop ? `<div class="shop-pin${v.tags.chain ? ' chain' : ''}">${SVG.shop}</div>` : v.park ? `<div class="park-pin">${SVG.park}</div>` : `<div class="vet-pin ${v.nonstop ? 'ns' : ''}">${v.nonstop ? '<span>24</span>' : SVG.vet}</div>`, iconSize: [44, 44], iconAnchor: [22, 44] }) })
           .on('click', () => setSel(v)).addTo(layer.current!);
       });
-      if ((nonstop || parksOn || shopsOn) && shown.length && map.current && center) {
+      if ((nonstop || parksOn || shopsOn || friendlyOn) && shown.length && map.current && center) {
         const pts = [[center.lat, center.lon] as [number, number], ...shown.slice(0, 3).map((v) => [v.lat, v.lon] as [number, number])];
         map.current.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [30, 90], paddingBottomRight: [30, 40], maxZoom: 14, animate: !matchMedia('(prefers-reduced-motion: reduce)').matches });
       }
     })();
-  }, [shown, nonstop, parksOn, shopsOn, center, mapReady]);
+  }, [shown, nonstop, parksOn, shopsOn, friendlyOn, center, mapReady]);
 
   const focus = (v: Vet) => { map.current?.setView([v.lat, v.lon], 16, { animate: true }); setSel(v); };
   const t = sel?.tags ?? {};
   return (
     <div>
-      <PageHeader title={shopsOn ? 'Zverimexy v okolí' : parksOn ? 'Výběhy pro psy' : nonstop ? 'Nonstop pohotovost' : 'Veteriny v okolí'} sub={locNote || 'Podle tvé polohy'} />
+      <PageHeader title={friendlyOn ? 'Se psem vítán' : shopsOn ? 'Zverimexy v okolí' : parksOn ? 'Výběhy pro psy' : nonstop ? 'Nonstop pohotovost' : 'Veteriny v okolí'} sub={locNote || 'Podle tvé polohy'} />
+      {abroad && <p data-travel className="mb-3 rounded-2xl px-4 py-3 text-[13px] bg-primary/10 ring-1 ring-primary/30"><b>Cestovní režim</b> · jsi mimo Česko – veteriny a nonstop hledám živě v OpenStreetMap kolem tebe. Mezinárodní tísňová linka 112.</p>}
       <CitySearch onPick={(c) => { setLocNote(`Zobrazuji ${c.name}`); setSel(null); setCenter({ lat: c.lat, lon: c.lon }); }} />
       <div className="relative rounded-[26px] overflow-hidden shadow-float dark:shadow-float-d ring-1 ring-ink/5 dark:ring-white/10">
         <div ref={el} className="h-[46dvh] w-full bg-ink/5" data-testid="map" />
-        <div className="absolute inset-x-2 top-2 z-[500] grid grid-cols-3 gap-1.5">
+        <div className="absolute inset-x-2 top-2 z-[500] flex gap-1.5 overflow-x-auto no-scrollbar" role="toolbar" aria-label="Filtry mapy">
           <button onClick={() => setNonstop(!nonstop)} aria-pressed={nonstop}
-            className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            className={`press shrink-0 rounded-full px-3 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
             <GT t="🚨 Nonstop" /></button>
           <button onClick={toggleParks} aria-pressed={parksOn} data-filter="parks"
-            className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${parksOn ? 'bg-[#2F7D4A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            className={`press shrink-0 rounded-full px-3 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${parksOn ? 'bg-[#2F7D4A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
             <GT t="🌳 Výběhy" /></button>
           <button onClick={toggleShops} aria-pressed={shopsOn} data-filter="shops"
-            className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${shopsOn ? 'bg-[#3A3D43] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            className={`press shrink-0 rounded-full px-3 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${shopsOn ? 'bg-[#3A3D43] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
             <GT t="🛍️ Zverimexy" /></button>
+          <button onClick={toggleFriendly} aria-pressed={friendlyOn} data-filter="friendly"
+            className={`press shrink-0 rounded-full px-3 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${friendlyOn ? 'bg-[#7FB3E8] text-[#0F2540] ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            <GT t="☕ Se psem" /></button>
         </div>
         {state === 'loading' && <div className="absolute inset-x-0 bottom-3 z-[500] mx-auto w-max rounded-full bg-surface/90 dark:bg-surface-d/90 backdrop-blur px-4 py-2 text-sm shadow-card animate-fade"><PawLoader label="Hledám veteriny…" className="w-5 h-5" /></div>}
       </div>
@@ -232,8 +273,9 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
           <Card className="p-4 text-center"><p className="font-semibold">Nepodařilo se načíst data</p><p className="text-sm text-muted mt-1">Mapová služba OpenStreetMap (Overpass) je teď přetížená. Zkus to za pár minut.</p><Button variant="soft" className="mt-3" onClick={() => center && load(center)}>Zkusit znovu</Button></Card>
         )}
         {stale && <p className="text-[12px] text-muted px-1">Ukazuji uložený seznam klinik, čerstvá data se načítají na pozadí.</p>}
-        {state === 'ok' && !shown.length && (
-          <Card className="p-4 text-center text-sm text-muted">{shopsOn ? 'V okolí není v OSM žádný zverimex.' : parksOn ? 'V okolí není v OSM žádný psí výběh.' : nonstop ? 'V okolí není v OSM žádná ordinace označená jako nonstop (24/7). Zkus vypnout filtr a obvolat nejbližší kliniky.' : 'V okolí jsme nic nenašli.'}</Card>
+        {friendlyOn && friendly == null && <p className="text-[13px] text-muted px-1"><PawLoader label="Hledám kavárny a ubytování se psem…" className="w-5 h-5" /></p>}
+        {state === 'ok' && !shown.length && !(friendlyOn && friendly == null) && (
+          <Card className="p-4 text-center text-sm text-muted">{friendlyOn ? 'V okolí zatím nikdo v OSM neoznačil podnik jako dog-friendly. Znáš nějaký? Přidej mu v OpenStreetMap značku dog=yes.' : shopsOn ? 'V okolí není v OSM žádný zverimex.' : parksOn ? 'V okolí není v OSM žádný psí výběh.' : nonstop ? 'V okolí není v OSM žádná ordinace označená jako nonstop (24/7). Zkus vypnout filtr a obvolat nejbližší kliniky.' : 'V okolí jsme nic nenašli.'}</Card>
         )}
         {shown.slice(0, 30).map((v) => (
           <Card key={v.id} onClick={() => focus(v)} className="p-4 flex items-center gap-3.5">
@@ -241,7 +283,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
             <div className="min-w-0 flex-1">
               <p className="font-semibold truncate">{v.name}</p>
               {!v.park && (() => { const o = openNow(v.tags); return o == null ? null : <p data-open={o ? 'yes' : 'no'} className={`text-[12px] font-bold ${o ? 'text-[#1F7A43] dark:text-[#6FD39A]' : 'text-muted'}`}>{o ? (v.nonstop ? 'Otevřeno teď · nonstop' : 'Otevřeno teď') : 'Teď zavřeno'}</p>; })()}
-              <p className="text-[13px] text-muted truncate">{[v.dist < 1 ? `${Math.round(v.dist * 1000)} m` : `${v.dist.toFixed(1).replace('.', ',')} km`, v.park ? parkFacts(v.tags).join(', ') : address(v.tags), v.shop && data.cards.some((c) => c.store === v.tags.chain) ? '💳 máš kartu' : ''].filter(Boolean).join(' · ')}</p>
+              <p className="text-[13px] text-muted truncate">{[v.dist < 1 ? `${Math.round(v.dist * 1000)} m` : `${v.dist.toFixed(1).replace('.', ',')} km`, v.friendly ? `${friendlyKind(v.tags)} · ${friendlyRule(v.tags)}` : v.park ? parkFacts(v.tags).join(', ') : address(v.tags), v.shop && data.cards.some((c) => c.store === v.tags.chain) ? '💳 máš kartu' : ''].filter(Boolean).join(' · ')}</p>
             </div>
             {(() => { const ph = (v.tags.phone || v.tags['contact:phone'] || '').split(';')[0].replace(/\s+/g, ''); return ph && !v.park ? <a href={`tel:${ph}`} data-call onClick={(e) => e.stopPropagation()} aria-label={`Zavolat ${v.name}`} className="press shrink-0 min-h-[44px] px-3.5 rounded-full flex items-center gap-1.5 text-[13px] font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]"><Icon name="phone" className="w-4 h-4" />Zavolat</a> : <Icon name="chev" className="w-4 h-4 text-muted" />; })()}
           </Card>
@@ -257,6 +299,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
                 <button className="press rounded-2xl px-3.5 min-h-[44px] font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]" onClick={() => { sessionStorage.setItem('tlapka:openCard', card.id); history.pushState(null, '', '#cards'); dispatchEvent(new PopStateEvent('popstate')); }} data-open-card>Ukázat</button>
               </Card>}
             </>); })()}
+            {sel.friendly && <span data-friendly-rule className="inline-block rounded-full px-3 py-1 text-xs font-bold bg-primary/15 text-[#245B92] dark:text-[#A9CEF3]">{friendlyKind(sel.tags)} · {friendlyRule(sel.tags)}</span>}
             {sel.nonstop && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">{sel.tags['source:ns'] ? 'Nonstop 24/7 (ověřeno na webu kliniky)' : 'Nonstop 24/7 (dle OSM)'}</span>}
             <Card className="p-4 space-y-2.5 text-[14px]">
               {sel.park ? <p data-park-facts><span className="text-muted text-xs block">Výběh</span>{parkFacts(t).join(' · ') || 'Bez dalších údajů v OSM'}{t.description ? <span className="block text-sm text-muted mt-1">{t.description}</span> : null}</p> : <p><span className="text-muted text-xs block">Adresa</span>{address(t) || 'Neuvedena'}</p>}
