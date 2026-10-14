@@ -3,7 +3,7 @@ import { ask, notice, toast } from './feedback';
 import { useEffect, useRef, useState } from 'react';
 import type { DocMeta, Pet, Reminder, Visit } from '@/lib/types';
 import { useStore } from '@/lib/store';
-import { MAX_DOC_BYTES, fmtDate, fmtShort, intervalName, parse, relDue, status, today, typeOf, uid } from '@/lib/utils';
+import { MAX_DOC_BYTES, fmtDate, fmtShort, intervalName, parse, relDue, status, today, addDays, typeOf, uid } from '@/lib/utils';
 import { loadBlob, saveBlob } from '@/lib/docs';
 import { Avatar, Button, Card, Field, Icon, Sheet, StatusPill, inputCls } from './ui';
 
@@ -24,7 +24,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true, hint = false }: { 
     setPop(true);
     try { navigator.vibrate?.([12, 30, 18]); } catch {}
     const prev = r;
-    setTimeout(() => { completeReminder(r.id); setPop(false); setDx(0); toast(`${r.title} – hotovo ✓`, () => saveReminder(prev)); }, 380);
+    setTimeout(() => { completeReminder(r.id); setPop(false); setDx(0); toast(r.intervalDays > 0 ? `${r.title} ✓ · další ${new Date(addDays(today(), r.intervalDays)).toLocaleDateString('cs-CZ')} (počítáno od dneška)` : `${r.title} – hotovo ✓`, () => saveReminder(prev)); }, 380);
   };
   const can = s !== 'done';
   const onDown = (e: React.PointerEvent) => {

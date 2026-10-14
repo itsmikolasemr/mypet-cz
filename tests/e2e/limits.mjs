@@ -1,0 +1,15 @@
+import { createClient } from '@supabase/supabase-js';
+const URL = 'https://owveqkchmcutoqlsjlyb.supabase.co', KEY = 'sb_publishable_EDy4Im3JrXxTsRYd62GY1A_J3gw_tcY', PW = process.env.TLAPKA_TEST_PW;
+const as = async (e) => { const c = createClient(URL, KEY, { auth: { persistSession: false }, realtime: { transport: class { constructor() {} close() {} } } }); const r = await c.auth.signInWithPassword({ email: e, password: PW }); if (r.error) throw r.error; return c; };
+const A = await as('tlapka-e2e-a@example.com'), B = await as('tlapka-e2e-b@example.com'), C = await as('tlapka-e2e-c@example.com');
+const hh = (await A.from('tl_household_members').select('household_id').limit(1).single()).data.household_id;
+const inv = async () => (await A.from('tl_invites').insert({ household_id: hh }).select('code').single()).data.code;
+const R = {};
+R.bJoin = (await B.rpc('tl_join', { p_code: await inv(), p_display: 'Petr' })).error?.message ?? 'ok';
+R.cJoinFree = (await C.rpc('tl_join', { p_code: await inv(), p_display: 'Babička' })).error?.message ?? 'ok';
+R.sitterFree = (await A.from('tl_share_links').insert({ household_id: hh, pet_ids: ['p1'], token_hash: 'x' + Date.now(), scope: 'today', expires_at: new Date(Date.now() + 864e5).toISOString() })).error?.message ?? 'ok';
+R.pass30Free = (await A.from('tl_share_links').insert({ household_id: hh, pet_ids: ['p1'], token_hash: 'y' + Date.now(), scope: 'pass', expires_at: new Date(Date.now() + 20 * 864e5).toISOString() })).error?.message ?? 'ok';
+R.uploadFree = (await A.storage.from('tl-docs').upload(`${hh}/t1`, new Blob(['x']), { upsert: true })).error?.message ?? 'ok';
+R.cReadsBeforeJoin = (await C.from('tl_pets').select('id').eq('household_id', hh)).data?.length;
+R.selfPremium = (await A.from('tl_profiles').update({ is_premium: true }).eq('id', (await A.auth.getUser()).data.user.id).select()).data?.length ?? 'err';
+console.log(JSON.stringify({ hh, ...R }));

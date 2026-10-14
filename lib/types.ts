@@ -53,8 +53,12 @@ export interface AppData {
   docs: DocMeta[];
   meds: Medication[];
   allergies: Allergy[];
+  trash?: TrashItem[];
   settings: { theme: Theme; onboarded: boolean; notify: boolean; notifyHour: number };
 }
+
+export type TrashColl = 'pets' | 'reminders' | 'visits' | 'docs' | 'meds' | 'allergies';
+export interface TrashItem { coll: TrashColl; item: { id: string } & Record<string, unknown>; at: string; group: string }
 
 export interface DocMeta {
   id: string;

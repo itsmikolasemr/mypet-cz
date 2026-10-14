@@ -1,5 +1,6 @@
 'use client';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import type { TrashColl, TrashItem } from './types';
 import type { Allergy, AppData, DocMeta, Medication, Pet, Reminder, Visit } from './types';
 import { deleteBlob, loadBlob } from './docs';
 import { syncNotifications } from './notify';
@@ -21,8 +22,29 @@ export function validate(x: unknown): AppData | null {
     docs: Array.isArray(d.docs) ? d.docs : [],
     meds: Array.isArray(d.meds) ? d.meds : [],
     allergies: Array.isArray(d.allergies) ? d.allergies : [],
+    trash: Array.isArray(d.trash) ? d.trash : [],
     settings: { theme: d.settings?.theme ?? 'system', onboarded: true, notify: !!d.settings?.notify, notifyHour: d.settings?.notifyHour ?? 9 },
   };
+}
+
+const TRASH_COLLS: TrashColl[] = ['pets', 'reminders', 'visits', 'docs', 'meds', 'allergies'];
+export const TRASH_DAYS = 30;
+function withTrash(prev: AppData, next: AppData): AppData {
+  if (prev === next) return next;
+  const at = new Date().toISOString(), group = Math.random().toString(36).slice(2, 10);
+  const add: TrashItem[] = [];
+  for (const k of TRASH_COLLS) {
+    const a = prev[k] as { id: string }[], b = next[k] as { id: string }[];
+    if (a === b) continue;
+    const ids = new Set(b.map((x) => x.id));
+    for (const x of a) if (!ids.has(x.id)) add.push({ coll: k, item: x as TrashItem['item'], at, group });
+  }
+  const cutoff = Date.now() - TRASH_DAYS * 864e5;
+  const kept = (next.trash ?? []).filter((t) => Date.parse(t.at) > cutoff);
+  (next.trash ?? []).forEach((t) => { if (t.coll === 'docs' && Date.parse(t.at) <= cutoff) deleteBlob(t.item.id).catch(() => {}); });
+  if (!add.length && kept.length === (next.trash ?? []).length) return next;
+  // trashing a photo-heavy pet: drop the inline photo copy to keep localStorage small
+  return { ...next, trash: [...add.map((t) => (t.coll === 'pets' ? { ...t, item: { ...t.item, photo: undefined } } : t)), ...kept].slice(0, 300) };
 }
 
 function useStoreImpl() {
@@ -66,18 +88,19 @@ function useStoreImpl() {
     return () => m.removeEventListener('change', apply);
   }, [data.settings.theme, data.pets]);
 
-  const upd = useCallback((f: (d: AppData) => AppData) => setData((d) => f(d)), []);
+  // Every removal lands in a 30-day trash (grouped per action, e.g. pet + its records). Files stay on device until purge.
+  const upd = useCallback((f: (d: AppData) => AppData) => setData((d) => withTrash(d, f(d))), []);
 
   return {
     data, ready,
     savePet: (p: Pet) => upd((d) => ({ ...d, pets: d.pets.some((x) => x.id === p.id) ? d.pets.map((x) => (x.id === p.id ? p : x)) : [...d.pets, p] })),
-    deletePet: (id: string) => upd((d) => { d.docs.filter((x) => x.petId === id).forEach((x) => deleteBlob(x.id).catch(() => {})); return { ...d, docs: d.docs.filter((x) => x.petId !== id), meds: d.meds.filter((x) => x.petId !== id), allergies: d.allergies.filter((x) => x.petId !== id), pets: d.pets.filter((p) => p.id !== id), reminders: d.reminders.filter((r) => r.petId !== id), visits: d.visits.filter((v) => v.petId !== id) }; }),
+    deletePet: (id: string) => upd((d) => { return { ...d, docs: d.docs.filter((x) => x.petId !== id), meds: d.meds.filter((x) => x.petId !== id), allergies: d.allergies.filter((x) => x.petId !== id), pets: d.pets.filter((p) => p.id !== id), reminders: d.reminders.filter((r) => r.petId !== id), visits: d.visits.filter((v) => v.petId !== id) }; }),
     saveMed: (m: Medication) => upd((d) => ({ ...d, meds: d.meds.some((x) => x.id === m.id) ? d.meds.map((x) => (x.id === m.id ? m : x)) : [...d.meds, m] })),
     deleteMed: (id: string) => upd((d) => ({ ...d, meds: d.meds.filter((x) => x.id !== id) })),
     saveAllergy: (a: Allergy) => upd((d) => ({ ...d, allergies: d.allergies.some((x) => x.id === a.id) ? d.allergies.map((x) => (x.id === a.id ? a : x)) : [...d.allergies, a] })),
     deleteAllergy: (id: string) => upd((d) => ({ ...d, allergies: d.allergies.filter((x) => x.id !== id) })),
     addDoc: (m: DocMeta) => upd((d) => ({ ...d, docs: [...d.docs, m] })),
-    deleteDoc: (id: string) => { deleteBlob(id).catch(() => {}); upd((d) => ({ ...d, docs: d.docs.filter((x) => x.id !== id) })); },
+    deleteDoc: (id: string) => { upd((d) => ({ ...d, docs: d.docs.filter((x) => x.id !== id) })); },
     setNotify: (notify: boolean, notifyHour?: number) => upd((d) => ({ ...d, settings: { ...d.settings, notify, notifyHour: notifyHour ?? d.settings.notifyHour } })),
     addWeight: (petId: string, kg: number, date: string) => upd((d) => ({ ...d, pets: d.pets.map((p) => (p.id === petId ? { ...p, weights: [...p.weights, { id: uid(), date, kg }].sort((a, b) => a.date.localeCompare(b.date)) } : p)) })),
     deleteWeight: (petId: string, wid: string) => upd((d) => ({ ...d, pets: d.pets.map((p) => (p.id === petId ? { ...p, weights: p.weights.filter((w) => w.id !== wid) } : p)) })),
@@ -104,6 +127,13 @@ function useStoreImpl() {
       setData({ ...x, docs });
     },
     applyRemote: (f: (d: AppData) => AppData) => upd(f),
+    restoreTrash: (group: string) => setData((d) => {
+      const items = (d.trash ?? []).filter((t) => t.group === group);
+      const n = { ...d, trash: (d.trash ?? []).filter((t) => t.group !== group) } as AppData;
+      for (const t of items) { const arr = n[t.coll] as { id: string }[]; if (!arr.some((x) => x.id === t.item.id)) (n as unknown as Record<string, unknown[]>)[t.coll] = [...arr, t.item]; }
+      return n;
+    }),
+    emptyTrash: () => setData((d) => { (d.trash ?? []).forEach((t) => t.coll === 'docs' && deleteBlob(t.item.id).catch(() => {})); return { ...d, trash: [] }; }),
     reset: () => { data.docs.forEach((x) => deleteBlob(x.id).catch(() => {})); setData(empty()); },
   };
 }

@@ -29,7 +29,14 @@ export const auth = {
   signOut: () => cloud().auth.signOut(),
   session: async (): Promise<Session | null> => (await cloud().auth.getSession()).data.session,
   onChange: (f: (s: Session | null) => void) => cloud().auth.onAuthStateChange((_e, s) => f(s)).data.subscription,
-  deleteAccountData: async (hh: string) => cloud().from('tl_households').delete().eq('id', hh), // owner only (RLS); cascades all rows
+  /** GDPR: remove all files, then the household (cascades every row). Owner only (RLS). Non-owners just leave. */
+  deleteCloudData: async (hh: string) => {
+    const c = cloud();
+    for (;;) { const l = (await c.storage.from('tl-docs').list(hh, { limit: 100 })).data ?? []; if (!l.length) break; const r = await c.storage.from('tl-docs').remove(l.map((f) => `${hh}/${f.name}`)); if (r.error) throw r.error; }
+    const d = await c.from('tl_households').delete().eq('id', hh).select('id');
+    if (d.error) throw d.error;
+    if (!d.data?.length) { const uidv = (await c.auth.getUser()).data.user?.id; await c.from('tl_household_members').delete().eq('household_id', hh).eq('user_id', uidv ?? ''); }
+  },
 };
 
 // ---------- Households ----------
@@ -99,7 +106,7 @@ export async function syncFiles(hh: string, docs: DocMeta[]) {
 }
 
 /** One full round: push local changes since last snapshot, then pull remote changes since cursor and merge (LWW). */
-export async function syncNow(hh: string, data: AppData, apply: (f: (d: AppData) => AppData) => void, who?: string): Promise<SyncResult> {
+export async function syncNow(hh: string, data: AppData, apply: (f: (d: AppData) => AppData) => void, who?: string, opts: { files?: boolean } = {}): Promise<SyncResult> {
   const c = cloud();
   const snap: Snap = { ...emptySnap(), ...JSON.parse(localStorage.getItem(SNAP) || 'null') };
   let pushed = 0, doses = 0;
@@ -149,7 +156,7 @@ export async function syncNow(hh: string, data: AppData, apply: (f: (d: AppData)
   });
   localStorage.setItem(SNAP, JSON.stringify(snap)); localStorage.setItem(CURSOR, max);
   // 3) files: upload queue (local docs not yet in Storage), download docs from others missing locally
-  const files = await syncFiles(hh, [...data.docs, ...((remote.docs ?? []).filter((x) => !x.deleted).map((x) => x.data as unknown as DocMeta))]);
+  const files = opts.files === false ? { uploaded: 0, downloaded: 0, pendingFiles: data.docs.length } : await syncFiles(hh, [...data.docs, ...((remote.docs ?? []).filter((x) => !x.deleted).map((x) => x.data as unknown as DocMeta))]);
   const at = new Date().toISOString(); localStorage.setItem('tlapka:sync:at', at);
   return { pushed, pulled, doses, at, ...files };
 }

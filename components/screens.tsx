@@ -1,5 +1,6 @@
 'use client';
 import { Account } from './Account';
+import { BatteryGuide, ExportAll, PassShare, ScanButton, TrashSection, TravelChecklist } from './V11';
 import { ask as askDialog, notice, toast } from './feedback';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Pet, Reminder, Visit } from '@/lib/types';
@@ -48,6 +49,8 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
           <div className="grid grid-cols-2 gap-3 -mt-2">
             <button onClick={() => setNewRem(true)} className="press min-h-[48px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[15px]">＋ Připomínka</button>
             <button onClick={() => { sessionStorage.setItem('tlapka:petTab', 'doklady'); openPet(data.pets[0].id); }} className="press min-h-[48px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[15px]">📎 Dokument</button>
+            <ScanButton className="press min-h-[48px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[15px] flex items-center justify-center gap-1.5" />
+            <button onClick={() => go('second')} className="press min-h-[48px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[15px]">🩻 Druhý názor</button>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Card onClick={() => go('ai')} className="p-4">
@@ -172,6 +175,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
         </Card>
       )}
       <PassButton pet={pet} />
+      <div className="space-y-3 mt-3"><PassShare pet={pet} /><TravelChecklist pet={pet} /></div>
       {ask && <button onClick={ask} className="press w-full mb-4 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A] shadow-[0_14px_30px_-14px_rgba(232,85,58,.7)]">
         <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">🩺</span>
         <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-white/85">Zná profil, léky i alergie – {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
@@ -449,8 +453,10 @@ export function Settings() {
               <Row icon="🧪" title="Poslat zkušební upozornění" onClick={() => showNow('🐾 Tlapka', 'Takhle ti připomenu odčervení a očkování.')} />
             </>)}
           </Card>
+          <div className="mt-3"><BatteryGuide /></div>
         </section>
         <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Data</h2>
+          <div className="space-y-3 mb-3"><ExportAll /><TrashSection /></div>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
             <Row icon="📤" title="Exportovat zálohu" sub="JSON se všemi záznamy (bez souborů dokumentů)" onClick={exportJson} />
             <Row icon="📥" title="Importovat zálohu" sub="Nahradí aktuální data" onClick={() => ref.current?.click()} />
@@ -464,7 +470,7 @@ export function Settings() {
         </section>
         <div className="text-center pt-4 pb-2 text-muted text-sm">
           <Logo className="h-9 mx-auto text-ink dark:text-white mb-2" />
-          Verze 1.0 · data zůstávají jen v tomto zařízení
+          Verze 1.1 · bez účtu data zůstávají jen v tomto zařízení
         </div>
       </div>
       {msg && <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(env(safe-area-inset-bottom)+var(--badge,0px)+100px)] z-50 rounded-full bg-ink text-white dark:bg-white dark:text-ink px-4 py-2 text-sm shadow-lg animate-fade">{msg}</div>}
@@ -519,5 +525,5 @@ export function Onboarding() {
   );
 }
 
-export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses';
+export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses' | 'second';
 export type { Pet };

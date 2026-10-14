@@ -8,12 +8,13 @@ import Aivet from './Aivet';
 import { PremiumProvider } from '@/lib/premium';
 import { CloudProvider } from '@/lib/cloudsync';
 import { SharedPage } from './Shared';
+import { SecondOpinion } from './V11';
 import { BannerSlot, Expenses, Paywall } from './Premium';
 import { FeedbackHost } from './feedback';
 import { CalendarScreen, Dashboard, Onboarding, PetDetail, PetsList, Reminders, Settings, type Tab } from './screens';
 
 const VetMap = dynamic(() => import('./VetMap'), { ssr: false, loading: () => <div className="h-[46dvh] rounded-[26px] bg-ink/5 animate-pulse mt-20" /> });
-const EXTRA: Tab[] = ['map', 'ai', 'expenses'];
+const EXTRA: Tab[] = ['map', 'ai', 'expenses', 'second'];
 
 const TABS: { id: Tab; l: string; i: 'home' | 'paw' | 'bell' | 'heart' | 'cog' }[] = [
   { id: 'home', l: 'Přehled', i: 'home' }, { id: 'pets', l: 'Mazlíčci', i: 'paw' }, { id: 'reminders', l: 'Připomínky', i: 'bell' }, { id: 'calendar', l: 'Kalendář', i: 'heart' }, { id: 'settings', l: 'Nastavení', i: 'cog' },
@@ -56,6 +57,7 @@ function Shell() {
           {tab === 'calendar' && <CalendarScreen />}
           {tab === 'settings' && <Settings />}
           {tab === 'expenses' && <Expenses />}
+          {tab === 'second' && <SecondOpinion />}
         </div>
       </main>
       {tab !== 'map' && tab !== 'ai' && petId !== 'nonstop' && <BannerSlot />}

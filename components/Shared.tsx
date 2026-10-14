@@ -26,9 +26,9 @@ export function SharedPage({ token }: { token: string }) {
       {v === undefined && <p className="text-muted">Načítám…</p>}
       {v === null && <Card className="p-5"><p className="font-bold text-lg">Odkaz neplatí</p><p className="text-muted mt-1">Vypršel nebo ho majitel zrušil. Požádej o nový.</p></Card>}
       {v && <>
-        <div><h1 className="text-2xl font-bold">Hlídání</h1><p className="text-[14px] text-muted">Platí do {new Date(v.expires_at).toLocaleString('cs-CZ')} · bez registrace</p></div>
-        <label className="block"><span className="text-[13px] font-semibold">Tvoje jméno (uvidí ho majitel)</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder="např. Jana" className="mt-1 w-full min-h-[48px] rounded-2xl px-4 bg-ink/5 dark:bg-white/10" /></label>
+        <div><h1 className="text-2xl font-bold">{v.scope === 'pass' ? 'Zdravotní pas' : 'Hlídání'}</h1><p className="text-[14px] text-muted">Platí do {new Date(v.expires_at).toLocaleString('cs-CZ')} · bez registrace</p></div>
+        {v.scope === 'today' && <label className="block"><span className="text-[13px] font-semibold">Tvoje jméno (uvidí ho majitel)</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder="např. Jana" className="mt-1 w-full min-h-[48px] rounded-2xl px-4 bg-ink/5 dark:bg-white/10" /></label>}
         {v.pets.map((p) => {
           const rs = v.reminders.filter((r) => r.petId === p.id), ms = v.meds.filter((m) => m.petId === p.id), al = v.allergies.filter((a) => a.petId === p.id);
           return (
@@ -41,11 +41,11 @@ export function SharedPage({ token }: { token: string }) {
                 return (
                   <div key={x.k} className="flex items-center gap-3">
                     <div className="flex-1 min-w-0"><p className="font-medium break-words">{x.title}</p><p className="text-[13px] text-muted">{d ? `✓ podal(a) ${d.by ?? '—'} v ${t(d.given_at)}` : x.sub}</p></div>
-                    <button onClick={() => give(p.id, x.rem, x.med)} className="press min-h-[44px] px-4 rounded-2xl font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]">Podáno</button>
+                    {v.scope === 'today' && <button onClick={() => give(p.id, x.rem, x.med)} className="press min-h-[44px] px-4 rounded-2xl font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]">Podáno</button>}
                   </div>
                 );
               })}
-              {!rs.length && !ms.length && <p className="text-[14px] text-muted">Dnes nic k podání.</p>}
+              {!rs.length && !ms.length && <p className="text-[14px] text-muted">{v.scope === 'pass' ? 'Žádné záznamy.' : 'Dnes nic k podání.'}</p>}
             </Card>
           );
         })}
