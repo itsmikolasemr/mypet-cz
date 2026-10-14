@@ -28,7 +28,7 @@ async function shareOrSave(b: Blob, name: string, text?: string) {
   try { if (navigator.canShare?.({ files: [f] })) { await navigator.share({ files: [f], text }); return; } } catch (e) { if ((e as Error).name === 'AbortError') return; }
   download(b, name);
 }
-const needAuth = (e: string) => (e === 'auth' ? 'Nejdřív se přihlas v Nastavení › Účet a záloha.' : e === 'server' ? 'Komunitní funkce ještě nejsou na serveru zapnuté.' : 'Nepovedlo se, zkus to znovu.');
+const needAuth = (e: string) => (/invalid code|expired/i.test(e) ? 'Kód neplatí nebo vypršel.' : e === 'auth' ? 'Nejdřív se přihlas v Nastavení › Účet a záloha.' : e === 'server' ? 'Komunitní funkce ještě nejsou na serveru zapnuté.' : 'Nepovedlo se, zkus to znovu.');
 const RAR_CLS: Record<Rarity, string> = { tecka: 'bg-ink/5 dark:bg-white/10', bricho: 'bg-[#7FB3E8]/15', tlapka: 'bg-[#7FB3E8]/30', zlata: 'bg-[#E9D9A6]/50 dark:bg-[#E9D9A6]/25', sezonni: 'bg-[#BFE3D6]/50 dark:bg-[#BFE3D6]/20' };
 
 /* ───────── Fair share (Today / Dashboard) ───────── */
@@ -43,7 +43,7 @@ export function FairShareCard() {
         <button onClick={() => setEdit(true)} className="text-[13px] font-semibold text-primary min-h-[44px] px-2">{name || 'Já'}</button></div>
       {fs.share.length > 0 ? (
         <ul className="space-y-2">{fs.share.map((r) => (
-          <li key={r.name}><div className="flex justify-between text-[13px]"><b>{r.name}</b><span className="text-muted">dnes {r.today} · týden {r.week} ({r.pct} %)</span></div>
+          <li key={r.name}><div className="flex justify-between text-[13px]"><b>{r.name}</b><span className="text-muted tabular-nums">dnes {r.today} · týden {r.week} ({r.pct} %)</span></div>
             <div className="h-2 rounded-full bg-ink/5 dark:bg-white/10 mt-1"><div className="h-2 rounded-full bg-primary" style={{ width: `${r.pct}%` }} /></div></li>
         ))}</ul>
       ) : <p className="text-[13px] text-muted">Odškrtni krmení nebo venčení v Tlapka Dni.</p>}
@@ -219,7 +219,7 @@ export function ChallengesCard() {
         <div key={c.id} className="rounded-2xl bg-ink/[0.03] dark:bg-white/[0.05] p-3">
           <div className="flex justify-between text-[13px]"><b>{c.title}</b><span className="text-muted">kód {c.code}</span></div>
           <div className="h-2 rounded-full bg-ink/5 dark:bg-white/10 my-1.5"><div className="h-2 rounded-full bg-primary" style={{ width: `${Math.min(100, (sum / c.goal) * 100)}%` }} /></div>
-          <p className="text-[12px] text-muted">{sum}/{c.goal} · {c.members.map((m) => `${m.display_name || '?'} ${m.count}`).join(' · ')}</p>
+          <p className="text-[12px] text-muted tabular-nums">{sum}/{c.goal} · {c.members.map((m) => `${m.display_name || '?'} ${m.count}`).join(' · ')}</p>
           <button className="text-[12px] text-muted underline min-h-[44px]" onClick={async () => { if (await ask({ title: 'Opustit výzvu?', ok: 'Opustit' })) { await leaveChallenge(c.id); load(); } }}>Opustit</button>
         </div>); })}
       <div className="flex gap-2"><input aria-label="Kód výzvy" className={inp + ' uppercase'} value={code} onChange={(e) => setCode(e.target.value)} placeholder="Kód výzvy" />

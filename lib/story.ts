@@ -9,7 +9,7 @@ import { drawPaw } from './wrappedCanvas';
 import { avatarImage } from './avatar';
 import { tr, loc } from './i18n';
 
-const ff = () => { try { return getComputedStyle(document.body).fontFamily || 'Manrope, sans-serif'; } catch { return 'Manrope, sans-serif'; } };
+const ff = () => { try { return getComputedStyle(document.body).fontFamily || 'Inter, sans-serif'; } catch { return 'Inter, sans-serif'; } };
 async function img(src: string) { const i = new Image(); i.src = src; await i.decode(); return i; }
 function trCtx(ctx: CanvasRenderingContext2D) { const f = ctx.fillText.bind(ctx), m = ctx.measureText.bind(ctx); ctx.fillText = (t, x, y, w) => f(tr(t), x, y, w); ctx.measureText = (t) => m(tr(t)); }
 

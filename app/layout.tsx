@@ -1,8 +1,10 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
-import { Manrope } from 'next/font/google';
+import { Inter, Manrope } from 'next/font/google';
 
-const font = Manrope({ subsets: ['latin', 'latin-ext'], variable: '--font', display: 'swap' });
+// UI font: Inter (v1.2). Manrope 800 stays ONLY for the approved 'Tlapka.' logo wordmark.
+const font = Inter({ subsets: ['latin', 'latin-ext'], weight: ['400', '500', '600', '700'], variable: '--font', display: 'swap' });
+const logoFont = Manrope({ subsets: ['latin'], weight: ['800'], variable: '--font-logo', display: 'swap' });
 
 export const metadata: Metadata = {
   title: 'Tlapka – péče o mazlíčky',
@@ -17,7 +19,7 @@ const noFlash = `try{var h=document.head;for(var i=h.childNodes.length-1;i>=0;i-
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="cs" className={font.variable} suppressHydrationWarning>
+    <html lang="cs" className={`${font.variable} ${logoFont.variable}`} suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: noFlash }} /></head>
       <body className="font-sans">{children}</body>
     </html>

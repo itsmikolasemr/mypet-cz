@@ -207,3 +207,6 @@ html.glass .swipe-track > .bg-surface, html.glass .swipe-track .bg-surface { bac
 /* glass: selected radio chips (Jazyk, tarify, motivy) must read as selected – the level-2 pane rule above flattens bg-primary/10 */
 html.glass [role="radio"][aria-checked="true"] { background: rgba(127,179,232,.32) !important; box-shadow: inset 0 0 0 2px #3D7FC4, 0 6px 16px -10px rgba(30,34,40,.45) !important; }
 html.glass [role="radio"][aria-checked="true"] .text-muted { color: #17191D; }
+/* Inter (v1.2): tabular figures wherever numbers line up – tables, counters, progress, prices, dates */
+table, td, th, [data-num], .tabular-nums, [role="progressbar"], time { font-variant-numeric: tabular-nums; }
+body { font-feature-settings: "cv11"; } /* Inter cv11: single-storey a – softer, friendlier with the brand */

@@ -82,7 +82,7 @@ export function About({ open }: { open: (t: 'privacy' | 'terms') => void }) {
       <Card className="p-4 mt-4 text-[13px] text-muted space-y-1.5">
         <p>Mapové podklady a data o veterinách, výbězích a zverimexech: © přispěvatelé <a className="underline" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> (ODbL).</p>
         <p>Aivet využívá model Google Gemini. Odpovědi jsou orientační a nenahrazují vyšetření.</p>
-        <p>Písmo Manrope (SIL Open Font License). Knihovny: Next.js, React, Leaflet, pdf-lib, ZXing, Capacitor.</p>
+        <p>Písma Inter a Manrope (logo), obě SIL Open Font License. Knihovny: Next.js, React, Leaflet, pdf-lib, ZXing, Capacitor.</p>
         <p>Tlapka není zdravotnický prostředek.</p>
       </Card>
     </div>

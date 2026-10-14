@@ -15,6 +15,8 @@ module.exports = {
         warning: '#D97706',
       },
       fontFamily: { sans: ['var(--font)', 'system-ui', '-apple-system', 'sans-serif'] },
+      // Inter is loaded 400–700 only: map extrabold/black to 700 so nothing is faux-bolded
+      fontWeight: { extrabold: '700', black: '700' },
       boxShadow: {
         card: '0 1px 1px rgba(29,30,34,.03), 0 6px 14px -6px rgba(29,30,34,.08), 0 20px 40px -18px rgba(29,30,34,.16)',
         'card-d': '0 1px 0 rgba(255,255,255,.04) inset, 0 8px 18px -6px rgba(0,0,0,.5), 0 24px 48px -20px rgba(0,0,0,.6)',

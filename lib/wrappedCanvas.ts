@@ -1,5 +1,5 @@
 import { tr } from './i18n';
-/** Renders one Wrapped slide to a 1080×1920 canvas (IG story) – brand: #7FB3E8 polštářek, grafit #3A3D43, světle šedá #ECEFF3, Manrope. */
+/** Renders one Wrapped slide to a 1080×1920 canvas (IG story) – brand: #7FB3E8 polštářek, grafit #3A3D43, světle šedá #ECEFF3, Inter. */
 import type { Slide } from './wrapped';
 
 export const THEMES = [
@@ -9,7 +9,7 @@ export const THEMES = [
 ] as const;
 export const themeFor = (i: number, key: string) => (key === 'intro' || key === 'persona' ? THEMES[0] : key === 'invite' ? THEMES[1] : THEMES[1 + (i % 2)]);
 
-function fontFamily() { try { return getComputedStyle(document.body).fontFamily || 'Manrope, sans-serif'; } catch { return 'Manrope, sans-serif'; } }
+function fontFamily() { try { return getComputedStyle(document.body).fontFamily || 'Inter, sans-serif'; } catch { return 'Inter, sans-serif'; } }
 function fit(ctx: CanvasRenderingContext2D, text: string, max: number, size: number, weight: number, ff: string) {
   let s = size; do { ctx.font = `${weight} ${s}px ${ff}`; if (ctx.measureText(text).width <= max) break; s -= 6; } while (s > 60); return s;
 }

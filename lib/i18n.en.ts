@@ -267,7 +267,7 @@ export const EN: Record<string, string> = {
 "Napsat nám": "Write to us",
 "Mapové podklady a data o veterinách, výbězích a zverimexech: © přispěvatelé": "Map tiles and data on vets, dog parks and pet shops: © contributors",
 "Aivet využívá model Google Gemini. Odpovědi jsou orientační a nenahrazují vyšetření.": "Aivet uses the Google Gemini model. Answers are indicative and do not replace an examination.",
-"Písmo Manrope (SIL Open Font License). Knihovny: Next.js, React, Leaflet, pdf-lib, ZXing, Capacitor.": "Manrope typeface (SIL Open Font License). Libraries: Next.js, React, Leaflet, pdf-lib, ZXing, Capacitor.",
+"Písma Inter a Manrope (logo), obě SIL Open Font License. Knihovny: Next.js, React, Leaflet, pdf-lib, ZXing, Capacitor.": "Inter and Manrope (logo) typefaces, both SIL Open Font License. Libraries: Next.js, React, Leaflet, pdf-lib, ZXing, Capacitor.",
 "Tlapka není zdravotnický prostředek.": "Tlapka is not a medical device.",
 "Nejdřív se přihlas v Nastavení › Účet a záloha.": "Sign in first in Settings › Account & backup.",
 "Komunitní funkce ještě nejsou na serveru zapnuté.": "Community features aren't enabled on the server yet.",

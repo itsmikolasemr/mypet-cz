@@ -176,11 +176,11 @@ export function PawLoader({ label = 'Načítám…', className = 'w-6 h-6' }: { 
 
 export function Logo({ className = 'h-8', animate = false }: { className?: string; animate?: boolean }) {
   const px = Number(className.match(/(?:^|\s)h-(\d+)/)?.[1] ?? 8) * 4;
-  // Polštářek logo: mark + Manrope ExtraBold wordmark + round baby-blue "pad" period. Colours follow the theme (light/dark/Sklo).
+  // Polštářek logo: mark + Manrope ExtraBold wordmark (approved logo asset; the UI itself uses Inter) + round baby-blue "pad" period. Colours follow the theme (light/dark/Sklo).
   return (
     <span className={`inline-flex items-center ${className}`} style={{ gap: px * 0.22 }} role="img" aria-label="Tlapka" data-logo>
       <PawMark animate={animate} className="h-full w-auto aspect-square shrink-0" />
-      <span aria-hidden className="font-extrabold tracking-[-0.03em] leading-none text-[#2E3138] dark:text-white" style={{ fontSize: px * 0.62 }}>Tlapka<span className="inline-block rounded-full bg-[#7FB3E8] align-baseline ml-[0.04em]" style={{ width: '0.15em', height: '0.15em' }} /></span>
+      <span aria-hidden className="tracking-[-0.03em] leading-none text-[#2E3138] dark:text-white" style={{ fontSize: px * 0.62, fontFamily: 'var(--font-logo), var(--font), sans-serif', fontWeight: 800 }}>Tlapka<span className="inline-block rounded-full bg-[#7FB3E8] align-baseline ml-[0.04em]" style={{ width: '0.15em', height: '0.15em' }} /></span>
     </span>
   );
 }
