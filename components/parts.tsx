@@ -61,7 +61,7 @@ export function ReminderRow({ r, pet, onEdit, showPet = true, hint = false }: { 
     <div className="relative">
       {can && (
         <div aria-hidden className="absolute inset-0 rounded-[22px] overflow-hidden flex items-center pl-5 font-bold text-[#0F2540] bg-gradient-to-r from-[#A9CEF3] to-[#7FB3E8]" style={{ opacity: dx ? 0.35 + progress * 0.65 : hinting ? 0.9 : 0 }}>
-          <span style={{ transform: `scale(${0.8 + progress * 0.3})` }} className="transition-transform">✓ Hotovo</span>
+          <span style={{ transform: `scale(${0.8 + progress * 0.3})` }} className="transition-transform"><GT t="✓ Hotovo" /></span>
         </div>
       )}
       <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden rounded-[22px] z-10">
@@ -75,8 +75,8 @@ export function ReminderRow({ r, pet, onEdit, showPet = true, hint = false }: { 
           <button onClick={() => { if (!suppressClick.current) onEdit(); }} className="flex items-center gap-3 flex-1 min-w-0 text-left">
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${s === 'overdue' ? 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400' : s === 'soon' ? 'bg-[#DCEBFA] text-[#2F6FAF] dark:bg-[#7FB3E8]/15 dark:text-[#A9CEF3]' : 'bg-primary/10 text-primary-d dark:text-primary'}`}><Emo e={t.emoji} className="w-6 h-6" /></div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-start gap-2 min-w-0"><p className="font-semibold line-clamp-2 break-words">{r.title}</p><span className="shrink-0"><StatusPill s={s} /></span></div>
-              <p className="text-[13px] text-muted truncate">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0"><p className="font-semibold leading-snug line-clamp-2 break-words">{r.title}</p><span className="shrink-0"><StatusPill s={s} /></span></div>
+              <p className="text-[13px] leading-snug text-muted line-clamp-2 mt-0.5 tabular-nums">
                 {showPet && pet ? `${pet.name} · ` : ''}{r.product ? `${r.product} · ` : ''}{s === 'done' ? `hotovo ${fmtDate(r.completedAt!)}` : `${fmtShort(r.dueDate)} (${relDue(r.dueDate)})`}
               </p>
               {r.intervalDays > 0 && s !== 'done' && <p className="text-[12px] text-muted flex items-center gap-1"><Icon name="repeat" className="w-3 h-3" />{intervalName(r.intervalDays)}</p>}

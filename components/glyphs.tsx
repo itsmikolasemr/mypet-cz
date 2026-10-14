@@ -93,7 +93,7 @@ export function Glyph({ name, className = 'w-6 h-6', label }: { name: GlyphName;
   );
 }
 /** emoji → glyph, so legacy call sites (Empty emoji="…", PERKS e: '…') pick up the icon set automatically */
-export const EMOJI_GLYPH: Record<string, GlyphName> = { '🐾': 'paw', '🔔': 'bell', '📋': 'journal', '🐶': 'dog', '🐕': 'dog', '🐈': 'cat', '🐱': 'cat', '🐇': 'rabbit', '🐹': 'guinea', '🦦': 'ferret', '🦜': 'bird', '🦎': 'reptile', '🩺': 'stetho', '🗺️': 'map', '💳': 'card', '💰': 'coins', '📄': 'doc', '🚫': 'nodads', '☁️': 'cloud', '👨‍👩‍👧': 'family', '🤔': 'think', '💊': 'pill', '💉': 'syringe', '🛡️': 'shield', '📅': 'calendar', '⚠️': 'warn', '⚠': 'warn', '✂️': 'scissors', '💧': 'drop', '📌': 'pin', '📎': 'clip', '🧳': 'suitcase', '🎨': 'palette', '📦': 'box', 'ℹ️': 'info', '👤': 'user', '📤': 'upload', '📥': 'download', '🗑️': 'trash', '🔒': 'lock', '📜': 'scroll', '📷': 'camera', '🖼️': 'image', '🚨': 'siren', '🛍️': 'shop', '🦴': 'bone', '🥫': 'can', '🐠': 'fish', '🔗': 'link', '🖨️': 'printer', '🌐': 'globe', '🍽️': 'food', '📞': 'phone', '🔑': 'key', '✨': 'sparkle', '✈️': 'plane', '✅': 'check', '☐': 'box0', '⏰': 'clock', '🧪': 'flask', '🧾': 'receipt', '🩻': 'xray', '📘': 'book', '👆': 'hand', '📆': 'calendar', '🗓️': 'calendar', '🌳': 'park', '⭐': 'star', '✎': 'pen', '🚧': 'warn', '☕': 'cup', '🏅': 'medal', '🔳': 'qr', '👥': 'users', '🎁': 'gift', '🎟️': 'ticket', '👛': 'wallet', '🏷️': 'sticker', '🏁': 'flag' };
+export const EMOJI_GLYPH: Record<string, GlyphName> = { '🐾': 'paw', '🔔': 'bell', '📋': 'journal', '🐶': 'dog', '🐕': 'dog', '🐈': 'cat', '🐱': 'cat', '🐇': 'rabbit', '🐹': 'guinea', '🦦': 'ferret', '🦜': 'bird', '🦎': 'reptile', '🩺': 'stetho', '🗺️': 'map', '💳': 'card', '💰': 'coins', '📄': 'doc', '🚫': 'nodads', '☁️': 'cloud', '👨‍👩‍👧': 'family', '🤔': 'think', '💊': 'pill', '💉': 'syringe', '🛡️': 'shield', '📅': 'calendar', '⚠️': 'warn', '⚠': 'warn', '✂️': 'scissors', '💧': 'drop', '📌': 'pin', '📎': 'clip', '🧳': 'suitcase', '🎨': 'palette', '📦': 'box', 'ℹ️': 'info', '👤': 'user', '📤': 'upload', '📥': 'download', '🗑️': 'trash', '🔒': 'lock', '📜': 'scroll', '📷': 'camera', '🖼️': 'image', '🚨': 'siren', '🛍️': 'shop', '🦴': 'bone', '🥫': 'can', '🐠': 'fish', '🔗': 'link', '🖨️': 'printer', '🌐': 'globe', '🍽️': 'food', '📞': 'phone', '🔑': 'key', '✨': 'sparkle', '✈️': 'plane', '✅': 'check', '☐': 'box0', '⏰': 'clock', '🧪': 'flask', '🧾': 'receipt', '🩻': 'xray', '📘': 'book', '👆': 'hand', '📆': 'calendar', '🗓️': 'calendar', '🌳': 'park', '⭐': 'star', '✎': 'pen', '🚧': 'warn', '☕': 'cup', '🏅': 'medal', '🔳': 'qr', '👥': 'users', '🎁': 'gift', '🎟️': 'ticket', '👛': 'wallet', '🏷️': 'sticker', '🏁': 'flag', '✦': 'sparkle', '✓': 'check', '✔': 'check', '🏠': 'family' };
 export const SPECIES_GLYPH: Record<string, GlyphName> = { pes: 'dog', kocka: 'cat', kralik: 'rabbit', morce: 'guinea', fretka: 'ferret', ptak: 'bird', plaz: 'reptile', jine: 'other' };
 
 /** Emoji token → custom glyph (falls back to the raw char only for unmapped tokens). */
@@ -103,7 +103,7 @@ export function Emo({ e, className = 'w-[1.15em] h-[1.15em] inline-block align-[
 }
 /** "🔔 Text" → [glyph] Text. Leading emoji only. */
 export function GT({ t, className }: { t: string; className?: string }) {
-  const m = t.match(/^(\p{Extended_Pictographic}\uFE0F?(?:\u200D\p{Extended_Pictographic}\uFE0F?)*)\s*/u);
+  const m = t.match(/^([✓✔✎✦]|\p{Extended_Pictographic}\uFE0F?(?:\u200D\p{Extended_Pictographic}\uFE0F?)*)\s*/u);
   if (!m) return <>{t}</>;
   return <span className="inline-flex items-center gap-1.5"><Emo e={m[1]} className={className ?? 'w-[1.15em] h-[1.15em] shrink-0'} /><span>{t.slice(m[0].length)}</span></span>;
 }

@@ -43,7 +43,7 @@ export function FairShareCard() {
         <button onClick={() => setEdit(true)} className="text-[13px] font-semibold text-primary min-h-[44px] px-2">{name || 'Já'}</button></div>
       {fs.share.length > 0 ? (
         <ul className="space-y-2">{fs.share.map((r) => (
-          <li key={r.name}><div className="flex justify-between text-[13px]"><b>{r.name}</b><span className="text-muted tabular-nums">dnes {r.today} · týden {r.week} ({r.pct} %)</span></div>
+          <li key={r.name}><div className="flex justify-between text-[13px]"><b>{r.name}</b><span className="text-muted tabular-nums">{`${tr('dnes')} ${r.today} · ${tr('týden')} ${r.week} (${r.pct} %)`}</span></div>
             <div className="h-2 rounded-full bg-ink/5 dark:bg-white/10 mt-1"><div className="h-2 rounded-full bg-primary" style={{ width: `${r.pct}%` }} /></div></li>
         ))}</ul>
       ) : <p className="text-[13px] text-muted">Odškrtni krmení nebo venčení v Tlapka Dni.</p>}
@@ -106,10 +106,10 @@ export function ShareExtras({ pet }: { pet: Pet }) {
       <H e="✨" t="Sdílej a ukaž" sub="Story na Instagram, avatar, nálepky a QR pro kamarády ve výběhu." />
       <div className="flex items-center gap-3"><img src={avatarDataUrl(pet, { bg: true, size: 96 })} alt={`Avatar ${pet.name}`} className="w-16 h-16 rounded-2xl" />
         <p className="text-[13px] text-muted flex-1">Plochý avatar v barvách Tlapky. Vytváří se přímo v telefonu, fotka nikam neodchází.</p></div>
-      <div className="grid grid-cols-2 gap-2">
-        <Button variant="soft" disabled={!!busy} onClick={story}><Emo e="📷" className="w-5 h-5" /> {busy === 'story' ? 'Kreslím…' : 'Tlapka Story'}</Button>
+      <div className="grid grid-cols-2 gap-2 [&>button]:whitespace-nowrap [&>button]:text-[14px]">
+        <Button variant="soft" disabled={!!busy} onClick={story}><Emo e="📷" className="w-5 h-5" /> {busy === 'story' ? 'Kreslím…' : 'Story'}</Button>
         <Button variant="soft" disabled={!!busy} onClick={avatar}><Emo e="🖼️" className="w-5 h-5" /> Avatar</Button>
-        <Button variant="soft" disabled={!!busy} onClick={stickers}><Emo e="🏷️" className="w-5 h-5" /> {busy === 'stickers' ? 'Balím…' : 'Nálepky (ZIP)'}</Button>
+        <Button variant="soft" disabled={!!busy} onClick={stickers}><Emo e="🏷️" className="w-5 h-5" /> {busy === 'stickers' ? 'Balím…' : 'Nálepky'}</Button>
         <Button variant="soft" onClick={friend}><Emo e="🔳" className="w-5 h-5" /> QR kamarád</Button>
       </div>
       {fq && <div className="text-center" data-friend-qr><img src={fq} alt="QR kamarád" className="w-44 h-44 mx-auto rounded-xl" /><p className="text-[13px] text-muted">Ať si ho kamarád načte fotoaparátem. Obsahuje jen jméno, druh, narozeniny a 3 odznaky.</p></div>}
@@ -127,14 +127,14 @@ export function BadgesCard({ pet }: { pet: Pet }) {
   const list = BADGES.filter((b) => all || earned.has(b.id));
   return (
     <Card className="p-4" >
-      <div data-badges className="flex items-center justify-between"><H e="🏅" t="Odznaky" sub={`${earned.size} z ${BADGES.length}${pet.memorial ? ' · vzpomínkový profil, odznaky jsou zamrzlé' : ''}`} />
+      <div data-badges className="flex items-center justify-between"><H e="🏅" t="Odznaky" sub={`${earned.size} ${tr('z')} ${BADGES.length}${pet.memorial ? ' · vzpomínkový profil, odznaky jsou zamrzlé' : ''}`} />
         <button className="text-[13px] font-semibold text-primary min-h-[44px] px-2" onClick={() => setAll(!all)}>{all ? 'Jen získané' : 'Všechny'}</button></div>
-      {nb && !pet.memorial && <p className="text-[13px] mb-2">Nejblíž: <b>{nb.b.name}</b> · {nb.p.have}/{nb.p.need}</p>}
+      {nb && !pet.memorial && <p className="text-[13px] mb-2 tabular-nums">{tr('Nejblíž:')} <b>{tr(nb.b.name)}</b> · {nb.p.have}/{nb.p.need}</p>}
       {!list.length ? <p className="text-[13px] text-muted">Zatím žádný. První získáš odškrtnutím úkolu v Tlapka Dni.</p> : (
         <ul className="grid grid-cols-2 gap-2">{list.map((b) => { const got = earned.has(b.id); const p = progress(b, data, pet);
           return <li key={b.id} className={`rounded-2xl p-2.5 ${RAR_CLS[b.rarity]} ${got ? '' : 'opacity-60'}`}>
             <p className="text-[13px] font-bold leading-tight">{b.name}</p>
-            <p className="text-[11px] uppercase tracking-[0.06em] font-extrabold text-[#3D7FC4] dark:text-[#A9CEF3]">{RARITY[b.rarity].name}{!b.noReward && RARITY[b.rarity].reward ? ` · ${RARITY[b.rarity].reward}` : ''}</p>
+            <p className="text-[11px] uppercase tracking-[0.06em] font-bold text-[#3D7FC4] dark:text-[#A9CEF3] mt-0.5">{RARITY[b.rarity].name}</p>{!b.noReward && RARITY[b.rarity].reward && <p className="text-[11px] font-semibold text-muted">{RARITY[b.rarity].reward}</p>}
             <p className="text-[12px] text-muted leading-snug mt-0.5">{b.desc}</p>
             {!got && <p className="text-[11px] text-muted mt-0.5">{b.server ? 'ověřuje server' : `${Math.min(p.have, p.need)}/${p.need}`}</p>}
           </li>; })}</ul>
@@ -196,7 +196,7 @@ export function ReferralCard() {
       <div data-referral><H e="🎁" t="Pozvi kamaráda" sub="Oba dostanete měsíc Premium. Počítá se, až bude kamarád 7 dní aktivní. Max. 12 měsíců za rok." /></div>
       {cloud.session ? (<>
         <Button className="w-full" onClick={() => (navigator.share ? navigator.share({ url: link, text: tr('Hlídá mi odčervení i očkování. Zkus Tlapku, oba dostaneme měsíc Premium.') }).catch(() => {}) : navigator.clipboard?.writeText(link).then(() => toast('Odkaz zkopírován')))}>Sdílet pozvánku</Button>
-        {st && <p className="text-[13px] text-muted">{st.n} přátel · {st.waiting} čeká na 7 aktivních dní · {Math.min(st.days, 365)} dní Premium za poslední rok</p>}
+        {st && <p className="text-[13px] text-muted">{`${st.n} ${tr('přátel')} · ${st.waiting} ${tr('čeká na 7 aktivních dní')} · ${Math.min(st.days, 365)} ${tr('dní Premium za poslední rok')}`}</p>}
       </>) : <p className="text-[13px] text-muted">{needAuth('auth')}</p>}
     </Card>
   );
@@ -217,7 +217,7 @@ export function ChallengesCard() {
       <div data-challenges><H e="🏁" t="Výzvy s kamarády" sub="Společný cíl na týden: procházky se počítají z Tlapka Dne. Žádné žebříčky, jen parta." /></div>
       {list.map((c) => { const sum = c.members.reduce((a, m) => a + m.count, 0); return (
         <div key={c.id} className="rounded-2xl bg-ink/[0.03] dark:bg-white/[0.05] p-3">
-          <div className="flex justify-between text-[13px]"><b>{c.title}</b><span className="text-muted">kód {c.code}</span></div>
+          <div className="flex justify-between text-[13px]"><b>{c.title}</b><span className="text-muted">{`${tr('kód')} ${c.code}`}</span></div>
           <div className="h-2 rounded-full bg-ink/5 dark:bg-white/10 my-1.5"><div className="h-2 rounded-full bg-primary" style={{ width: `${Math.min(100, (sum / c.goal) * 100)}%` }} /></div>
           <p className="text-[12px] text-muted tabular-nums">{sum}/{c.goal} · {c.members.map((m) => `${m.display_name || '?'} ${m.count}`).join(' · ')}</p>
           <button className="text-[12px] text-muted underline min-h-[44px]" onClick={async () => { if (await ask({ title: 'Opustit výzvu?', ok: 'Opustit' })) { await leaveChallenge(c.id); load(); } }}>Opustit</button>
@@ -350,8 +350,13 @@ export function SheltersSection() {
         : <p className="text-[13px] text-muted">Prvního útulka měsíce vybereme po spuštění. Částku a potvrzení o převodu tu vždy zveřejníme.</p>}
     </Card>
     <Card className="p-4">
-      <div data-adopce><H e="🏠" t="Hledají domov" sub="Jen z ověřených útulků. Kontakt vede přímo na útulek." /></div>
-      {!st?.adoptions.length ? <p className="text-[13px] text-muted">Zatím tu nikdo není. Útulky teprve ověřujeme.</p> : (
+      <div data-adopce><H e="🐾" t="Hledají domov" sub="Jen z ověřených útulků. Kontakt vede přímo na útulek." /></div>
+      {!st?.adoptions.length ? (!st?.shelters.length ? <p className="text-[13px] text-muted">Zatím tu nikdo není. Útulky teprve ověřujeme.</p> : (<>
+        <p className="text-[13px] text-muted mb-2">Konkrétní zvířata brzy. Zatím ověřené útulky, se kterými spolupracujeme:</p>
+        <ul className="divide-y divide-ink/5 dark:divide-white/10" data-shelters>{st.shelters.map((s) => (
+          <li key={s.id} className="flex items-center gap-3 py-2 min-h-[48px]"><span className="flex-1 min-w-0"><b className="block text-[14px] leading-snug">{s.name}</b><span className="text-[12px] text-muted">{s.city} · {s.region}</span></span>
+            {(s.web || s.donate_url) && <a className="press shrink-0 inline-flex items-center min-h-[44px] px-3 rounded-xl text-[13px] font-semibold bg-primary/10 text-primary-d dark:text-primary" href={s.web ?? s.donate_url!} target="_blank" rel="noreferrer">Mám zájem</a>}</li>))}</ul>
+      </>)) : (
         <ul className="grid grid-cols-2 gap-2">{st.adoptions.map((a) => { const s = st.shelters.find((x) => x.id === a.shelter_id); if (!s) return null; return (
           <li key={a.id} className="rounded-2xl bg-ink/[0.03] dark:bg-white/[0.05] p-2.5 text-[13px]">
             {a.photo_url && <img src={a.photo_url} alt={a.name} className="w-full aspect-square object-cover rounded-xl mb-1.5" />}

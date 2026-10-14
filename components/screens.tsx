@@ -92,7 +92,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             </Card>
             <Card onClick={() => go('expenses')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="coins" /></div>
-              <span className="min-w-0"><span className="font-semibold text-[14px] flex items-center gap-1.5 leading-tight">Výdaje</span><span className="block text-[12px] text-muted leading-snug">Kolik stojí péče{!prem.isPremium && ' · ✦ Premium'}</span></span>
+              <span className="min-w-0"><span className="font-semibold text-[14px] flex items-center gap-1.5 leading-tight">Výdaje</span><span className="block text-[12px] text-muted leading-snug">Kolik stojí péče{!prem.isPremium && <> <PremiumBadge small /></>}</span></span>
             </Card>
             <Card onClick={() => go('second')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name="doc" /></div>
@@ -544,7 +544,7 @@ export function Settings() {
           </Card>
         </section>
         <div className="text-center pt-4 pb-2 text-muted text-sm">
-          <Logo className="h-9 mx-auto text-ink dark:text-white mb-2" />
+          <div className="flex justify-center mb-2"><Logo className="h-9 text-ink dark:text-white" /></div>
           Verze 1.2 · bez účtu data zůstávají jen v tomto zařízení
         </div>
       </div>

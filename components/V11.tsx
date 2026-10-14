@@ -234,7 +234,7 @@ export function TravelChecklist({ pet }: { pet: Pet }) {
   if (dest === 'third') items.push({ ok: null, t: 'Test titru protilátek proti vzteklině', d: 'Krev min. 30 dní po očkování; při návratu do EU čekací lhůta 3 měsíce od odběru. Plánuj s předstihem!' }, { ok: null, t: 'Podmínky cílové země', d: 'Ověř na webu velvyslanectví a SVS.' });
   items.push({ ok: null, t: 'Max. 5 zvířat při nekomerčním převozu' }, { ok: null, t: 'Kopie dokladů v telefonu', d: 'Pas PDF z Tlapky + fotka EU pasu.' });
   if (!prem.isPremium) return (
-    <Card className="p-4 flex items-center gap-3"><span className="text-2xl" aria-hidden><Emo e="✈️" className="w-6 h-6" /></span><div className="flex-1"><p className="font-semibold">Cestovní checklist</p><p className="text-[13px] text-muted">Co potřebuje {pet.name} na cestu – lhůty, pas, vzteklina.</p></div><button className="press min-h-[44px] px-3 rounded-xl font-semibold bg-ink/5 dark:bg-white/10" onClick={() => prem.openPaywall('cestovni-checklist')}>Otevřít <PremiumBadge /></button></Card>
+    <Card className="p-4 flex items-center gap-3"><span className="text-2xl" aria-hidden><Emo e="✈️" className="w-6 h-6" /></span><div className="flex-1 min-w-0"><p className="font-semibold leading-snug">Cestovní checklist <PremiumBadge small /></p><p className="text-[13px] leading-snug text-muted">Co potřebuje {pet.name} na cestu – lhůty, pas, vzteklina.</p></div><button className="press shrink-0 min-h-[44px] px-3 rounded-xl font-semibold bg-ink/5 dark:bg-white/10" onClick={() => prem.openPaywall('cestovni-checklist')}>Otevřít</button></Card>
   );
   return (
     <Card className="p-4 space-y-3" >
