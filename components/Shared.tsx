@@ -1,11 +1,12 @@
 'use client';
+import { SharedHandover } from './Handover';
 // Caretaker page (#share/<token>): works without account or local data. Shows pets, today's tasks and marks doses.
 import { useCallback, useEffect, useState } from 'react';
 import { sharedLogDose, sharedView } from '@/lib/cloud';
 import { Card, Logo } from './ui';
 import { toast } from './feedback';
 
-type V = { scope: string; expires_at: string; pets: { id: string; name: string; species: string }[]; reminders: { id: string; petId: string; title: string; product?: string; dueDate: string }[];
+type V = { scope: string; expires_at: string; pets: import('@/lib/types').Pet[]; reminders: { id: string; petId: string; title: string; product?: string; dueDate: string }[];
   meds: { id: string; petId: string; name: string; dose: string; frequency: string }[]; allergies: { id: string; petId: string; allergen: string }[]; doses: { pet_id: string; reminder_id: string | null; med_id: string | null; given_at: string; by: string | null }[] };
 
 export function SharedPage({ token }: { token: string }) {
@@ -26,7 +27,7 @@ export function SharedPage({ token }: { token: string }) {
       {v === undefined && <p className="text-muted">Načítám…</p>}
       {v === null && <Card className="p-5"><p className="font-bold text-lg">Odkaz neplatí</p><p className="text-muted mt-1">Vypršel nebo ho majitel zrušil. Požádej o nový.</p></Card>}
       {v && <>
-        <div><h1 className="text-2xl font-bold">{v.scope === 'pass' ? 'Zdravotní pas' : 'Hlídání'}</h1><p className="text-[14px] text-muted">Platí do {new Date(v.expires_at).toLocaleString('cs-CZ')} · bez registrace</p></div>
+        <div><h1 className="text-2xl font-bold">{v.pets.some((p) => p.care) ? 'Předávací karta' : v.scope === 'pass' ? 'Zdravotní pas' : 'Hlídání'}</h1><p className="text-[14px] text-muted">Platí do {new Date(v.expires_at).toLocaleString('cs-CZ')} · bez registrace</p></div>
         {v.scope === 'today' && <label className="block"><span className="text-[13px] font-semibold">Tvoje jméno (uvidí ho majitel)</span>
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder="např. Jana" className="mt-1 w-full min-h-[48px] rounded-2xl px-4 bg-ink/5 dark:bg-white/10" /></label>}
         {v.pets.map((p) => {
@@ -45,7 +46,8 @@ export function SharedPage({ token }: { token: string }) {
                   </div>
                 );
               })}
-              {!rs.length && !ms.length && <p className="text-[14px] text-muted">{v.scope === 'pass' ? 'Žádné záznamy.' : 'Dnes nic k podání.'}</p>}
+              <SharedHandover pet={p} data={{ meds: v.meds as unknown as import('@/lib/types').Medication[], allergies: v.allergies as unknown as import('@/lib/types').Allergy[] }} />
+              {!rs.length && !ms.length && !p.care && <p className="text-[14px] text-muted">{v.scope === 'pass' ? 'Žádné záznamy.' : 'Dnes nic k podání.'}</p>}
             </Card>
           );
         })}

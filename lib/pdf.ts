@@ -14,7 +14,7 @@ export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
   doc.setTitle(`Zdravotní pas – ${pet.name}`); doc.setCreator('Tlapka'); doc.setLanguage('cs');
   const W = 595, H = 842, M = 44;
   let page = doc.addPage([W, H]); let y = H - M;
-  const ink = rgb(0.23, 0.16, 0.14), muted = rgb(0.46, 0.38, 0.35), brand = rgb(0.91, 0.33, 0.23), red = rgb(0.75, 0.1, 0.1);
+  const ink = rgb(0.114, 0.118, 0.133), muted = rgb(0.337, 0.357, 0.388), brand = rgb(0.498, 0.702, 0.91), brandText = rgb(0.141, 0.376, 0.624), navy = rgb(0.059, 0.145, 0.251), red = rgb(0.75, 0.1, 0.1);
   const ensure = (h: number) => { if (y - h < M) { page = doc.addPage([W, H]); y = H - M; } };
   const wrap = (t: string, font = F, size = 10.5, maxW = W - 2 * M) => {
     const out: string[] = []; for (const para of t.split('\n')) { let line = ''; for (const w of para.split(' ')) { const tryL = line ? line + ' ' + w : w; if (font.widthOfTextAtSize(tryL, size) > maxW && line) { out.push(line); line = w; } else line = tryL; } out.push(line); } return out;
@@ -22,12 +22,12 @@ export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {
   const text = (t: string, o: { font?: typeof F; size?: number; color?: ReturnType<typeof rgb>; x?: number; maxW?: number } = {}) => {
     const size = o.size ?? 10.5; for (const l of wrap(t, o.font ?? F, size, o.maxW)) { ensure(size + 4); page.drawText(l, { x: o.x ?? M, y: y - size, size, font: o.font ?? F, color: o.color ?? ink }); y -= size + 4; }
   };
-  const h2 = (t: string) => { y -= 10; ensure(30); page.drawText(t, { x: M, y: y - 13, size: 13, font: B, color: brand }); y -= 18; page.drawLine({ start: { x: M, y }, end: { x: W - M, y }, thickness: 0.6, color: rgb(0.93, 0.85, 0.8) }); y -= 6; };
+  const h2 = (t: string) => { y -= 10; ensure(30); page.drawText(t, { x: M, y: y - 13, size: 13, font: B, color: brandText }); y -= 18; page.drawLine({ start: { x: M, y }, end: { x: W - M, y }, thickness: 0.6, color: rgb(0.85, 0.9, 0.96) }); y -= 6; };
 
   // header band
   page.drawRectangle({ x: 0, y: H - 96, width: W, height: 96, color: brand });
-  page.drawText('Zdravotní pas', { x: M, y: H - 46, size: 24, font: B, color: rgb(1, 1, 1) });
-  page.drawText(`${pet.name} · vygenerováno v aplikaci Tlapka ${fmtDate(today())}`, { x: M, y: H - 70, size: 11, font: F, color: rgb(1, 0.93, 0.88) });
+  page.drawText('Zdravotní pas', { x: M, y: H - 46, size: 24, font: B, color: navy });
+  page.drawText(`${pet.name} · vygenerováno v aplikaci Tlapka ${fmtDate(today())}`, { x: M, y: H - 70, size: 11, font: F, color: navy });
   y = H - 120;
 
   const meds = data.meds.filter((m) => m.petId === pet.id && (!m.end || m.end >= today()));
@@ -77,4 +77,28 @@ export async function saveOrShare(blob: Blob, name: string) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   return name;
+}
+
+/** Generic simple document (sections of lines) in the Tlapka style — used for the sitter handover card. */
+export async function simplePdf(title: string, subtitle: string, sections: { h: string; lines: string[]; alert?: boolean }[], footer: string): Promise<Blob> {
+  const [{ PDFDocument, rgb }, fontkit] = await Promise.all([import('pdf-lib'), import('@pdf-lib/fontkit').then((m) => m.default)]);
+  const doc = await PDFDocument.create(); doc.registerFontkit(fontkit);
+  const [reg, bold] = await Promise.all(['/fonts/LiberationSans-Regular.ttf', '/fonts/LiberationSans-Bold.ttf'].map((u) => fetch(u).then((r) => r.arrayBuffer())));
+  const F = await doc.embedFont(reg, { subset: true }), B = await doc.embedFont(bold, { subset: true });
+  doc.setTitle(title); doc.setCreator('Tlapka'); doc.setLanguage('cs');
+  const W = 595, H = 842, M = 44; let page = doc.addPage([W, H]); let y = H - M;
+  const ink = rgb(0.114, 0.118, 0.133), muted = rgb(0.337, 0.357, 0.388), navy = rgb(0.059, 0.145, 0.251), brandText = rgb(0.141, 0.376, 0.624), red = rgb(0.7, 0.08, 0.08);
+  const ensure = (h: number) => { if (y - h < M) { page = doc.addPage([W, H]); y = H - M; } };
+  const wrap = (t: string, font: typeof F, size: number) => { const out: string[] = []; for (const para of t.split('\n')) { let line = ''; for (const w of para.split(' ')) { const tryL = line ? line + ' ' + w : w; if (font.widthOfTextAtSize(tryL, size) > W - 2 * M && line) { out.push(line); line = w; } else line = tryL; } out.push(line); } return out; };
+  page.drawRectangle({ x: 0, y: H - 96, width: W, height: 96, color: rgb(0.498, 0.702, 0.91) });
+  page.drawText(title, { x: M, y: H - 46, size: 22, font: B, color: navy }); page.drawText(subtitle, { x: M, y: H - 70, size: 11, font: F, color: navy });
+  y = H - 120;
+  for (const s of sections) {
+    if (!s.lines.length) continue;
+    y -= 8; ensure(34); page.drawText(s.h, { x: M, y: y - 13, size: 13, font: B, color: s.alert ? red : brandText }); y -= 18;
+    page.drawLine({ start: { x: M, y }, end: { x: W - M, y }, thickness: 0.6, color: rgb(0.85, 0.9, 0.96) }); y -= 6;
+    for (const t of s.lines) for (const l of wrap(t, s.alert ? B : F, 10.5)) { ensure(15); page.drawText(l, { x: M, y: y - 10.5, size: 10.5, font: s.alert ? B : F, color: s.alert ? red : ink }); y -= 14.5; }
+  }
+  y -= 14; ensure(12); page.drawText(footer, { x: M, y: y - 8, size: 8, font: F, color: muted });
+  return new Blob([(await doc.save()) as BlobPart], { type: 'application/pdf' });
 }

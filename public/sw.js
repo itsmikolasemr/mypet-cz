@@ -1,5 +1,5 @@
-const C = 'tlapka-v3';
-const CORE = ['/', '/vets-cz.json', '/manifest.webmanifest', '/favicon.svg'];
+const C = 'tlapka-v4';
+const CORE = ['/', '/vets-cz.json', '/dogparks-cz.json', '/manifest.webmanifest', '/favicon.svg'];
 // Precache the shell AND the hashed JS/CSS it references, so the first offline reload works.
 async function precache() {
   const c = await caches.open(C);
@@ -24,7 +24,7 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((r) => { if (r.ok) { const cp = r.clone(); caches.open(C).then((c) => c.put(req, cp)); } return r; })));
     return;
   }
-  if (url.pathname === '/vets-cz.json') {
+  if (url.pathname === '/vets-cz.json' || url.pathname === '/dogparks-cz.json') {
     // stale-while-revalidate
     e.respondWith(caches.open(C).then((c) => c.match(req).then((hit) => { const net = fetch(req).then((r) => { if (r.ok) c.put(req, r.clone()); return r; }).catch(() => hit); return hit || net; })));
   }

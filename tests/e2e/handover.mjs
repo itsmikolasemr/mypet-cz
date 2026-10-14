@@ -1,0 +1,35 @@
+import { chromium, webkit, devices } from 'playwright'; import fs from 'node:fs'; import { execSync } from 'node:child_process';
+const BR = process.env.BROWSER || 'chromium'; const BASE = 'http://localhost:4125/'; const S = '/workspace/mypet-shots/'; const SHARE = process.env.SHARE_URL;
+const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' }); const errs = []; const R = {};
+const c = await b.newContext({ ...devices['iPhone 14'], acceptDownloads: true, geolocation: { latitude: 50.0755, longitude: 14.4378 }, permissions: ['geolocation'] });
+await c.addInitScript(() => { window.__copied = []; Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t) => { window.__copied.push(t); } }, configurable: true }); window.print = () => { window.__printed = document.getElementById('print-area')?.innerText || 'EMPTY'; }; });
+const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message));
+await p.goto(BASE); await p.getByText('Přeskočit').click(); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(600);
+await p.evaluate(() => { history.pushState(null, '', '#pets/max'); dispatchEvent(new PopStateEvent('popstate')); }); await p.waitForTimeout(700);
+await p.locator('[data-handover]').scrollIntoViewIfNeeded();
+await p.locator('[data-edit-care]').click();
+await p.fill('[name=feedWhat0]', 'Granule Brit Care Lamb'); await p.fill('[name=feedAmount0]', '150 g'); await p.fill('[name=feedTimes0]', '2'); await p.fill('[name=feedAt0]', '7:00, 18:00');
+await p.fill('[name=walks]', '3× denně 30 min, u silnice na vodítku'); await p.fill('[name=habits]', 'Spí v obýváku'); await p.fill('[name=fears]', 'Ohňostroje');
+await p.fill('[name=ownerName]', 'Jana'); await p.fill('[name=ownerPhone]', '+420 777 123 456'); await p.fill('[name=vetName]', 'Veterina Brno-střed'); await p.fill('[name=vetPhone]', '543 210 987');
+await p.fill('[name=emergency]', 'Při zvracení víc než 2× volat veterináře');
+await p.screenshot({ path: S + `handover-form-${BR}.png` });
+await p.locator('[data-save-care]').click(); await p.waitForTimeout(400);
+R.summary = (await p.locator('[data-handover] + ul').innerText().catch(() => '')).slice(0, 200);
+await p.locator('[data-handover]').scrollIntoViewIfNeeded(); await p.screenshot({ path: S + `handover-card-${BR}.png` });
+await p.locator('[data-h-copy]').click(); await p.waitForTimeout(200);
+await p.locator('[data-h-site]').click(); await p.waitForTimeout(300); await p.locator('[role=alertdialog] button').last().click();
+const cp = await p.evaluate(() => window.__copied); R.copyHasPhone = cp[0]?.includes('777 123 456'); R.copyHasFeeding = cp[0]?.includes('150 g, 2× denně (7:00, 18:00)');
+R.siteNoPhone = !!cp[1] && !cp[1].includes('777') && !cp[1].includes('543 210'); R.siteHasMeds = /Léky/.test(cp[1] || ''); fs.writeFileSync(`/workspace/pwtest/site-${BR}.txt`, cp[1] || '');
+await p.locator('[data-h-print]').click(); await p.waitForTimeout(400); R.printed = ((await p.evaluate(() => window.__printed)) || '').includes('Krmení');
+const [dl] = await Promise.all([p.waitForEvent('download'), p.locator('[data-h-pdf]').click()]); const pdfp = `/workspace/pwtest/handover-${BR}.pdf`; await dl.saveAs(pdfp);
+const txt = execSync(`pdftotext ${pdfp} -`).toString(); R.pdf = ['Předávací karta', 'Krmení', 'Granule Brit Care Lamb', 'Alergie', '777 123 456', 'V nouzi'].every((k) => txt.includes(k)) || txt.slice(0, 300);
+// map: dog parks around Prague
+await p.evaluate(() => { history.pushState(null, '', '#map'); dispatchEvent(new PopStateEvent('popstate')); }); await p.waitForTimeout(1500);
+await p.locator('[data-filter=parks]').click(); await p.waitForTimeout(1800);
+R.parkPins = await p.locator('.park-pin').count(); R.vetPinsWhileParks = await p.locator('.vet-pin').count(); R.title = await p.locator('h1').first().innerText();
+await p.screenshot({ path: S + `map-dogparks-${BR}.png` });
+await p.getByText('🐕').nth(R.parkPins + 1).click().catch(() => {}); await p.waitForTimeout(500);
+R.parkSheet = await p.locator('[data-park-facts]').count(); await p.screenshot({ path: S + `map-dogpark-sheet-${BR}.png` }); await p.keyboard.press('Escape');
+await p.locator('[data-filter=parks]').click(); await p.waitForTimeout(800); R.vetPinsAfter = await p.locator('.vet-pin').count();
+if (SHARE) { const s = await c.newPage(); await s.goto(SHARE); await s.locator('[data-shared-handover]').waitFor({ timeout: 15000 }); R.shared = (await s.locator('[data-shared-handover]').innerText()).slice(0, 160).replace(/\n/g, ' | '); R.sharedTel = await s.locator('a[href^="tel:"]').count(); await s.screenshot({ path: S + `handover-shared-${BR}.png`, fullPage: true }); }
+console.log(JSON.stringify(R, null, 1), errs); await b.close();

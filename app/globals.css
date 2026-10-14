@@ -46,6 +46,8 @@ input[type='date'] { min-height: 50px; -webkit-appearance: none; }
 html.dark .leaflet-tile-pane { filter: brightness(.72) contrast(1.1) saturate(.6) hue-rotate(-10deg); }
 .vet-pin { width: 34px; height: 34px; border-radius: 50% 50% 50% 4px; transform: rotate(-45deg); background: #fff; box-shadow: 0 6px 14px -4px rgba(29,30,34,.45); display: flex; align-items: center; justify-content: center; font-size: 15px; border: 2px solid #7FB3E8; }
 .vet-pin > * , .vet-pin { line-height: 1; }
+.park-pin { width: 34px; height: 34px; border-radius: 50% 50% 50% 4px; transform: rotate(-45deg); background: #2F7D4A; box-shadow: 0 6px 14px -4px rgba(29,30,34,.45); display: flex; align-items: center; justify-content: center; font-size: 15px; border: 2px solid #fff; }
+.park-pin > span { transform: rotate(45deg); }
 .vet-pin.ns { background: linear-gradient(135deg,#A9CEF3,#7FB3E8); color: #fff; font-weight: 800; font-size: 12px; border-color: #fff; }
 .me-dot { width: 18px; height: 18px; border-radius: 50%; background: #3b82f6; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(59,130,246,.25); }
 .leaflet-control-zoom { border: none !important; box-shadow: 0 6px 16px -6px rgba(29,30,34,.35) !important; border-radius: 16px !important; overflow: hidden; }
@@ -127,3 +129,4 @@ html.glass nav[aria-label="Hlavní navigace"] > div { background: rgba(248,248,2
 @keyframes cal-l { from { transform: translateX(-40%); opacity: 0; } to { transform: none; opacity: 1; } }
 .cal-in-r { animation: cal-r .28s cubic-bezier(.2,.9,.3,1); }
 .cal-in-l { animation: cal-l .28s cubic-bezier(.2,.9,.3,1); }
+@media print { body > *:not(#print-area) { display: none !important; } #print-area { display: block !important; } html, body { background: #fff !important; } }

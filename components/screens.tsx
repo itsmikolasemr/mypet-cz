@@ -1,5 +1,6 @@
 'use client';
 import { Account } from './Account';
+import { HandoverCard } from './Handover';
 import { BatteryGuide, ExportAll, PassShare, PrnRow, ScanButton, TrashSection, TravelChecklist } from './V11';
 import { ask as askDialog, notice, toast } from './feedback';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -180,7 +181,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
         </Card>
       )}
       <PassButton pet={pet} />
-      <div className="space-y-3 mt-3"><PassShare pet={pet} /><TravelChecklist pet={pet} /></div>
+      <div className="space-y-3 mt-3"><HandoverCard pet={pet} /><PassShare pet={pet} /><TravelChecklist pet={pet} /></div>
       {ask && <button onClick={ask} className="press w-full mb-4 flex items-center gap-3 rounded-[22px] p-3.5 text-left text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] shadow-[0_14px_30px_-14px_rgba(127,179,232,.7)]">
         <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">🩺</span>
         <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-white/85">Zná profil, léky i alergie – {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />

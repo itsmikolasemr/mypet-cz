@@ -16,6 +16,25 @@ export interface Pet {
   photo?: string;
   weights: WeightEntry[];
   createdAt: string;
+  /** Předávací karta pro hlídače */
+  care?: PetCare;
+}
+
+export interface Feeding { id: string; what: string; amount: string; timesPerDay: number; times: string; notes?: string }
+export interface Contact { name: string; phone: string; note?: string }
+export interface PetCare {
+  feeding: Feeding[];
+  treats?: string;
+  water?: string;
+  walks?: string;
+  habits?: string;
+  fears?: string;
+  house?: string;
+  owner?: Contact;
+  backup?: Contact;
+  vet?: Contact & { address?: string };
+  emergency?: string;
+  updated?: string;
 }
 
 export type ReminderType = 'ockovani' | 'odcerveni' | 'antiparazitika' | 'veterina' | 'pece' | 'leky' | 'jine';
