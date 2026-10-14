@@ -1,0 +1,30 @@
+// node tests/v12.test.mjs – Tlapka Den (today/ticks/widget payload) + Wrapped stats; transpiles lib/*.ts with tsc into a temp dir
+import assert from 'node:assert/strict';
+import { execSync } from 'node:child_process';
+import fs from 'node:fs'; import path from 'node:path'; import os from 'node:os';
+const out = fs.mkdtempSync(path.join(os.tmpdir(), 'v12-'));
+execSync(`npx tsc lib/today.ts lib/wrapped.ts lib/sample.ts lib/utils.ts lib/types.ts --outDir ${out} --module es2020 --target es2020 --moduleResolution node --skipLibCheck --esModuleInterop`, { stdio: 'inherit' });
+for (const f of fs.readdirSync(out)) { const p = path.join(out, f); fs.writeFileSync(p.replace(/\.js$/, '.mjs'), fs.readFileSync(p, 'utf8').replace(/from '\.\/(\w+)'/g, "from './$1.mjs'")); }
+globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
+const T = await import(path.join(out, 'today.mjs')); const W = await import(path.join(out, 'wrapped.mjs')); const S = await import(path.join(out, 'sample.mjs'));
+const data = { ...S.sampleData(), settings: { theme: 'light', onboarded: true, notify: false, notifyHour: 9 } };
+const now = new Date();
+const tasks = T.todayTasks(data, now);
+assert.equal(tasks.length, 8, 'Max: lék 1 + krmení 2 + venčení 3, Mia: krmení 2');
+assert.equal(tasks.filter((t) => t.done).length, 1, 'ranní venčení z ukázky je hotové');
+const open = tasks.find((t) => !t.done && t.kind === 'feed');
+const d1 = T.applyTick(data, open.id, 'test', now);
+assert.equal(T.todayTasks(d1, now).filter((t) => t.done).length, 2);
+assert.strictEqual(T.applyTick(d1, open.id, 'test', now), d1, 'opakovaný tick (widget + appka) nic nezdvojí');
+const med = tasks.find((t) => t.kind === 'med');
+const d2 = T.applyTick(d1, med.id, 'widget', now);
+assert.equal(d2.meds[0].given.length, d1.meds[0].given.length + 1, 'lék se zapíše do Medication.given');
+const d3 = T.undoTick(d2, med.id, now); assert.equal(d3.meds[0].given.length, d1.meds[0].given.length, 'undo vrátí dávku');
+const w = T.widgetToday(d2, now); assert.equal(w.done, 3); assert.equal(w.total, 8); assert.ok(JSON.stringify(w).length < 4096, 'payload < 4 KB');
+const st = W.wrapped(data, 'max', now.getFullYear(), now);
+assert.ok(st.walks > 300 && st.doseStreak >= 30 && st.visits >= 2 && st.spent > 0, JSON.stringify({ w: st.walks, s: st.doseStreak, v: st.visits }));
+assert.ok(st.parks.length >= 2 && st.topPark);
+const sl = W.slides(st); assert.equal(sl[0].key, 'intro'); assert.equal(sl.at(-1).key, 'invite'); assert.ok(sl.length >= 7);
+const cat = W.wrapped(data, 'mia', now.getFullYear(), now); assert.equal(cat.walks, 0); assert.ok(!W.slides(cat).some((s) => s.key === 'walks'), 'kočka bez procházek nemá slide procházek');
+const empty = W.wrapped({ ...data, visits: [], daily: [], meds: [] }, 'mia', now.getFullYear(), now); assert.ok(W.slides(empty).length >= 4, 'i prázdný rok má smysluplný příběh');
+console.log('v12 OK', { tasks: tasks.length, walks: st.walks, streak: st.doseStreak, slides: sl.length });

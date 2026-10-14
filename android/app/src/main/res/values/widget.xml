@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_bg">#ECEFF3</color><color name="widget_ink">#2E3138</color><color name="widget_muted">#6B7079</color><color name="widget_track">#D5DAE1</color>
+    <string name="widget_title">Tlapka Den</string>
+    <string name="widget_desc">Dnešní léky, krmení a venčení – odškrtni jedním klepnutím.</string>
+    <string name="widget_empty">Na dnes nic. Přidej krmení a venčení v appce.</string>
+    <string name="widget_all_done">Všechno hotovo. Dobrá práce!</string>
+    <string name="widget_left">Zbývá %1$d</string>
+    <string name="widget_walk">Venčení – %1$s</string>
+    <string name="widget_tick_a11y">Odškrtnout: %1$s</string>
+</resources>

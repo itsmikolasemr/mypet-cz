@@ -20,6 +20,15 @@
             </intent-filter>
         </activity>
 
+        <!-- v1.2 Tlapka Den widget -->
+        <receiver android:name=".TlapkaDenWidget" android:exported="false" android:label="@string/widget_title">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="cz.tlapka.app.WIDGET_TICK" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/tlapka_den_widget_info" />
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

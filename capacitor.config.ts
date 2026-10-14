@@ -4,9 +4,9 @@ const config: CapacitorConfig = {
   appId: 'cz.tlapka.app',
   appName: 'Tlapka',
   webDir: 'out',
-  backgroundColor: '#FFF8F0',
+  backgroundColor: '#ECEFF3',
   plugins: {
-    LocalNotifications: { smallIcon: 'ic_stat_tlapka', iconColor: '#E8553A' },
+    LocalNotifications: { smallIcon: 'ic_stat_tlapka', iconColor: '#7FB3E8' },
   },
 };
 
