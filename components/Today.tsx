@@ -1,4 +1,5 @@
 'use client';
+import { myName } from '@/lib/growth';
 import { loc } from '@/lib/i18n';
 /** v1.2 „Tlapka Den“ – in-app twin of the home-screen widget: today's meds / feeding / walks, one tap to tick. */
 import { useMemo } from 'react';
@@ -24,7 +25,7 @@ function Ring({ done, total, size = 56 }: { done: number; total: number; size?: 
 export function TaskRow({ t, compact = false }: { t: TodayTask; compact?: boolean }) {
   const { tickToday, untickToday } = useStore();
   const k = KIND[t.kind];
-  const tick = () => { if (t.done) { untickToday(t.id); return; } tickToday(t.id); toast(`${t.pet}: ${t.kind === 'walk' ? 'venčení' : t.title} hotovo`, () => untickToday(t.id)); };
+  const tick = () => { if (t.done) { untickToday(t.id); return; } tickToday(t.id, myName()); toast(`${t.pet}: ${t.kind === 'walk' ? 'venčení' : t.title} hotovo`, () => untickToday(t.id)); };
   return (
     <div className={`flex items-center gap-3 ${compact ? 'py-2' : 'p-3'} ${t.done ? 'opacity-60' : ''}`} data-task={t.id} data-done={t.done ? '1' : '0'}>
       <span className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-primary-d dark:text-primary flex items-center justify-center"><Glyph name={k.g} /></span>

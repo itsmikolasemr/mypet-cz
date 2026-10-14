@@ -1,7 +1,7 @@
 -- Tlapka v1.2 growth: co-owners (párový režim), group challenges, promo codes, referrals, achievements.
 -- All objects NEW, prefixed tl_, RLS on. Reward maths runs ONLY on the server (security definer RPCs / service role).
 
--- ───────── shared: Premium reward ledger (cap 60 days / rolling year from rewards) ─────────
+-- ───────── shared: Premium reward ledger (caps per rolling year: referrals 12 months = 365 d, badges 60 d; promo uncapped) ─────────
 create table public.tl_reward_ledger (
   id bigint generated always as identity primary key,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -20,8 +20,8 @@ language plpgsql security definer set search_path = '' as $$
 declare used int; give int; prof public.tl_profiles;
 begin
   if p_source <> 'promo' then
-    select coalesce(sum(days),0) into used from public.tl_reward_ledger where user_id = p_user and source <> 'promo' and granted_at > now() - interval '365 days';
-    give := greatest(0, least(p_days, 60 - used));
+    select coalesce(sum(days),0) into used from public.tl_reward_ledger where user_id = p_user and source = p_source and granted_at > now() - interval '365 days';
+    give := greatest(0, least(p_days, (case p_source when 'referral' then 365 else 60 end) - used));
   else give := p_days; end if;
   insert into public.tl_reward_ledger(user_id, source, ref, days) values (p_user, p_source, p_ref, give) on conflict do nothing;
   if not found then return 0; end if;           -- idempotent: same reward twice = nothing
@@ -198,7 +198,7 @@ create or replace view tl_private.promo_stats as
   select c.code, c.creator, c.days, c.max_uses, count(r.user_id) as redemptions, max(r.redeemed_at) as last_redeemed
   from public.tl_promo_codes c left join public.tl_promo_redemptions r on r.code = c.code group by c.code;
 
--- ───────── 8) Referrals: inviter +30 days, friend +14 days; counted after friend is active 7 days ─────────
+-- ───────── 8) Referrals: both get 1 month (friend on sign-up, inviter after the friend is active 7 days); max 12 months / year ─────────
 create table public.tl_referrals (
   id uuid primary key default gen_random_uuid(),
   inviter uuid not null references auth.users(id) on delete cascade,
@@ -210,7 +210,7 @@ create table public.tl_referrals (
 alter table public.tl_referrals enable row level security;
 create policy "tl_referrals own read" on public.tl_referrals for select to authenticated using (inviter = (select auth.uid()) or invitee = (select auth.uid()));
 
--- referral code = first 10 hex chars of the inviter's uid (stable, shareable); the friend's 14 days start immediately
+-- referral code = first 10 hex chars of the inviter's uid (stable, shareable); the friend's month starts immediately
 create or replace function public.tl_referral_claim(p_code text) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare inv uuid; me uuid := auth.uid(); age interval;
@@ -222,8 +222,8 @@ begin
   if age > interval '3 days' then return jsonb_build_object('ok', false, 'reason', 'not_new'); end if;   -- only fresh accounts
   insert into public.tl_referrals(inviter, invitee) values (inv, me) on conflict (invitee) do nothing;
   if not found then return jsonb_build_object('ok', false, 'reason', 'already'); end if;
-  perform tl_private.grant_days(me, 'referral', 'welcome', 14);
-  return jsonb_build_object('ok', true, 'days', 14);
+  perform tl_private.grant_days(me, 'referral', 'welcome', 30);
+  return jsonb_build_object('ok', true, 'days', 30);
 end $$;
 
 -- run daily by the service role (Netlify scheduled function): friend qualifies when the account is ≥7 days old,
@@ -321,3 +321,140 @@ create policy "tl_daily update" on public.tl_daily for update to authenticated u
 do $$ begin
   if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then execute 'alter publication supabase_realtime add table public.tl_daily'; end if;
 end $$;
+
+
+-- ═════════ Kolo 3: komunita „Tlapkaři“ (MVP), útulky + adopční výloha, Dar z Tlapky ═════════
+-- Profile: pet-first, city only (never address), private by default ('friends').
+create table public.tl_tlapkari (
+  user_id uuid primary key default auth.uid() references auth.users(id) on delete cascade,
+  pet_name text not null check (length(pet_name) between 1 and 40),
+  species text not null default 'pes',
+  breed text, city text check (city is null or length(city) <= 60),
+  avatar text,                                 -- avatar seed/colour, no photos in MVP
+  showcase text[] not null default '{}' check (cardinality(showcase) <= 3),
+  level int not null default 1 check (level between 1 and 5),   -- cosmetic only, never unlocks care features
+  visibility text not null default 'friends' check (visibility in ('friends','public')),
+  birthday date,                               -- month/day used for the friends feed
+  updated_at timestamptz not null default now()
+);
+create table public.tl_friendships (
+  a uuid not null references auth.users(id) on delete cascade,
+  b uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (a, b), check (a < b)
+);
+create table public.tl_friend_tokens (           -- QR in the park: short-lived token, scanned by the other phone
+  token text primary key default encode(extensions.gen_random_bytes(12), 'hex'),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  expires_at timestamptz not null default now() + interval '15 minutes'
+);
+create table public.tl_feed_events (             -- only system events (badge, birthday, new friend, level) – no user text, no comments
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  kind text not null check (kind in ('badge','birthday','friend','level','adoption')),
+  ref text,                                    -- badge id / level number / friend pet name
+  created_at timestamptz not null default now()
+);
+create index tl_feed_events_user_idx on public.tl_feed_events(user_id, created_at desc);
+create table public.tl_feed_reactions (
+  event_id bigint not null references public.tl_feed_events(id) on delete cascade,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  kind text not null check (kind in ('paw','dot')),          -- brand: no hearts → tlapka + tečka ("mazlení")
+  created_at timestamptz not null default now(),
+  primary key (event_id, user_id)
+);
+alter table public.tl_tlapkari enable row level security;
+alter table public.tl_friendships enable row level security;
+alter table public.tl_friend_tokens enable row level security;
+alter table public.tl_feed_events enable row level security;
+alter table public.tl_feed_reactions enable row level security;
+create or replace function tl_private.is_friend(o uuid) returns boolean language sql stable security definer set search_path = '' as $$
+  select o = auth.uid() or exists (select 1 from public.tl_friendships where (a = auth.uid() and b = o) or (b = auth.uid() and a = o)) $$;
+create policy "tl_tlapkari read" on public.tl_tlapkari for select to authenticated using (visibility = 'public' or (select tl_private.is_friend(user_id)));
+create policy "tl_tlapkari own write" on public.tl_tlapkari for insert to authenticated with check (user_id = (select auth.uid()));
+create policy "tl_tlapkari own update" on public.tl_tlapkari for update to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy "tl_tlapkari own delete" on public.tl_tlapkari for delete to authenticated using (user_id = (select auth.uid()));
+create policy "tl_friendships read" on public.tl_friendships for select to authenticated using (a = (select auth.uid()) or b = (select auth.uid()));
+create policy "tl_friendships unfriend" on public.tl_friendships for delete to authenticated using (a = (select auth.uid()) or b = (select auth.uid()));
+create policy "tl_friend_tokens own" on public.tl_friend_tokens for select to authenticated using (user_id = (select auth.uid()));
+create policy "tl_feed read friends" on public.tl_feed_events for select to authenticated using ((select tl_private.is_friend(user_id)));
+create policy "tl_reactions read" on public.tl_feed_reactions for select to authenticated
+  using (exists (select 1 from public.tl_feed_events e where e.id = event_id and tl_private.is_friend(e.user_id)));
+create policy "tl_reactions own" on public.tl_feed_reactions for insert to authenticated
+  with check (user_id = (select auth.uid()) and exists (select 1 from public.tl_feed_events e where e.id = event_id and tl_private.is_friend(e.user_id)));
+create policy "tl_reactions undo" on public.tl_feed_reactions for delete to authenticated using (user_id = (select auth.uid()));
+
+create or replace function public.tl_friend_token() returns text language plpgsql security definer set search_path = '' as $$
+declare t text;
+begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+  delete from public.tl_friend_tokens where user_id = auth.uid() or expires_at < now();
+  insert into public.tl_friend_tokens(user_id) values (auth.uid()) returning token into t; return t;
+end $$;
+create or replace function public.tl_friend_add(p_token text) returns jsonb language plpgsql security definer set search_path = '' as $$
+declare o uuid; me uuid := auth.uid(); pn text;
+begin
+  if me is null then raise exception 'not authenticated'; end if;
+  select user_id into o from public.tl_friend_tokens where token = p_token and expires_at > now();
+  if o is null or o = me then return jsonb_build_object('ok', false); end if;
+  insert into public.tl_friendships(a, b) values (least(me, o), greatest(me, o)) on conflict do nothing;
+  if found then
+    select pet_name into pn from public.tl_tlapkari where user_id = o;
+    insert into public.tl_feed_events(user_id, kind, ref) values (me, 'friend', pn);
+    insert into public.tl_feed_events(user_id, kind, ref) values (o, 'friend', (select pet_name from public.tl_tlapkari where user_id = me));
+  end if;
+  return jsonb_build_object('ok', true, 'pet', pn);
+end $$;
+-- events are written by the server: badges only if the badge row exists for that user; birthdays by the daily job
+create or replace function public.tl_feed_badge(p_badge text) returns void language plpgsql security definer set search_path = '' as $$
+begin
+  if not exists (select 1 from public.tl_achievements where user_id = auth.uid() and badge = p_badge) then raise exception 'no such badge'; end if;
+  if exists (select 1 from public.tl_feed_events where user_id = auth.uid() and kind = 'badge' and ref = p_badge) then return; end if;
+  insert into public.tl_feed_events(user_id, kind, ref) values (auth.uid(), 'badge', p_badge);
+end $$;
+create or replace function public.tl_feed_birthdays() returns int language sql security definer set search_path = '' as $$
+  with ins as (insert into public.tl_feed_events(user_id, kind, ref)
+    select user_id, 'birthday', pet_name from public.tl_tlapkari t
+    where to_char(birthday, 'MM-DD') = to_char(now() at time zone 'Europe/Prague', 'MM-DD')
+      and not exists (select 1 from public.tl_feed_events e where e.user_id = t.user_id and e.kind = 'birthday' and e.created_at > now() - interval '300 days')
+    returning 1) select count(*)::int from ins $$;
+
+-- Shelters (verified manually: IČO in ARES, consent, Darujme/Donio profile) + adoption showcase. Tlapka never handles donor money.
+create table public.tl_shelters (
+  id uuid primary key default gen_random_uuid(),
+  name text not null, ico text not null, city text not null, region text not null,
+  web text, donate_url text check (donate_url is null or donate_url ~ '^https://(www\.)?(darujme\.cz|donio\.cz)/'),
+  contact_email text, contact_phone text,
+  verified_at timestamptz,                      -- null = not shown
+  created_at timestamptz not null default now()
+);
+create table public.tl_adoptions (
+  id uuid primary key default gen_random_uuid(),
+  shelter_id uuid not null references public.tl_shelters(id) on delete cascade,
+  name text not null, species text not null, age_text text, sex text,
+  photo_url text, temperament text, kids_ok boolean, dogs_ok boolean, cats_ok boolean,
+  active boolean not null default true, created_at timestamptz not null default now()
+);
+-- Dar z Tlapky: 5 % of Premium revenue each month → shelter of the month (company donation, users never pay here)
+create table public.tl_shelter_of_month (
+  month date primary key check (extract(day from month) = 1),
+  shelter_id uuid not null references public.tl_shelters(id),
+  premium_revenue_czk numeric(12,2),            -- net revenue basis, filled after the month closes
+  donated_czk numeric(12,2),                    -- = 5 % of basis, filled when paid
+  paid_at timestamptz, proof_url text, note text
+);
+alter table public.tl_shelters enable row level security;
+alter table public.tl_adoptions enable row level security;
+alter table public.tl_shelter_of_month enable row level security;
+create policy "tl_shelters public verified" on public.tl_shelters for select to anon, authenticated using (verified_at is not null);
+create policy "tl_adoptions public" on public.tl_adoptions for select to anon, authenticated
+  using (active and exists (select 1 from public.tl_shelters s where s.id = shelter_id and s.verified_at is not null));
+create policy "tl_som public" on public.tl_shelter_of_month for select to anon, authenticated using (true);
+
+do $$ declare f text; begin
+  foreach f in array array['tl_friend_token()','tl_friend_add(text)','tl_feed_badge(text)'] loop
+    execute format('revoke all on function public.%s from public, anon', f);
+    execute format('grant execute on function public.%s to authenticated', f);
+  end loop; end $$;
+revoke all on function public.tl_feed_birthdays() from public, anon, authenticated;
+grant execute on function public.tl_feed_birthdays() to service_role;

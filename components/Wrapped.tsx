@@ -42,7 +42,7 @@ function SlideView({ s, i, total, photo, qr }: { s: Slide; i: number; total: num
 }
 
 export function WrappedPlayer({ petId, onClose, year }: { petId: string; onClose: () => void; year?: number }) {
-  const { data } = useStore();
+  const { data, setFlag } = useStore();
   const st = useMemo(() => wrapped(data, petId, year), [data, petId, year]);
   const list = useMemo(() => (st ? mkSlides(st) : []), [st]);
   const [i, setI] = useState(0); const [paused, setPaused] = useState(false); const [qr, setQr] = useState<string>(); const [busy, setBusy] = useState(false);
@@ -67,8 +67,9 @@ export function WrappedPlayer({ petId, onClose, year }: { petId: string; onClose
       else if (all) { const { zipSync } = await import('fflate'); const z: Record<string, Uint8Array> = {}; for (const f of files) z[f.name] = new Uint8Array(await f.arrayBuffer()); dl(new Blob([zipSync(z) as BlobPart], { type: 'application/zip' }), `tlapka-wrapped-${st.pet.name}.zip`); toast('Příběh uložen (ZIP s obrázky 1080×1920)'); }
       else { dl(files[0], files[0].name); toast('Obrázek uložen – nahraj ho do Instagram Stories'); }
       (window as unknown as { __wrappedFiles?: number }).__wrappedFiles = files.length;
+      setFlag(`wrapped:${petId}`);
     } finally { setBusy(false); }
-  }, [st, list, i, qr]);
+  }, [st, list, i, qr, setFlag, petId]);
 
   if (!st) return null;
   const s = list[i];

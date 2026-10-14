@@ -26,6 +26,10 @@ export function validate(x: unknown): AppData | null {
     cards: Array.isArray(d.cards) ? d.cards : [],
     trash: Array.isArray(d.trash) ? d.trash : [],
     daily: Array.isArray(d.daily) ? d.daily : [],
+    badges: Array.isArray(d.badges) ? d.badges : [],
+    friends: Array.isArray(d.friends) ? d.friends : [],
+    checkins: Array.isArray(d.checkins) ? d.checkins : [],
+    flags: d.flags && typeof d.flags === 'object' ? d.flags : {},
     settings: { theme: d.settings?.theme ?? 'system', onboarded: true, notify: !!d.settings?.notify, notifyHour: d.settings?.notifyHour ?? 9, dayBefore: d.settings?.dayBefore ?? true, weekly: d.settings?.weekly ?? true },
   };
 }
@@ -150,6 +154,9 @@ function useStoreImpl() {
       setData({ ...x, docs });
     },
     applyRemote: (f: (d: AppData) => AppData) => upd(f),
+    /** generic local update (v1.2 growth features) */
+    patch: (f: (d: AppData) => AppData) => upd(f),
+    setFlag: (k: string, v = new Date().toISOString()) => upd((d) => ({ ...d, flags: { ...(d.flags ?? {}), [k]: v } })),
     restoreTrash: (group: string) => setData((d) => {
       const items = (d.trash ?? []).filter((t) => t.group === group);
       const n = { ...d, trash: (d.trash ?? []).filter((t) => t.group !== group) } as AppData;

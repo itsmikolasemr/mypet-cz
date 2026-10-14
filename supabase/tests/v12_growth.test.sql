@@ -78,7 +78,11 @@ select case when sum(days) = 30 then 'ok inviter +30 d' else 'FAIL inviter days'
 -- cap: rewards (non-promo) never exceed 60 days / year
 select tl_private.grant_days('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'referral', 'r2', 30) as g2, tl_private.grant_days('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'referral', 'r3', 30) as g3,
        tl_private.grant_days('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'referral', 'r3', 30) as g3again \gset
-select case when :g2 = 30 and :g3 = 0 and :g3again = 0 then 'ok 60-day cap + idempotent' else 'FAIL cap ' || :g2 || '/' || :g3 end;
+select case when :g2 = 30 and :g3 = 30 and :g3again = 0 then 'ok referral idempotent' else 'FAIL ref ' || :g2 || '/' || :g3 end;
+select sum(tl_private.grant_days('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'referral', 'bulk' || g, 30)) as bulk from generate_series(1, 20) g \gset
+select case when (select sum(days) from public.tl_reward_ledger where user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' and source = 'referral') = 365 then 'ok referral cap 12 months/yr' else 'FAIL ref cap' end;
+select tl_private.grant_days('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'badge', 'b1', 30) + tl_private.grant_days('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'badge', 'b2', 30) + tl_private.grant_days('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'badge', 'b3', 30) as bdays \gset
+select case when :bdays = 60 then 'ok badge cap 60 d' else 'FAIL badge cap ' || :bdays end;
 
 -- 7) badges: family is verified from server data (owner has an editor) → no reward for Tečka; unknown evidence → cosmetic only
 select pg_temp.as_user('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'); set role authenticated;
@@ -90,3 +94,26 @@ set role anon;
 do $$ begin perform public.tl_redeem_promo('X'); raise exception 'FAIL anon'; exception when insufficient_privilege then null; end $$;
 reset role;
 select 'ok anon blocked';
+
+-- community: QR friendship, feed visible only to friends, reactions only on friends' events, shelters only when verified
+select pg_temp.as_user('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'); set role authenticated;
+insert into public.tl_tlapkari(pet_name, species, city) values ('Max', 'pes', 'Praha');
+select public.tl_friend_token() as tok \gset
+reset role;
+select pg_temp.as_user('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'); set role authenticated;
+insert into public.tl_tlapkari(pet_name, species, city) values ('Bella', 'pes', 'Praha');
+select count(*) as seen_before from public.tl_tlapkari where pet_name = 'Max' \gset
+select public.tl_friend_add(:'tok')->>'pet' as fp \gset
+select count(*) as seen_after from public.tl_tlapkari where pet_name = 'Max' \gset
+select id as ev from public.tl_feed_events where kind = 'friend' and user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' \gset
+insert into public.tl_feed_reactions(event_id, kind) values (:ev, 'paw');
+reset role;
+select case when :seen_before = 0 and :seen_after = 1 and :'fp' = 'Max' then 'ok friends via QR + private profiles' else 'FAIL friends' end;
+select pg_temp.as_user('cccccccc-cccc-cccc-cccc-cccccccccccc'); set role authenticated;
+select count(*) as stranger_feed from public.tl_feed_events where user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' \gset
+reset role;
+select case when :stranger_feed = 0 then 'ok feed hidden from non-friends' else 'FAIL feed leak' end;
+insert into public.tl_shelters(name, ico, city, region) values ('Neověřený', '1', 'X', 'Y');
+set role anon; select count(*) as sh from public.tl_shelters \gset
+reset role;
+select case when :sh = 0 then 'ok unverified shelters hidden' else 'FAIL shelters' end;
