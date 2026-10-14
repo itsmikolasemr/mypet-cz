@@ -8,7 +8,7 @@ await p.goto(BASE); await p.getByText('Vyzkoušet s ukázkovými daty').click();
 await p.evaluate(() => { const d = JSON.parse(localStorage.getItem('tlapka:data:v1')); d.cards = [{ id: 'pc', store: 'petcenter', name: 'Pet Center', code: '8591234567893', format: 'EAN13', notes: '', uses: 0, created: new Date().toISOString() }]; localStorage.setItem('tlapka:data:v1', JSON.stringify(d)); history.replaceState(null, '', '#map'); });
 await p.reload(); await p.waitForTimeout(2000);
 const chips = await p.locator('[data-testid=map] ~ div button').evaluateAll((bs) => bs.map((x) => { const r = x.getBoundingClientRect(); return [x.innerText, Math.round(r.left), Math.round(r.right), x.scrollWidth <= x.clientWidth + 1]; }));
-R.chipsFit = chips.length === 3 && chips.every((x) => x[1] >= 0 && x[2] <= 390 && x[3]); R.chips = chips.map((x) => x[0]);
+R.chipsFit = chips.length === 4 && chips.slice(0, 3).every((x) => x[1] >= 0 && x[2] <= 390 && x[3]) /* v1.2: 4th chip „Se psem“ in a horizontally scrolling row */; R.chips = chips.map((x) => x[0]);
 await p.locator('[data-filter=shops]').click(); await p.waitForTimeout(2000);
 R.title = await p.locator('h1').first().innerText(); R.shopPins = await p.locator('.shop-pin').count(); R.chainPins = await p.locator('.shop-pin.chain').count(); R.vetPins = await p.locator('.vet-pin').count();
 await p.screenshot({ path: S + `map-zverimexy-${BR}.png` });
