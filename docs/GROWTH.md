@@ -34,7 +34,7 @@ node tests/v12.test.mjs
 
 ## Seed (ručně, service role)
 ```sql
-insert into tl_promo_codes(code, creator, days, max_uses) values ('TLAPKA-ANNA', 'Anna (IG)', 30, 500);
+insert into tl_promo_codes(code, creator, days, max_uses) values ('ANNA30', 'Anna (IG)', 30, 500);
 insert into tl_shelters(name, ico, city, region, web, donate_url, contact_email, verified_at)
   values ('…', '…', '…', '…', 'https://…', 'https://www.darujme.cz/…', '…', now());   -- jen ověřené (IČO v ARES, smlouva)
 insert into tl_shelter_of_month(month, shelter_id) values ('2026-11-01', '<id>');  -- donated_czk + proof_url po zaplacení

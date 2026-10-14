@@ -1,9 +1,9 @@
 'use client';
-// Zásady ochrany osobních údajů, Podmínky užívání, O aplikaci. Údaje o provozovateli jsou ZÁSTUPNÉ – před vydáním doplnit (hledej „[DOPLNIT“).
+// Zásady ochrany osobních údajů, Podmínky užívání, O aplikaci. Provozovatel z ARES (14. 10. 2026); e-maily jsou ZÁSTUPNÉ – před vydáním doplnit (hledej „[DOPLNIT“).
 import { PageHeader, Card, Logo } from './ui';
 
 export const COMPANY = {
-  name: '[DOPLNIT: obchodní firma / jméno podnikatele]', ico: '[DOPLNIT: IČO]', address: '[DOPLNIT: sídlo]',
+  name: 'ABEGRIN s.r.o.', ico: '29262585', dic: 'CZ29262585', address: 'Králova 279/9, Žabovřesky, 616 00 Brno', register: 'C 69118 vedená u Krajského soudu v Brně',
   email: '[DOPLNIT: kontaktní e-mail, např. podpora@tlapka.cz]', dpo: '[DOPLNIT: e-mail pro ochranu osobních údajů]',
 };
 export const LEGAL_UPDATED = '14. 10. 2026';
@@ -16,7 +16,7 @@ const Doc = ({ title, children }: { title: string; children: React.ReactNode }) 
     {children}
   </article>
 );
-const Op = () => <p>Provozovatel: <Ph>{COMPANY.name}</Ph>, IČO <Ph>{COMPANY.ico}</Ph>, sídlo <Ph>{COMPANY.address}</Ph>, e-mail <Ph>{COMPANY.email}</Ph>.</p>;
+const Op = () => <p>Provozovatel: {COMPANY.name}, IČO {COMPANY.ico}, DIČ {COMPANY.dic}, sídlo {COMPANY.address}, zapsaná v obchodním rejstříku, spisová značka {COMPANY.register}, e-mail <Ph>{COMPANY.email}</Ph>.</p>;
 
 export function Privacy() {
   return (
