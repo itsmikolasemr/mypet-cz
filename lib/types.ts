@@ -80,6 +80,9 @@ export interface Medication {
   end: string;
   notes: string;
   reminderId?: string;
+  /** as-needed (Dle potřeby): minimum hours between doses */
+  minHours?: number;
+  given?: { at: string; by?: string }[];
 }
 
 export type Severity = 'mirna' | 'stredni' | 'tezka';

@@ -205,6 +205,9 @@ export function MedForm({ open, onClose, med, petId }: { open: boolean; onClose:
           <Field label="Od"><input type="date" required className={inputCls} value={f.start} onChange={(e) => set('start', e.target.value)} /></Field>
           <Field label="Do (volitelné)"><input type="date" className={inputCls} value={f.end} min={f.start} onChange={(e) => set('end', e.target.value)} /></Field>
         </div>
+        <div className={f.frequency === 'Dle potřeby' ? '' : 'hidden'}>
+          <Field label="Nejdříve znovu po (hodinách)"><input inputMode="numeric" name="minHours" className={inputCls} value={f.minHours ?? ''} onChange={(e) => set('minHours', e.target.value ? Math.max(0, Math.min(168, Number(e.target.value) || 0)) : undefined)} placeholder="např. 8 – podle veterináře" /></Field>
+        </div>
         <Field label="Poznámka"><textarea rows={2} className={inputCls} value={f.notes} onChange={(e) => set('notes', e.target.value)} placeholder="např. podávat s jídlem" /></Field>
         <label className="flex items-center gap-3 rounded-2xl bg-primary/5 px-4 py-3">
           <input type="checkbox" className="w-5 h-5 accent-[#E8553A]" checked={remind} onChange={(e) => setRemind(e.target.checked)} />

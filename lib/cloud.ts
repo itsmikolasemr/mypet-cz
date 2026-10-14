@@ -5,6 +5,7 @@
 import { createClient, type Provider, type Session, type SupabaseClient } from '@supabase/supabase-js';
 import type { AppData, DocMeta } from './types';
 import { loadBlob, saveBlob } from './docs';
+import { deviceId } from './premium';
 
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://owveqkchmcutoqlsjlyb.supabase.co';
 export const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_KEY || 'sb_publishable_EDy4Im3JrXxTsRYd62GY1A_J3gw_tcY';
@@ -12,7 +13,8 @@ export const NATIVE_REDIRECT = 'cz.tlapka.app://auth-callback';
 
 let sb: SupabaseClient | null = null;
 export function cloud(): SupabaseClient {
-  if (!sb) sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce', storageKey: 'tlapka:auth' } });
+  const dev = typeof localStorage !== 'undefined' ? deviceId() : ''; // same id premium/Aivet use; created here if first
+  if (!sb) sb = createClient(SUPABASE_URL, SUPABASE_KEY, { global: { headers: dev ? { 'x-tlapka-device': dev } : {} }, auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce', storageKey: 'tlapka:auth' } });
   return sb;
 }
 const isNative = () => typeof window !== 'undefined' && !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
@@ -106,18 +108,23 @@ export async function syncFiles(hh: string, docs: DocMeta[]) {
 }
 
 /** One full round: push local changes since last snapshot, then pull remote changes since cursor and merge (LWW). */
-export async function syncNow(hh: string, data: AppData, apply: (f: (d: AppData) => AppData) => void, who?: string, opts: { files?: boolean } = {}): Promise<SyncResult> {
+export async function syncNow(hh: string, data: AppData, apply: (f: (d: AppData) => AppData) => void, who?: string, opts: { files?: boolean; push?: boolean } = {}): Promise<SyncResult> {
   const c = cloud();
   const snap: Snap = { ...emptySnap(), ...JSON.parse(localStorage.getItem(SNAP) || 'null') };
   let pushed = 0, doses = 0;
-  // 1) push
-  for (const k of COLLS) {
+  // 1) push (skipped when this device is not the free backup device)
+  for (const k of opts.push === false ? [] : COLLS) {
     const cur = new Map((data[k] as Rec[]).map((r) => [r.id, r]));
     const rows: Record<string, unknown>[] = [];
     for (const [id, r] of cur) {
       const s = stable(r);
       if (snap[k][id] !== s) {
         rows.push({ household_id: hh, id, pet_id: k === 'pets' ? id : r.petId ?? null, data: r, deleted: false, ...(k === 'docs' ? { storage_path: `${hh}/${id}` } : {}) });
+        const given = (r as { given?: { at: string; by?: string }[] }).given;
+        if (k === 'meds' && given) {
+          const before = snap[k][id] ? (JSON.parse(snap[k][id]).given ?? []).length : given.length;
+          for (const g of given.slice(before)) { const ins = await c.from('tl_dose_logs').insert({ household_id: hh, pet_id: r.petId, med_id: id, given_by_name: g.by ?? who ?? null, given_at: g.at }); if (!ins.error) doses++; }
+        }
         if (k === 'reminders' && r.history) {
           const before: string[] = snap[k][id] ? (JSON.parse(snap[k][id]).history ?? []) : r.history;
           for (const day of r.history.slice(before.length)) {

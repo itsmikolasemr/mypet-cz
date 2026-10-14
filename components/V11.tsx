@@ -242,3 +242,29 @@ export function TravelChecklist({ pet }: { pet: Pet }) {
     </Card>
   );
 }
+
+// ---------- As-needed meds: "bezpečné znovu po…" ----------
+export function prnStatus(m: { minHours?: number; given?: { at: string; by?: string }[] }, now = Date.now()) {
+  const last = m.given?.at(-1); if (!last) return { last: null, nextAt: null as number | null, ok: true };
+  const nextAt = Date.parse(last.at) + (m.minHours ?? 0) * 3600e3;
+  return { last, nextAt, ok: now >= nextAt };
+}
+export function PrnRow({ med }: { med: import('@/lib/types').Medication }) {
+  const { saveMed } = useStore(); const cloud = useCloud();
+  const [, tick] = useState(0); useEffect(() => { const t = setInterval(() => tick((x) => x + 1), 60000); return () => clearInterval(t); }, []);
+  const st = prnStatus(med);
+  const hm = (t: number | string) => new Date(t).toLocaleString('cs-CZ', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+  const give = async () => {
+    if (!st.ok && !(await (await import('./feedback')).ask({ title: 'Ještě není bezpečné podat', text: `Podle nastavení až ${hm(st.nextAt!)}. Opravdu zapsat dávku?`, ok: 'Přesto zapsat', danger: true }))) return;
+    const prev = med; saveMed({ ...med, given: [...(med.given ?? []), { at: new Date().toISOString(), by: cloud.name }].slice(-50) });
+    toast(`${med.name} – zapsáno ${new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}`, () => saveMed(prev));
+  };
+  return (
+    <div className="flex items-center gap-3 px-3 pb-2.5 -mt-1" data-prn={med.id}>
+      <p className={`flex-1 text-[13px] ${st.ok ? 'text-muted' : 'text-amber-700 dark:text-amber-300 font-semibold'}`}>
+        {st.last ? <>Naposledy {hm(st.last.at)}{st.last.by ? ` (${st.last.by})` : ''} · {st.ok ? 'lze znovu podat' : `bezpečně znovu po ${hm(st.nextAt!)}`}</> : med.minHours ? `Dle potřeby, nejdřív po ${med.minHours} h` : 'Dle potřeby'}
+      </p>
+      <button onClick={give} className="press min-h-[44px] px-3 rounded-xl font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]">Podáno teď</button>
+    </div>
+  );
+}

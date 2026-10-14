@@ -2,7 +2,7 @@
 import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
 process.env.AIVET_API_KEY = 'dev-dummy'; process.env.AIVET_BASE_URL = 'http://localhost:4198/'; process.env.ENTITLEMENT_SECRET = 'dev-secret'; process.env.AIVET_FALLBACK_MODELS = '';
 const ROOT = '/workspace/mypet-scan';
-const fns = { '/api/aivet': 'aivet.mjs', '/api/ai': 'ai.mjs', '/api/entitlement': 'entitlement.mjs', '/api/vets': 'vets.mjs' };
+const fns = { '/api/aivet': 'aivet.mjs', '/api/ai': 'ai.mjs', '/api/entitlement': 'entitlement.mjs', '/api/vets': 'vets.mjs', '/api/account/delete': 'account-delete.mjs', '/api/billing/revenuecat': 'billing-revenuecat.mjs', '/api/billing/stripe': 'billing-stripe.mjs' };
 const loaded = {};
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json', '.woff2': 'font/woff2', '.ttf': 'font/ttf' };
 http.createServer(async (req, res) => {

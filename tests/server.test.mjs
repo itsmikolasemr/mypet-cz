@@ -1,0 +1,45 @@
+// node tests/server.test.mjs – server functions against a mocked Supabase (no service key needed locally)
+import assert from 'node:assert/strict';
+Object.assign(process.env, { SUPABASE_SERVICE_ROLE_KEY: 'sb_secret_TEST', REVENUECAT_WEBHOOK_AUTH: 'Bearer rc-test-secret', STRIPE_WEBHOOK_SECRET: 'whsec_test', ENTITLEMENT_SECRET: 's', PREMIUM_DEV_MODE: 'on' });
+const UID = '11111111-2222-4333-8444-555555555555';
+let calls = []; let listed = 0;
+const realFetch = globalThis.fetch;
+globalThis.fetch = async (url, init = {}) => {
+  url = String(url); const h = new Headers(init.headers); calls.push({ url, method: init.method || 'GET', body: init.body, apikey: h.get('apikey'), auth: h.get('authorization') });
+  const ok = (b, s = 200) => new Response(b == null ? null : JSON.stringify(b), { status: s });
+  if (url.endsWith('/auth/v1/user')) return h.get('authorization') === 'Bearer good-token-0123456789abcdef' ? ok({ id: UID, email: 'x@example.com' }) : ok({ msg: 'bad' }, 401);
+  if (url.includes('/rpc/')) return ok(null, 204);
+  if (url.includes('/rest/v1/tl_household_members')) return ok([{ household_id: 'aaaaaaaa-0000-4000-8000-000000000001' }]);
+  if (url.includes('/storage/v1/object/list/')) return ok(listed++ === 0 ? [{ name: 'doc1' }, { name: 'doc2' }] : []);
+  return ok(null, 204);
+};
+const req = (path, { body, headers = {}, method = 'POST' } = {}) => new Request('http://x' + path, { method, headers: { 'Content-Type': 'application/json', ...headers }, body: typeof body === 'string' ? body : JSON.stringify(body) });
+const rc = (await import('../netlify/functions/billing-revenuecat.mjs')).default;
+const st = await import('../netlify/functions/billing-stripe.mjs');
+const del = (await import('../netlify/functions/account-delete.mjs')).default;
+const ent = (await import('../netlify/functions/entitlement.mjs')).default;
+const purge = (await import('../netlify/functions/trash-purge.mjs'));
+const R = [];
+const t = async (name, f) => { calls = []; try { await f(); R.push('✓ ' + name); } catch (e) { R.push('✗ ' + name + ' – ' + e.message); } };
+const rpcArgs = () => calls.filter((c) => c.url.includes('tl_admin_set_premium')).map((c) => JSON.parse(c.body));
+
+await t('RevenueCat: wrong auth rejected', async () => { assert.equal((await rc(req('/', { body: { event: { type: 'RENEWAL', app_user_id: UID } }, headers: { Authorization: 'nope' } }))).status, 401); assert.equal(rpcArgs().length, 0); });
+await t('RevenueCat: INITIAL_PURCHASE sets premium with expiry', async () => { const r = await rc(req('/', { body: { event: { type: 'INITIAL_PURCHASE', app_user_id: UID, expiration_at_ms: 1893456000000, entitlement_ids: ['premium'] } }, headers: { Authorization: 'Bearer rc-test-secret' } })); assert.equal(r.status, 200); const a = rpcArgs()[0]; assert.equal(a.p_user, UID); assert.equal(a.p_on, true); assert.equal(a.p_source, 'revenuecat'); assert.ok(a.p_until.startsWith('2030')); assert.equal(calls.at(-1).apikey, 'sb_secret_TEST'); assert.equal(calls.at(-1).auth, null); });
+await t('RevenueCat: EXPIRATION clears premium', async () => { await rc(req('/', { body: { event: { type: 'EXPIRATION', app_user_id: UID } }, headers: { Authorization: 'Bearer rc-test-secret' } })); assert.equal(rpcArgs()[0].p_on, false); });
+await t('RevenueCat: CANCELLATION keeps access (no write)', async () => { await rc(req('/', { body: { event: { type: 'CANCELLATION', app_user_id: UID } }, headers: { Authorization: 'Bearer rc-test-secret' } })); assert.equal(rpcArgs().length, 0); });
+await t('RevenueCat: anonymous $RCAnonymousID ignored', async () => { const j = await (await rc(req('/', { body: { event: { type: 'RENEWAL', app_user_id: '$RCAnonymousID:abc' } }, headers: { Authorization: 'Bearer rc-test-secret' } }))).json(); assert.equal(j.ignored, 'no_supabase_uid'); });
+const signStripe = async (raw, t = Math.floor(Date.now() / 1000)) => { const k = await crypto.subtle.importKey('raw', new TextEncoder().encode('whsec_test'), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']); const m = [...new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(`${t}.${raw}`)))].map((b) => b.toString(16).padStart(2, '0')).join(''); return `t=${t},v1=${m}`; };
+await t('Stripe: bad signature rejected', async () => { const raw = JSON.stringify({ type: 'checkout.session.completed', data: { object: { client_reference_id: UID } } }); assert.equal((await st.default(req('/', { body: raw, headers: { 'stripe-signature': 't=1,v1=00' } }))).status, 400); assert.equal(rpcArgs().length, 0); });
+await t('Stripe: replay (old timestamp) rejected', async () => { const raw = '{"type":"x"}'; assert.equal((await st.default(req('/', { body: raw, headers: { 'stripe-signature': await signStripe(raw, 1000) } }))).status, 400); });
+await t('Stripe: checkout.session.completed sets premium', async () => { const raw = JSON.stringify({ type: 'checkout.session.completed', data: { object: { client_reference_id: UID } } }); assert.equal((await st.default(req('/', { body: raw, headers: { 'stripe-signature': await signStripe(raw) } }))).status, 200); assert.equal(rpcArgs()[0].p_on, true); assert.equal(rpcArgs()[0].p_source, 'stripe'); });
+await t('Stripe: subscription.deleted clears premium', async () => { const raw = JSON.stringify({ type: 'customer.subscription.deleted', data: { object: { status: 'canceled', metadata: { user_id: UID }, current_period_end: 1893456000 } } }); await st.default(req('/', { body: raw, headers: { 'stripe-signature': await signStripe(raw) } })); assert.equal(rpcArgs()[0].p_on, false); });
+await t('Delete account: no token -> 401', async () => { assert.equal((await del(req('/', { body: { confirm: 'SMAZAT' } }))).status, 401); });
+await t('Delete account: missing confirm -> 400', async () => { assert.equal((await del(req('/', { body: {}, headers: { Authorization: 'Bearer good-token-0123456789abcdef' } }))).status, 400); });
+await t('Delete account: files, household, auth user removed (in order)', async () => { const r = await del(req('/', { body: { confirm: 'SMAZAT' }, headers: { Authorization: 'Bearer good-token-0123456789abcdef' } })); const j = await r.json(); assert.equal(r.status, 200); assert.equal(j.files, 2); const seq = calls.map((c) => c.method + ' ' + c.url.replace(/^https:\/\/[^/]+/, '')); const iFiles = seq.findIndex((s) => s.startsWith('DELETE /storage/v1/object/tl-docs')); const iHh = seq.findIndex((s) => s.startsWith('DELETE /rest/v1/tl_households')); const iUser = seq.findIndex((s) => s === `DELETE /auth/v1/admin/users/${UID}`); assert.ok(iFiles >= 0 && iHh > iFiles && iUser > iHh, seq.join(' | ')); assert.deepEqual(JSON.parse(calls[iFiles].body).prefixes, ['aaaaaaaa-0000-4000-8000-000000000001/doc1', 'aaaaaaaa-0000-4000-8000-000000000001/doc2']); });
+await t('Test toggle: with session also sets DB flag for that user only', async () => { const r = await (await ent(req('/', { body: { deviceId: 'dev-0123456789abcdef', plan: 'yearly', test: true }, headers: { Authorization: 'Bearer good-token-0123456789abcdef' } }))).json(); assert.ok(r.token); assert.equal(r.db, true); const a = rpcArgs()[0]; assert.equal(a.p_user, UID); assert.equal(a.p_source, 'test'); });
+await t('Test toggle: forged token -> no DB write', async () => { const r = await (await ent(req('/', { body: { deviceId: 'dev-0123456789abcdef', plan: 'yearly', test: true }, headers: { Authorization: 'Bearer forged-0123456789abcdefgh' } }))).json(); assert.equal(r.db, false); assert.equal(rpcArgs().length, 0); });
+await t('Test toggle: deactivate clears DB flag', async () => { const r = await (await ent(req('/', { body: { deviceId: 'dev-0123456789abcdef', deactivate: true }, headers: { Authorization: 'Bearer good-token-0123456789abcdef' } }))).json(); assert.equal(r.db, true); assert.equal(rpcArgs()[0].p_on, false); });
+await t('Test toggle: disabled when PREMIUM_DEV_MODE=off', async () => { process.env.PREMIUM_DEV_MODE = 'off'; const r = await ent(req('/', { body: { deviceId: 'dev-0123456789abcdef', plan: 'yearly', test: true }, headers: { Authorization: 'Bearer good-token-0123456789abcdef' } })); assert.equal(r.status, 403); assert.equal(rpcArgs().length, 0); process.env.PREMIUM_DEV_MODE = 'on'; });
+await t('Trash purge: scheduled daily, calls tl_purge_trash', async () => { assert.equal(purge.config.schedule, '15 3 * * *'); await purge.default(); assert.ok(calls.some((c) => c.url.endsWith('/rest/v1/rpc/tl_purge_trash'))); });
+globalThis.fetch = realFetch;
+console.log(R.join('\n')); if (R.some((x) => x.startsWith('✗'))) process.exit(1);

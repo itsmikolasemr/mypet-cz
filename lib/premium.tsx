@@ -23,11 +23,15 @@ export interface PurchaseProvider {
 }
 
 /** TEST ONLY – grants a signed Premium token from /api/entitlement without any payment. */
+/** Supabase session header (if signed in) so the test toggle can also set the DB premium flag for this user. */
+export async function authHeader(): Promise<Record<string, string>> {
+  try { const { auth } = await import('./cloud'); const s = await auth.session(); return s ? { Authorization: `Bearer ${s.access_token}` } : {}; } catch { return {}; }
+}
 export const MockProvider: PurchaseProvider = {
   name: 'test',
   available: async () => { try { const r = await fetch(`${API_BASE}/api/entitlement`); return !!(await r.json()).devMode; } catch { return false; } },
   async purchase(plan, deviceId) {
-    const r = await fetch(`${API_BASE}/api/entitlement`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId, plan, test: true }) });
+    const r = await fetch(`${API_BASE}/api/entitlement`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(await authHeader()) }, body: JSON.stringify({ deviceId, plan, test: true }) });
     const j = await r.json();
     if (!r.ok || !j.token) throw new Error(j.error === 'test_mode_off' ? 'Testovací režim je vypnutý.' : 'Aktivace selhala.');
     return { plan, exp: j.exp, token: j.token, test: true, source: 'test' };
@@ -44,7 +48,7 @@ export const RevenueCatProvider: PurchaseProvider = {
 };
 
 const K_DEV = 'tlapka:device', K_ENT = 'tlapka:ent', K_TRIAL = 'tlapka:trialLeft';
-function deviceId() {
+export function deviceId() {
   let d = localStorage.getItem(K_DEV);
   if (!d) { d = (crypto.randomUUID?.() ?? Math.random().toString(36).slice(2) + Date.now().toString(36) + Math.random().toString(36).slice(2)); localStorage.setItem(K_DEV, d); }
   return d;
@@ -69,7 +73,9 @@ function usePremiumImpl() {
     openPaywall: (reason = 'obecne') => setPaywall(reason), closePaywall: () => setPaywall(null),
     setTrialLeft: (n: number) => { setTrialLeftS(n); localStorage.setItem(K_TRIAL, String(n)); },
     purchase: async (plan: PlanId) => { const p = await provider(); const e = await p.purchase(plan, deviceId()); save(e); return e; },
-    deactivate: () => save(null),
+    /** re-issue the test entitlement with the Supabase session so the DB flag matches (test mode only) */
+    resyncTest: async () => { if (!ent?.test) return; const e = await MockProvider.purchase(ent.plan, deviceId()); save(e); },
+    deactivate: () => { save(null); authHeader().then((h) => { if (h.Authorization) return fetch(`${API_BASE}/api/entitlement`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...h }, body: JSON.stringify({ deviceId: deviceId(), deactivate: true }) }); }).catch(() => {}); },
     headers: (): Record<string, string> => ({ 'X-Tlapka-Device': dev || deviceId(), ...(isPremium && ent ? { 'X-Tlapka-Entitlement': ent.token } : {}) }),
     canAddPet: (count: number) => isPremium || count < FREE.pets,
   };

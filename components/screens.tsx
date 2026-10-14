@@ -1,6 +1,6 @@
 'use client';
 import { Account } from './Account';
-import { BatteryGuide, ExportAll, PassShare, ScanButton, TrashSection, TravelChecklist } from './V11';
+import { BatteryGuide, ExportAll, PassShare, PrnRow, ScanButton, TrashSection, TravelChecklist } from './V11';
 import { ask as askDialog, notice, toast } from './feedback';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Pet, Reminder, Visit } from '@/lib/types';
@@ -205,7 +205,8 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
               <div className="space-y-2">{meds.map((m) => {
                 const ended = !!m.end && m.end < today();
                 return (
-                  <button key={m.id} onClick={() => setMed(m)} className={`press w-full flex items-center gap-3 text-left rounded-2xl bg-ink/[0.03] dark:bg-white/[0.04] px-3 py-2.5 ${ended ? 'opacity-55' : ''}`}>
+                  <div key={m.id} className="rounded-2xl bg-ink/[0.03] dark:bg-white/[0.04]">
+                  <button onClick={() => setMed(m)} className={`press w-full flex items-center gap-3 text-left rounded-2xl bg-ink/[0.03] dark:bg-white/[0.04] px-3 py-2.5 ${ended ? 'opacity-55' : ''}`}>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold">{m.name}{m.reminderId && <span className="ml-1.5 text-xs">🔔</span>}</p>
                       <p className="text-[13px] text-muted">{[m.dose, m.frequency].filter(Boolean).join(' · ')}</p>
@@ -213,6 +214,8 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
                     </div>
                     <Icon name="chev" className="w-4 h-4 text-muted" />
                   </button>
+                  {m.frequency === 'Dle potřeby' && !ended && <PrnRow med={m} />}
+                  </div>
                 );
               })}</div>
             )}
