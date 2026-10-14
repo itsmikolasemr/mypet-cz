@@ -123,3 +123,7 @@ html.glass nav[aria-label="Hlavní navigace"] > div { background: rgba(248,248,2
 .swipe-hint { animation: swipe-hint 1.6s cubic-bezier(.3,.9,.4,1) .6s 2; }
 @keyframes peek { 0%, 100% { transform: translateX(0); } 40% { transform: translateX(-28px); } }
 .peek-hint { animation: peek 1.2s ease-in-out .8s 1; }
+@keyframes cal-r { from { transform: translateX(40%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes cal-l { from { transform: translateX(-40%); opacity: 0; } to { transform: none; opacity: 1; } }
+.cal-in-r { animation: cal-r .28s cubic-bezier(.2,.9,.3,1); }
+.cal-in-l { animation: cal-l .28s cubic-bezier(.2,.9,.3,1); }

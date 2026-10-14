@@ -292,6 +292,11 @@ const WD = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
 export function CalendarScreen() {
   const { data } = useStore();
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
+  const [dir, setDir] = useState<0 | 1 | -1>(0);
+  const shift = (d: 1 | -1) => { setDir(d); setMonth((m) => new Date(m.getFullYear(), m.getMonth() + d, 1)); };
+  const sw = useRef<{ x: number; y: number; id: number } | null>(null);
+  const swiped = useRef(false);
+  const [drag, setDrag] = useState(0);
   const [sel, setSel] = useState(today());
   const [mode, setMode] = useState<'mesic' | 'seznam'>('mesic');
   const [edit, setEdit] = useState<Visit | null | 'new'>(null);
@@ -321,12 +326,19 @@ export function CalendarScreen() {
         <div className="animate-screen">
           <Card className="p-3 mt-4">
             <div className="flex items-center justify-between px-1 mb-2">
-              <button aria-label="Předchozí měsíc" className="press w-11 h-11 flex items-center justify-center rounded-full" onClick={() => setMonth(new Date(month.getFullYear(), mv - 1, 1))}><Icon name="back" /></button>
+              <button aria-label="Předchozí měsíc" className="press w-11 h-11 flex items-center justify-center rounded-full" onClick={() => shift(-1)}><Icon name="back" /></button>
               <p className="font-semibold capitalize">{month.toLocaleDateString('cs-CZ', { month: 'long', year: 'numeric' })}</p>
-              <button aria-label="Další měsíc" className="press w-11 h-11 flex items-center justify-center rounded-full" onClick={() => setMonth(new Date(month.getFullYear(), mv + 1, 1))}><Icon name="chev" /></button>
+              <button aria-label="Další měsíc" className="press w-11 h-11 flex items-center justify-center rounded-full" onClick={() => shift(1)}><Icon name="chev" /></button>
             </div>
             <div className="grid grid-cols-7 text-center text-[12px] font-semibold text-muted mb-1">{WD.map((d) => <div key={d}>{d}</div>)}</div>
-            <div className="grid grid-cols-7 gap-y-1">
+            <div className="overflow-hidden"
+              style={{ touchAction: 'pan-y' }} data-month={`${month.getFullYear()}-${month.getMonth() + 1}`}
+              onPointerDown={(e) => { swiped.current = false; sw.current = { x: e.clientX, y: e.clientY, id: e.pointerId }; }}
+              onPointerMove={(e) => { const s0 = sw.current; if (!s0 || s0.id !== e.pointerId) return; const x = e.clientX - s0.x; if (Math.abs(x) > Math.abs(e.clientY - s0.y) && Math.abs(x) > 6) setDrag(x); }}
+              onPointerUp={(e) => { const s0 = sw.current; sw.current = null; setDrag(0); if (!s0) return; const x = e.clientX - s0.x; if (Math.abs(x) > 50) { swiped.current = true; shift(x < 0 ? 1 : -1); } }}
+              onPointerCancel={() => { sw.current = null; setDrag(0); }}
+              onClickCapture={(e) => { if (swiped.current) { e.stopPropagation(); e.preventDefault(); swiped.current = false; } }}>
+            <div key={month.getTime()} className={`grid grid-cols-7 gap-y-1 select-none ${drag ? '' : dir === 1 ? 'cal-in-r' : dir === -1 ? 'cal-in-l' : ''}`} style={drag ? { transform: `translateX(${drag * 0.4}px)`, opacity: 1 - Math.min(0.4, Math.abs(drag) / 400) } : undefined}>
               {days.map((d) => {
                 const inM = parse(d).getMonth() === mv, isSel = d === sel, isT = d === today(), m = byDay[d];
                 return (
@@ -336,7 +348,7 @@ export function CalendarScreen() {
                   </button>
                 );
               })}
-            </div>
+            </div></div>
             <div className="flex gap-4 justify-center text-[12px] text-muted mt-2"><span className="flex items-center gap-1"><i className="w-1.5 h-1.5 rounded-full bg-primary" />Návštěva</span><span className="flex items-center gap-1"><i className="w-1.5 h-1.5 rounded-full bg-amber-500" />Připomínka</span></div>
           </Card>
           <div className="flex items-center justify-between mt-5 mb-2"><h2 className="font-semibold">{fmtDate(sel)}</h2>{data.pets.length > 0 && <button className="text-sm font-semibold text-primary min-h-[44px] min-w-[44px] justify-center px-2 -mr-2 inline-flex items-center min-h-[44px] px-2 -mr-2 inline-flex items-center" onClick={() => setEdit('new')}>+ Návštěva</button>}</div>

@@ -31,7 +31,7 @@ export function FeedbackHost() {
     <>
       {t && (
         <div role="status" aria-live="polite" className="fixed left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-32px)] max-w-[400px] flex items-center gap-3 rounded-2xl bg-[#2B201C] text-white px-4 py-2 shadow-float animate-up"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + 96px)' }}>
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + var(--banner, 0px) + 96px)' }}>
           <span className="flex-1 text-[15px] py-2">{t.msg}</span>
           {t.undo && <button onClick={() => { t.undo?.(); setT(null); toast('Vráceno zpět'); }} className="press min-h-[44px] px-3 -mr-2 font-bold text-[#FFB48A]">Zpět</button>}
         </div>

@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePremium, PLANS, FREE, type PlanId } from '@/lib/premium';
 import { useStore } from '@/lib/store';
 import { fmtDate, plural } from '@/lib/utils';
@@ -79,6 +79,26 @@ export function AdSlot({ id }: { id: string }) {
       <span className="flex-1 min-w-0"><span className="block font-semibold text-[15px]">{x.t}</span><span className="block text-[13px] text-muted">{x.d}</span></span>
       <button onClick={() => p.openPaywall(x.r)} className="press shrink-0 min-h-[44px] px-3 rounded-full text-[13px] font-bold text-white bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]">14 dní zdarma</button>
     </aside>
+  );
+}
+
+/** Reserved 320×50 mobile banner (AdMob-ready). Rendered by the shell only on non-emergency screens for free users. */
+export const BANNER_H = 50;
+export function BannerSlot() {
+  const p = usePremium();
+  useEffect(() => {
+    const on = !p.isPremium;
+    document.documentElement.style.setProperty('--banner', on ? `${BANNER_H + 8}px` : '0px');
+    return () => document.documentElement.style.setProperty('--banner', '0px');
+  }, [p.isPremium]);
+  if (p.isPremium) return null;
+  return (
+    <div className="fixed inset-x-0 z-30 flex justify-center pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + 88px)' }}>
+      <aside id="ad-banner" data-ad-slot="banner-bottom" data-ad-size="320x50" aria-label="Reklama"
+        className="pointer-events-auto w-[320px] h-[50px] rounded-xl flex items-center justify-center gap-2 bg-[#ECEDEF] dark:bg-[#26201d] ring-1 ring-black/[0.06] dark:ring-white/10 text-[12px] font-semibold uppercase tracking-wider text-[#5A5F68] dark:text-[#B8AAA2]">
+        Reklama
+      </aside>
+    </div>
   );
 }
 
