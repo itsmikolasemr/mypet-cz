@@ -58,9 +58,7 @@ function useStoreImpl() {
       const root = document.documentElement;
       root.classList.toggle('dark', dark);
       root.classList.toggle('glass', glass);
-      const photo = data.pets.find((p) => p.photo)?.photo;
-      if (glass && photo) root.style.setProperty('--glass-photo', `url("${photo}")`); else root.style.removeProperty('--glass-photo');
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#141917' : glass ? '#F3D3C2' : '#F7F5F2');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#141917' : glass ? '#E9EAEE' : '#F7F5F2');
     };
     apply();
     const m = matchMedia('(prefers-color-scheme: dark)');

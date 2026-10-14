@@ -355,6 +355,13 @@ export function CalendarScreen() {
 }
 
 /* ---------------- Settings ---------------- */
+const THEMES: { v: 'system' | 'light' | 'dark' | 'glass'; l: string; d: string; bg: string; pane: string; edge?: string; split?: boolean }[] = [
+  { v: 'system', l: 'Auto', d: 'Podle nastavení telefonu – ve dne světlý, v noci tmavý.', bg: '#FFF8F0', pane: '#FFFFFF', split: true },
+  { v: 'light', l: 'Světlý', d: 'Teplý světlý vzhled.', bg: '#FFF1E6', pane: '#FFFFFF', edge: '0 2px 6px rgba(59,42,36,.12)' },
+  { v: 'dark', l: 'Tmavý', d: 'Šetří oči i baterii v noci.', bg: '#17110E', pane: '#2a201b' },
+  { v: 'glass', l: 'Sklo', d: 'Matné sklo ve stylu iOS – průsvitné vrstvy nad šedým pozadím.', bg: 'linear-gradient(180deg,#F2F3F5,#DCDFE4)', pane: 'rgba(255,255,255,.7)', edge: 'inset 0 1px 0 #fff, 0 0 0 .5px rgba(60,64,72,.18)' },
+];
+
 export function Settings() {
   const { data, setTheme, setNotify, importData, reset, finishOnboarding } = useStore();
   const prem = usePremium();
@@ -381,6 +388,27 @@ export function Settings() {
     <div>
       <PageHeader title="Nastavení" />
       <div className="space-y-7 stagger">
+        <section aria-labelledby="vzhled-h"><h2 id="vzhled-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Vzhled</h2>
+          <Card className="p-3">
+            <div role="radiogroup" aria-label="Motiv aplikace" className="grid grid-cols-4 gap-2">
+              {THEMES.map((t) => {
+                const on = data.settings.theme === t.v;
+                return (
+                  <button key={t.v} role="radio" aria-checked={on} onClick={() => setTheme(t.v)} className={`press rounded-2xl p-1.5 text-center ring-2 transition ${on ? 'ring-primary' : 'ring-transparent'}`}>
+                    <span aria-hidden className="relative block h-[72px] rounded-xl overflow-hidden" style={{ background: t.bg, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.08)' }}>
+                      {t.split && <span className="absolute inset-y-0 right-0 w-1/2" style={{ background: '#17110E' }} />}
+                      <span className="absolute left-2 right-2 top-2 h-5 rounded-md" style={{ background: t.pane, boxShadow: t.edge }} />
+                      <span className="absolute left-2 w-2/3 top-9 h-5 rounded-md" style={{ background: t.pane, boxShadow: t.edge }} />
+                      <span className="absolute right-2 bottom-2 w-3 h-3 rounded-full bg-gradient-to-br from-[#FF9A5A] to-[#E8553A]" />
+                    </span>
+                    <span className={`block mt-1.5 text-[13px] font-semibold ${on ? '' : 'text-muted'}`}>{t.l}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[12px] text-muted mt-2 px-1">{THEMES.find((t) => t.v === data.settings.theme)?.d}</p>
+          </Card>
+        </section>
         <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Předplatné</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
             {prem.isPremium && prem.ent ? (<>
@@ -390,9 +418,6 @@ export function Settings() {
               <Row icon="✦" title="Získat Premium" sub="Aivet bez omezení, bez reklam, PDF pas, výdaje · 14 dní zdarma" right={<span className="text-sm font-bold text-primary">79 Kč</span>} onClick={() => prem.openPaywall('obecne')} />
             )}
           </Card>
-        </section>
-        <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Vzhled</h2>
-          <Segmented value={data.settings.theme} onChange={setTheme} options={[{ v: 'system', l: 'Auto' }, { v: 'light', l: 'Světlý' }, { v: 'dark', l: 'Tmavý' }, { v: 'glass', l: 'Sklo' }]} />
         </section>
         <section><h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Upozornění</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">

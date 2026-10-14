@@ -1,7 +1,7 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { AppData, Pet } from '@/lib/types';
-import { diffDays, REMINDER_TYPES, status, today } from '@/lib/utils';
+import { diffDays, REMINDER_TYPES, speciesOf, status, today } from '@/lib/utils';
 const low = (t: string) => (REMINDER_TYPES.some((x) => x.name === t) ? t.toLowerCase() : t);
 import { useAmbient } from './ambient';
 
@@ -35,6 +35,14 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
   const [idx, setIdx] = useState(0);
   const [bump, setBump] = useState(0);
   const pet = pets[Math.min(idx, pets.length - 1)];
+  const n = pets.length;
+  const go = (d: number) => { setIdx((i) => (Math.min(i, n - 1) + d + n) % n); try { navigator.vibrate?.(8); } catch {} };
+  const swiped = useRef(false);
+  const sw = useRef<{ x: number; y: number; id: number } | null>(null);
+  const [dx, setDx] = useState(0);
+  const onDown = (e: React.PointerEvent) => { swiped.current = false; if (n < 2) return; sw.current = { x: e.clientX, y: e.clientY, id: e.pointerId }; };
+  const onMove = (e: React.PointerEvent) => { const s0 = sw.current; if (!s0 || s0.id !== e.pointerId) return; const x = e.clientX - s0.x, y = e.clientY - s0.y; if (Math.abs(x) > Math.abs(y) && Math.abs(x) > 6) setDx(x); };
+  const onUp = (e: React.PointerEvent) => { const s0 = sw.current; sw.current = null; if (!s0) return; const x = e.clientX - s0.x; setDx(0); if (Math.abs(x) > 50) { swiped.current = true; go(x < 0 ? 1 : -1); } };
   const c = useMemo(() => careOf(data, pet.id), [data, pet.id]);
   const ambient = useAmbient(pet.photo);
   const cat = pet.species === 'kocka';
@@ -44,9 +52,13 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
   const label = c.overdue.length ? (c.mood === 'sad' ? (f ? 'Smutná' : 'Smutný') : 'Čeká na péči') : { happy: f ? 'Šťastná' : 'Šťastný', ok: 'V pohodě', sad: f ? 'Smutná' : 'Smutný' }[c.mood];
   const R = 46, C = 2 * Math.PI * R;
   return (
-    <section aria-label={`Živý mazlíček ${pet.name}: ${label}, péče ${c.score} %`} className="relative rounded-[30px] p-5 pb-4 overflow-hidden bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d ring-1 ring-ink/5 dark:ring-white/10">
+    <section aria-roledescription="karusel" aria-label={`Živý mazlíček ${pet.name}: ${label}, péče ${c.score} %`}
+      onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={() => { sw.current = null; setDx(0); }}
+      onClickCapture={(e) => { if (swiped.current) { e.stopPropagation(); e.preventDefault(); swiped.current = false; } }}
+      onKeyDown={(e) => { if (e.key === 'ArrowRight') go(1); if (e.key === 'ArrowLeft') go(-1); }}
+      style={{ touchAction: 'pan-y' }} data-pet={pet.id} className="companion-card select-none relative rounded-[30px] p-5 pb-4 overflow-hidden bg-surface dark:bg-surface-d shadow-float dark:shadow-float-d ring-1 ring-ink/5 dark:ring-white/10">
       <div aria-hidden className="absolute inset-0 opacity-60 dark:opacity-40 transition-colors duration-700" style={{ background: `radial-gradient(120% 90% at 20% 0%, ${fur}55, transparent 60%), radial-gradient(90% 80% at 100% 100%, ${c.mood === 'sad' ? '#7aa2c855' : '#FF9A5A44'}, transparent 60%)` }} />
-      <div className="relative flex items-center gap-4">
+      <div className="relative flex items-center gap-4 transition-transform duration-200" style={{ transform: dx ? `translateX(${dx * 0.35}px)` : undefined }} key={pet.id}>
         <button onClick={pet_} aria-label={`Pohladit ${pet.name}`} className={`companion mood-${c.mood} relative w-[132px] h-[132px] shrink-0`} key={bump}>
           <svg viewBox="0 0 120 120" className="absolute inset-0 -rotate-90" aria-hidden>
             <circle cx="60" cy="60" r={R} fill="none" strokeWidth="6" className="stroke-ink/10 dark:stroke-white/10" />
@@ -62,7 +74,10 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
               <ellipse cx="60" cy="90" rx="14" ry="10" fill="#FFF8F0" opacity=".55" />
               {/* head */}
               <g className="c-head">
-                {cat ? (<>
+                {pet.species === 'kralik' ? (<>
+                  <ellipse className="c-ear l" cx="49" cy="24" rx="6" ry="17" fill={fur} />
+                  <ellipse className="c-ear r" cx="71" cy="24" rx="6" ry="17" fill={fur} />
+                </>) : cat ? (<>
                   <path className="c-ear l" d="M38 44 L42 24 L54 38 Z" fill={fur} />
                   <path className="c-ear r" d="M82 44 L78 24 L66 38 Z" fill={fur} />
                 </>) : (<>
@@ -90,6 +105,7 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
             </g>
             {bump > 0 && <g className="c-hearts"><text x="30" y="30" fontSize="14">💛</text><text x="78" y="24" fontSize="11">💛</text><text x="56" y="16" fontSize="12">💛</text></g>}
           </svg>
+          {!pet.photo && !['pes', 'kocka'].includes(pet.species) && <span aria-hidden className="absolute -right-1 -bottom-1 w-9 h-9 rounded-full bg-surface dark:bg-surface-d shadow-card flex items-center justify-center text-lg">{speciesOf(pet.species).emoji}</span>}
           {pet.photo && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={pet.photo} alt="" className="absolute -right-1 -bottom-1 w-9 h-9 rounded-full object-cover ring-[3px] ring-surface dark:ring-surface-d shadow-card" />)}
@@ -100,9 +116,17 @@ export function Companion({ data, pets, onOpen }: { data: AppData; pets: Pet[]; 
           <div className="mt-2 relative rounded-2xl rounded-tl-md bg-bg/90 dark:bg-white/[0.07] px-3 py-2 text-[14px] leading-snug ring-1 ring-ink/5 dark:ring-white/10 animate-fade" key={pet.id + c.mood}>{line(pet, c)}</div>
         </div>
       </div>
-      {pets.length > 1 && (
-        <div className="relative flex justify-center gap-1.5 mt-3" role="tablist" aria-label="Vyber mazlíčka">
-          {pets.map((p, i) => <button key={p.id} role="tab" aria-selected={i === idx} aria-label={p.name} onClick={() => setIdx(i)} className={`h-2 rounded-full transition-all ${i === idx ? 'w-6 bg-primary' : 'w-2 bg-ink/20 dark:bg-white/25'}`} />)}
+      {n > 1 && (
+        <div className="relative flex items-center justify-between mt-3 -mx-1">
+          <button onClick={() => go(-1)} aria-label="Předchozí mazlíček" className="press w-9 h-9 rounded-full flex items-center justify-center text-lg bg-ink/5 dark:bg-white/10">‹</button>
+          <div className="flex items-center gap-1" role="tablist" aria-label="Vyber mazlíčka">
+            {pets.map((p, i) => (
+              <button key={p.id} role="tab" aria-selected={i === idx} aria-label={p.name} onClick={() => setIdx(i)} className="w-7 h-7 flex items-center justify-center">
+                <span className={`block h-2 rounded-full transition-all ${i === idx ? 'w-6 bg-primary' : 'w-2 bg-ink/25 dark:bg-white/30'}`} />
+              </button>
+            ))}
+          </div>
+          <button onClick={() => go(1)} aria-label="Další mazlíček" className="press w-9 h-9 rounded-full flex items-center justify-center text-lg bg-ink/5 dark:bg-white/10">›</button>
         </div>
       )}
     </section>
