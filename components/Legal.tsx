@@ -1,22 +1,21 @@
 'use client';
-// Zásady ochrany osobních údajů, Podmínky užívání, O aplikaci. Provozovatel z ARES (14. 10. 2026); e-maily jsou ZÁSTUPNÉ – před vydáním doplnit (hledej „[DOPLNIT“).
+// Zásady ochrany osobních údajů, Podmínky užívání, O aplikaci. Provozovatel z ARES (14. 10. 2026); kontakt emr@itsmedesign.cz.
 import { PageHeader, Card, Logo } from './ui';
 
 export const COMPANY = {
   name: 'ABEGRIN s.r.o.', ico: '29262585', dic: 'CZ29262585', address: 'Králova 279/9, Žabovřesky, 616 00 Brno', register: 'C 69118 vedená u Krajského soudu v Brně',
-  email: '[DOPLNIT: kontaktní e-mail, např. podpora@tlapka.cz]', dpo: '[DOPLNIT: e-mail pro ochranu osobních údajů]',
+  email: 'emr@itsmedesign.cz', dpo: 'emr@itsmedesign.cz',
 };
 export const LEGAL_UPDATED = '14. 10. 2026';
-const Ph = ({ children }: { children: React.ReactNode }) => <mark className="rounded px-1 bg-amber-100 text-amber-900 dark:bg-amber-400/20 dark:text-amber-100" data-placeholder>{children}</mark>;
 const H = ({ children }: { children: React.ReactNode }) => <h2 className="font-bold text-[16px] mt-6 mb-2">{children}</h2>;
 const Doc = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <article className="text-[14px] leading-relaxed [&_li]:ml-5 [&_li]:list-disc [&_p]:mb-2">
     <PageHeader title={title} sub={`Platné od ${LEGAL_UPDATED}`} />
-    <Card className="p-4 mb-4 text-[13px]" ><p><b>Návrh dokumentu.</b> Údaje označené žlutě je nutné před vydáním doplnit a text nechat zkontrolovat právníkem.</p></Card>
+    <Card className="p-4 mb-4 text-[13px]" ><p><b>Návrh dokumentu.</b> Před vydáním nechat text zkontrolovat právníkem.</p></Card>
     {children}
   </article>
 );
-const Op = () => <p>Provozovatel: {COMPANY.name}, IČO {COMPANY.ico}, DIČ {COMPANY.dic}, sídlo {COMPANY.address}, zapsaná v obchodním rejstříku, spisová značka {COMPANY.register}, e-mail <Ph>{COMPANY.email}</Ph>.</p>;
+const Op = () => <p>Provozovatel: {COMPANY.name}, IČO {COMPANY.ico}, DIČ {COMPANY.dic}, sídlo {COMPANY.address}, zapsaná v obchodním rejstříku, spisová značka {COMPANY.register}, e-mail {COMPANY.email}.</p>;
 
 export function Privacy() {
   return (
@@ -39,7 +38,7 @@ export function Privacy() {
       <p>Supabase (hosting databáze, EU), Netlify (hosting webu a funkcí), Google (Gemini, AdMob), RevenueCat, Apple a Google (platby). S nikým jiným data nesdílíme a neprodáváme je.</p>
       <H>5. Tvoje práva</H>
       <p>Máš právo na přístup, opravu, výmaz, omezení, přenositelnost (export v Nastavení › Data) a námitku. Účet smažeš sám v Nastavení › Účet › Smazat účet. Souhlas můžeš kdykoli odvolat. Stížnost můžeš podat u Úřadu pro ochranu osobních údajů (uoou.gov.cz).</p>
-      <p>Kontakt pro ochranu osobních údajů: <Ph>{COMPANY.dpo}</Ph>.</p>
+      <p>Kontakt pro ochranu osobních údajů: {COMPANY.dpo}.</p>
     </Doc>
   );
 }
@@ -78,7 +77,7 @@ export function About({ open }: { open: (t: 'privacy' | 'terms') => void }) {
       <div className="text-center mb-5"><Logo animate className="h-14 mx-auto" /><p className="text-muted text-sm mt-2">Verze 1.2 · vyrobeno v Česku s láskou k tlapkám</p></div>
       <Card className="divide-y divide-ink/5 dark:divide-white/5">
         {([['privacy', 'Ochrana osobních údajů'], ['terms', 'Podmínky užívání']] as const).map(([k, l]) => <button key={k} onClick={() => open(k)} className="press w-full text-left px-4 min-h-[52px] font-medium flex items-center justify-between">{l}<span aria-hidden className="text-muted">›</span></button>)}
-        <a className="block px-4 py-3.5 font-medium" href={`mailto:${COMPANY.email.startsWith('[') ? 'podpora@example.com' : COMPANY.email}?subject=Tlapka%20–%20zpětná%20vazba`}>Napsat nám <span className="block text-[13px] text-muted"><Ph>{COMPANY.email}</Ph></span></a>
+        <a className="block px-4 py-3.5 font-medium" href={`mailto:${COMPANY.email.startsWith('[') ? 'podpora@example.com' : COMPANY.email}?subject=Tlapka%20–%20zpětná%20vazba`}>Napsat nám <span className="block text-[13px] text-muted">{COMPANY.email}</span></a>
       </Card>
       <Card className="p-4 mt-4 text-[13px] text-muted space-y-1.5">
         <p>Mapové podklady a data o veterinách, výbězích a zverimexech: © přispěvatelé <a className="underline" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> (ODbL).</p>

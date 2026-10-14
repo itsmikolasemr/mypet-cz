@@ -1,5 +1,7 @@
 # Wallet karty (Apple Wallet / Google Wallet) – příprava
 
+> **Apple Wallet je odložený** (rozhodnutí uživatele 14. 10. 2026): žádný Pass Type ID certifikát, v aplikaci žádné tlačítko. Endpoint `/api/wallet/apple` zůstává jen jako kostra a vrací 501.
+
 Stav: **kostra** `netlify/functions/wallet.mjs` (`/api/wallet/apple`, `/api/wallet/google`). Bez certifikátů vrací 501, v UI zatím není tlačítko.
 
 ## Apple Wallet (.pkpass)

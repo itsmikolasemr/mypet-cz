@@ -3,9 +3,8 @@ import Link from 'next/link';
 
 // Public web page required by Google Play (Data safety → "account deletion URL"). Static, no login needed.
 export const metadata: Metadata = { title: 'Smazání účtu – Tlapka', description: 'Jak smazat účet Tlapka a související data.' };
-const EMAIL = '[DOPLNIT: kontaktní e-mail, např. podpora@tlapka.cz]';
+const EMAIL = 'emr@itsmedesign.cz';
 const NAME = 'ABEGRIN s.r.o., IČO 29262585, Králova 279/9, 616 00 Brno';
-const Ph = ({ children }: { children: React.ReactNode }) => <mark data-placeholder className="rounded px-1 bg-amber-100 text-amber-900">{children}</mark>;
 
 export default function DeleteAccountPage() {
   return (
@@ -20,7 +19,7 @@ export default function DeleteAccountPage() {
       </ol>
       <p className="mt-2">Účet se smaže okamžitě.</p>
       <h2 className="font-bold text-lg mt-6 mb-2">Bez aplikace</h2>
-      <p>Pošli e-mail z adresy, kterou používáš k přihlášení, na <Ph>{EMAIL}</Ph> s předmětem „Smazání účtu“. Smažeme ho do 30 dnů a potvrdíme ti to e-mailem.</p>
+      <p>Pošli e-mail z adresy, kterou používáš k přihlášení, na {EMAIL} s předmětem „Smazání účtu“. Smažeme ho do 30 dnů a potvrdíme ti to e-mailem.</p>
       <h2 className="font-bold text-lg mt-6 mb-2">Co se smaže</h2>
       <ul className="list-disc ml-5 space-y-1">
         <li>Účet a přihlašovací údaje.</li>
