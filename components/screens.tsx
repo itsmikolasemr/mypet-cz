@@ -73,7 +73,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             </Card>
             <Card onClick={() => go('map')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">🗺️</div>
-              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Mapa</span><span className="block text-[12px] text-muted leading-snug">Veteriny, nonstop, výběhy</span></span>
+              <span className="min-w-0"><span className="font-semibold text-[15px] flex items-center gap-1.5 leading-tight">Mapa</span><span className="block text-[12px] text-muted leading-snug">Veteriny, výběhy, zverimexy</span></span>
             </Card>
             <Card onClick={() => go('cards')} className="p-3.5 flex items-center gap-3 min-h-[72px]">
               <div className="w-10 h-10 shrink-0 rounded-2xl bg-primary/10 text-xl flex items-center justify-center">💳</div>

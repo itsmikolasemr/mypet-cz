@@ -4,8 +4,10 @@ import type { Map as LMap, LayerGroup } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button, Card, Icon, PageHeader, Sheet } from './ui';
 import { API_BASE } from '@/lib/api';
+import { useStore } from '@/lib/store';
+import type { CardStore } from '@/lib/types';
 
-type Vet = { id: string; lat: number; lon: number; name: string; tags: Record<string, string>; dist: number; nonstop: boolean; park?: boolean };
+type Vet = { id: string; lat: number; lon: number; name: string; tags: Record<string, string>; dist: number; nonstop: boolean; park?: boolean; shop?: boolean };
 const BRNO = { lat: 49.1951, lon: 16.6068 };
 const ENDPOINTS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
 
@@ -39,6 +41,17 @@ export async function bundledParks(c: { lat: number; lon: number }): Promise<Vet
   return (await parksP).map(([lat, lon, tags, id]) => ({ id, lat, lon, tags, name: tags.name ?? 'Psí výběh', dist: km(c, { lat, lon }), nonstop: false, park: true })).sort((a, b) => a.dist - b.dist);
 }
 const PARK_FACTS: [string, (v: string) => string][] = [['fence', (v) => (v === 'yes' ? 'Oplocený' : v === 'no' ? 'Neoplocený' : '')], ['barrier', (v) => (v === 'fence' ? 'Oplocený' : '')], ['lit', (v) => (v === 'yes' ? 'Osvětlený' : '')], ['surface', (v) => ({ grass: 'Tráva', dirt: 'Hlína', sand: 'Písek', gravel: 'Štěrk', woodchips: 'Štěpka' } as Record<string, string>)[v] ?? '']];
+let shopsP: Promise<[number, number, Record<string, string>, string][]> | null = null;
+/** Bundled OSM shop=pet (+ chains Super zoo, Pet Center, Fressnapf/Maxi Zoo, Zoo Bonus) snapshot for CZ (public/petshops-cz.json). */
+export async function bundledShops(c: { lat: number; lon: number }): Promise<Vet[]> {
+  shopsP ??= fetch('/petshops-cz.json').then((r) => r.json());
+  return (await shopsP).map(([lat, lon, tags, id]) => ({ id, lat, lon, tags, name: tags.name ?? 'Zverimex', dist: km(c, { lat, lon }), nonstop: false, shop: true })).sort((a, b) => a.dist - b.dist);
+}
+/** OSM opening_hours → čitelná čeština (Mo-Fr 09:00-18:00; Sa off → Po–Pá 9:00–18:00 / So zavřeno). */
+export const czHours = (oh: string) => oh === '24/7' ? ['Nonstop 24/7'] : oh.split(';').map((x) => x.trim()).filter(Boolean).map((x) => x
+  .replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH)\b/g, (d) => ({ Mo: 'Po', Tu: 'Út', We: 'St', Th: 'Čt', Fr: 'Pá', Sa: 'So', Su: 'Ne', PH: 'svátky' } as Record<string, string>)[d])
+  .replace(/(\p{L})-(\p{L})/gu, '$1–$2').replace(/\b0(\d):/g, '$1:').replace(/(\d)-(\d)/g, '$1–$2').replace(/\b(off|closed)\b/g, 'zavřeno').replace(/,/g, ', '));
+export const CHAIN_NAME: Record<string, string> = { superzoo: 'Super zoo', petcenter: 'Pet Center', fressnapf: 'Fressnapf / Maxi Zoo', zoobonus: 'Zoo Bonus', hulin: 'Krmiva Hulín' };
 export const parkFacts = (t: Record<string, string>) => [...new Set(PARK_FACTS.map(([k, f]) => (t[k] ? f(t[k]) : '')).filter(Boolean))];
 
 /** Live refresh: browser → Overpass (de, kumi), then optional /api/vets proxy. */
@@ -72,8 +85,12 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   const [nonstop, setNonstopRaw] = useState(initialNonstop);
   const [parksOn, setParksOn] = useState(false);
   const [parks, setParks] = useState<Vet[]>([]);
-  const setNonstop = (v: boolean) => { setNonstopRaw(v); if (v) setParksOn(false); };
-  const toggleParks = () => { setParksOn((x) => !x); setNonstopRaw(false); };
+  const [shopsOn, setShopsOn] = useState(false);
+  const [shops, setShops] = useState<Vet[]>([]);
+  const { data } = useStore();
+  const setNonstop = (v: boolean) => { setNonstopRaw(v); if (v) { setParksOn(false); setShopsOn(false); } };
+  const toggleParks = () => { setParksOn((x) => !x); setNonstopRaw(false); setShopsOn(false); };
+  const toggleShops = () => { setShopsOn((x) => !x); setNonstopRaw(false); setParksOn(false); };
   const [sel, setSel] = useState<Vet | null>(null);
   const [stale, setStale] = useState(false);
 
@@ -90,11 +107,13 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   const [allNs, setAllNs] = useState<Vet[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const shown = useMemo(() => {
+    if (shopsOn) { const near = shops.filter((v) => v.dist <= 10); return near.length >= 3 ? near : shops.slice(0, 10); }
     if (parksOn) { const near = parks.filter((v) => v.dist <= 15); return near.length >= 3 ? near : parks.slice(0, 10); }
     if (!nonstop) return vets;
     const m = new Map([...allNs, ...vets.filter((v) => v.nonstop)].map((v) => [v.id, v]));
     return [...m.values()].sort((a, b) => a.dist - b.dist).slice(0, 15);
-  }, [vets, nonstop, allNs, parksOn, parks]);
+  }, [vets, nonstop, allNs, parksOn, parks, shopsOn, shops]);
+  useEffect(() => { if (shopsOn && center && !shops.length) bundledShops(center).then(setShops).catch(() => {}); }, [shopsOn, center, shops.length]);
   useEffect(() => { if (parksOn && center && !parks.length) bundledParks(center).then(setParks).catch(() => {}); }, [parksOn, center, parks.length]);
   const load = useCallback(async (c: { lat: number; lon: number }) => {
     setState('loading');
@@ -141,51 +160,55 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
       const L = (await import('leaflet')).default;
       layer.current.clearLayers();
       shown.forEach((v) => {
-        L.marker([v.lat, v.lon], { icon: L.divIcon({ className: '', html: v.park ? '<div class="park-pin"><span>🐕</span></div>' : `<div class="vet-pin ${v.nonstop ? 'ns' : ''}"><span>${v.nonstop ? '24' : '🩺'}</span></div>`, iconSize: [44, 44], iconAnchor: [22, 44] }) })
+        L.marker([v.lat, v.lon], { icon: L.divIcon({ className: '', html: v.shop ? `<div class="shop-pin${v.tags.chain ? ' chain' : ''}"><span>🛍️</span></div>` : v.park ? '<div class="park-pin"><span>🐕</span></div>' : `<div class="vet-pin ${v.nonstop ? 'ns' : ''}"><span>${v.nonstop ? '24' : '🩺'}</span></div>`, iconSize: [44, 44], iconAnchor: [22, 44] }) })
           .on('click', () => setSel(v)).addTo(layer.current!);
       });
-      if ((nonstop || parksOn) && shown.length && map.current && center) {
+      if ((nonstop || parksOn || shopsOn) && shown.length && map.current && center) {
         const pts = [[center.lat, center.lon] as [number, number], ...shown.slice(0, 3).map((v) => [v.lat, v.lon] as [number, number])];
         map.current.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [30, 90], paddingBottomRight: [30, 40], maxZoom: 14, animate: !matchMedia('(prefers-reduced-motion: reduce)').matches });
       }
     })();
-  }, [shown, nonstop, parksOn, center, mapReady]);
+  }, [shown, nonstop, parksOn, shopsOn, center, mapReady]);
 
   const focus = (v: Vet) => { map.current?.setView([v.lat, v.lon], 16, { animate: true }); setSel(v); };
   const t = sel?.tags ?? {};
   return (
     <div>
-      <PageHeader title={parksOn ? 'Výběhy pro psy' : nonstop ? 'Nonstop pohotovost' : 'Veteriny v okolí'} sub={locNote || 'Podle tvé polohy'} />
+      <PageHeader title={shopsOn ? 'Zverimexy v okolí' : parksOn ? 'Výběhy pro psy' : nonstop ? 'Nonstop pohotovost' : 'Veteriny v okolí'} sub={locNote || 'Podle tvé polohy'} />
       <div className="relative rounded-[26px] overflow-hidden shadow-float dark:shadow-float-d ring-1 ring-ink/5 dark:ring-white/10">
         <div ref={el} className="h-[46dvh] w-full bg-ink/5" data-testid="map" />
-        <div className="absolute inset-x-2 top-2 z-[500] grid grid-cols-2 gap-2">
+        <div className="absolute inset-x-2 top-2 z-[500] grid grid-cols-3 gap-1.5">
           <button onClick={() => setNonstop(!nonstop)} aria-pressed={nonstop}
-            className={`press rounded-full px-2 min-h-[44px] text-[13px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
             🚨 Nonstop
           </button>
           <button onClick={toggleParks} aria-pressed={parksOn} data-filter="parks"
-            className={`press rounded-full px-2 min-h-[44px] text-[13px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${parksOn ? 'bg-[#2F7D4A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
-            🐕 Výběhy pro psy
+            className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${parksOn ? 'bg-[#2F7D4A] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            🐕 Výběhy
+          </button>
+          <button onClick={toggleShops} aria-pressed={shopsOn} data-filter="shops"
+            className={`press rounded-full px-1.5 min-h-[44px] text-[12.5px] font-bold whitespace-nowrap backdrop-blur-xl shadow-card ring-1 transition ${shopsOn ? 'bg-[#8A4B12] text-white ring-transparent' : 'bg-surface/85 dark:bg-surface-d/85 ring-ink/10 dark:ring-white/10'}`}>
+            🛍️ Zverimexy
           </button>
         </div>
         {state === 'loading' && <div className="absolute inset-x-0 bottom-3 z-[500] mx-auto w-max rounded-full bg-surface/90 dark:bg-surface-d/90 backdrop-blur px-4 py-2 text-sm shadow-card animate-fade">Hledám veteriny…</div>}
       </div>
       <p className="text-[13px] text-muted mt-3 px-1 leading-snug">Klepni na značku nebo vyber místo ze seznamu. <b>V nouzi vždy nejdřív zavolej.</b></p>
-      <details className="text-[12px] text-muted mt-1 px-1 leading-snug"><summary className="cursor-pointer min-h-[32px] flex items-center">Odkud jsou data?</summary>Z komunitní mapy <a className="underline" href="https://www.openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> (snímek říjen 2026), mohou být neúplná. „Nonstop“ ukazuje místa s otevírací dobou 24/7 včetně několika pražských klinik ověřených na jejich webu.</details>
+      <details className="text-[12px] text-muted mt-1 px-1 leading-snug"><summary className="cursor-pointer min-h-[32px] flex items-center">Odkud jsou data?</summary>Z komunitní mapy <a className="underline" href="https://www.openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> (snímek říjen 2026), mohou být neúplná. „Nonstop“ ukazuje místa s otevírací dobou 24/7 včetně několika pražských klinik ověřených na jejich webu. Zverimexy (624) a výběhy (402) jsou uložené v appce, fungují i offline.</details>
       <div className="mt-4 space-y-3 stagger">
         {state === 'error' && (
           <Card className="p-4 text-center"><p className="font-semibold">Nepodařilo se načíst data</p><p className="text-sm text-muted mt-1">Mapová služba OpenStreetMap (Overpass) je teď přetížená. Zkus to za pár minut.</p><Button variant="soft" className="mt-3" onClick={() => center && load(center)}>Zkusit znovu</Button></Card>
         )}
         {stale && <p className="text-[12px] text-muted px-1">Ukazuji uložený seznam klinik, čerstvá data se načítají na pozadí.</p>}
         {state === 'ok' && !shown.length && (
-          <Card className="p-4 text-center text-sm text-muted">{parksOn ? 'V okolí není v OSM žádný psí výběh.' : nonstop ? 'V okolí není v OSM žádná ordinace označená jako nonstop (24/7). Zkus vypnout filtr a obvolat nejbližší kliniky.' : 'V okolí jsme nic nenašli.'}</Card>
+          <Card className="p-4 text-center text-sm text-muted">{shopsOn ? 'V okolí není v OSM žádný zverimex.' : parksOn ? 'V okolí není v OSM žádný psí výběh.' : nonstop ? 'V okolí není v OSM žádná ordinace označená jako nonstop (24/7). Zkus vypnout filtr a obvolat nejbližší kliniky.' : 'V okolí jsme nic nenašli.'}</Card>
         )}
         {shown.slice(0, 30).map((v) => (
           <Card key={v.id} onClick={() => focus(v)} className="p-4 flex items-center gap-3.5">
-            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.park ? 'bg-[#2F7D4A]/12 dark:bg-[#5FBF7F]/15' : v.nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] font-bold text-sm' : 'bg-primary/10'}`}>{v.park ? '🐕' : v.nonstop ? '24/7' : '🩺'}</div>
+            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.shop ? 'bg-[#8A4B12]/12 dark:bg-[#E0A060]/15' : v.park ? 'bg-[#2F7D4A]/12 dark:bg-[#5FBF7F]/15' : v.nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] font-bold text-sm' : 'bg-primary/10'}`}>{v.shop ? '🛍️' : v.park ? '🐕' : v.nonstop ? '24/7' : '🩺'}</div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold truncate">{v.name}</p>
-              <p className="text-[13px] text-muted truncate">{[v.dist < 1 ? `${Math.round(v.dist * 1000)} m` : `${v.dist.toFixed(1).replace('.', ',')} km`, v.park ? parkFacts(v.tags).join(', ') : address(v.tags)].filter(Boolean).join(' · ')}</p>
+              <p className="text-[13px] text-muted truncate">{[v.dist < 1 ? `${Math.round(v.dist * 1000)} m` : `${v.dist.toFixed(1).replace('.', ',')} km`, v.park ? parkFacts(v.tags).join(', ') : address(v.tags), v.shop && data.cards.some((c) => c.store === v.tags.chain) ? '💳 máš kartu' : ''].filter(Boolean).join(' · ')}</p>
             </div>
             <Icon name="chev" className="w-4 h-4 text-muted" />
           </Card>
@@ -194,10 +217,17 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
       <Sheet open={!!sel} onClose={() => setSel(null)} title={sel?.name ?? ''}>
         {sel && (
           <div className="space-y-3">
+            {sel.shop && (() => { const card = data.cards.find((c) => c.store === (sel.tags.chain as CardStore)); return (<>
+              {sel.tags.chain && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold bg-[#8A4B12]/12 text-[#6B3A0E] dark:text-[#F0B880]">Řetězec {CHAIN_NAME[sel.tags.chain] ?? sel.tags.chain}</span>}
+              {card && <Card className="p-4 flex items-center gap-3">
+                <span className="text-2xl" data-shop-card>💳</span><span className="flex-1"><b className="block">Máš tu věrnostní kartu</b><span className="text-sm text-muted">{card.name} – ukaž ji u pokladny</span></span>
+                <button className="press rounded-2xl px-3.5 min-h-[44px] font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]" onClick={() => { sessionStorage.setItem('tlapka:openCard', card.id); history.pushState(null, '', '#cards'); dispatchEvent(new PopStateEvent('popstate')); }} data-open-card>Ukázat</button>
+              </Card>}
+            </>); })()}
             {sel.nonstop && <span className="inline-block rounded-full px-3 py-1 text-xs font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">{sel.tags['source:ns'] ? 'Nonstop 24/7 (ověřeno na webu kliniky)' : 'Nonstop 24/7 (dle OSM)'}</span>}
             <Card className="p-4 space-y-2.5 text-[15px]">
               {sel.park ? <p data-park-facts><span className="text-muted text-xs block">Výběh</span>{parkFacts(t).join(' · ') || 'Bez dalších údajů v OSM'}{t.description ? <span className="block text-sm text-muted mt-1">{t.description}</span> : null}</p> : <p><span className="text-muted text-xs block">Adresa</span>{address(t) || 'Neuvedena'}</p>}
-              <p><span className="text-muted text-xs block">Otevírací doba</span>{t.opening_hours ? <code className="text-sm">{t.opening_hours}</code> : 'Neuvedena v OSM'}</p>
+              <p><span className="text-muted text-xs block">Otevírací doba</span>{t.opening_hours ? czHours(t.opening_hours).map((l, i) => <span key={i} className="block">{l}</span>) : 'Neuvedena v OSM'}</p>
               {(t.phone || t['contact:phone']) && <p><span className="text-muted text-xs block">Telefon</span><a className="text-primary font-semibold" href={`tel:${(t.phone || t['contact:phone']).split(';')[0].replace(/\s/g, '')}`}>{t.phone || t['contact:phone']}</a></p>}
               {(t.website || t['contact:website']) && <p className="truncate"><span className="text-muted text-xs block">Web</span><a className="text-primary" target="_blank" rel="noreferrer" href={t.website || t['contact:website']}>{(t.website || t['contact:website']).replace(/^https?:\/\//, '')}</a></p>}
               <p className="text-muted text-sm">{sel.dist.toFixed(1).replace('.', ',')} km od {locNote ? 'centra Brna' : 'tebe'}</p>

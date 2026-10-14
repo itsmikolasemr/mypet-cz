@@ -1,0 +1,24 @@
+// Mapa: filtr Zverimexy (bundled OSM), detail, "Máš tu věrnostní kartu" → pokladna.
+import { chromium, webkit, devices } from 'playwright';
+const BR = process.env.BROWSER === 'webkit' ? 'webkit' : 'chromium'; const BASE = 'http://localhost:4125/'; const S = '/workspace/mypet-shots/'; const R = {}; const errs = [];
+const b = BR === 'webkit' ? await webkit.launch() : await chromium.launch();
+const c = await b.newContext({ ...devices['iPhone 14'], geolocation: { latitude: 50.0755, longitude: 14.4378 }, permissions: ['geolocation'] });
+const p = await c.newPage(); p.on('pageerror', (e) => errs.push(e.message));
+await p.goto(BASE); await p.getByText('Přeskočit').click(); await p.getByText('Vyzkoušet s ukázkovými daty').click(); await p.waitForTimeout(500);
+await p.evaluate(() => { const d = JSON.parse(localStorage.getItem('tlapka:data:v1')); d.cards = [{ id: 'pc', store: 'petcenter', name: 'Pet Center', code: '8591234567893', format: 'EAN13', notes: '', uses: 0, created: new Date().toISOString() }]; localStorage.setItem('tlapka:data:v1', JSON.stringify(d)); history.replaceState(null, '', '#map'); });
+await p.reload(); await p.waitForTimeout(2000);
+const chips = await p.locator('[data-testid=map] ~ div button').evaluateAll((bs) => bs.map((x) => { const r = x.getBoundingClientRect(); return [x.innerText, Math.round(r.left), Math.round(r.right), x.scrollWidth <= x.clientWidth + 1]; }));
+R.chipsFit = chips.length === 3 && chips.every((x) => x[1] >= 0 && x[2] <= 390 && x[3]); R.chips = chips.map((x) => x[0]);
+await p.locator('[data-filter=shops]').click(); await p.waitForTimeout(2000);
+R.title = await p.locator('h1').first().innerText(); R.shopPins = await p.locator('.shop-pin').count(); R.chainPins = await p.locator('.shop-pin.chain').count(); R.vetPins = await p.locator('.vet-pin').count();
+await p.screenshot({ path: S + `map-zverimexy-${BR}.png` });
+R.withCardInList = await p.getByText('💳 máš kartu').count();
+await p.locator('main').getByText('💳 máš kartu').first().click(); await p.waitForTimeout(800);
+R.sheet = (await p.locator('[role=dialog]').innerText()).slice(0, 200).replace(/\n/g, ' | ');
+R.hasCardBox = await p.locator('[data-shop-card]').count(); R.nav = await p.locator('[role=dialog] a', { hasText: 'Navigovat' }).count();
+await p.screenshot({ path: S + `map-zverimex-detail-${BR}.png` });
+await p.locator('[data-open-card]').click(); await p.waitForTimeout(1200);
+R.cashier = await p.evaluate(() => location.hash) + ' ' + (await p.getByText('8591234567893').count() || (await p.locator('svg').count() > 0));
+await p.screenshot({ path: S + `map-zverimex-pokladna-${BR}.png` });
+const ok = R.chipsFit && R.title === 'Zverimexy v okolí' && R.shopPins >= 3 && R.vetPins === 0 && R.hasCardBox === 1 && R.nav === 1 && R.cashier.startsWith('#cards') && !errs.length;
+console.log(BR, ok ? 'PASS' : 'FAIL', JSON.stringify(R), errs); await b.close(); process.exit(ok ? 0 : 1);

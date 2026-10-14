@@ -131,6 +131,8 @@ export function Wallet() {
   const [show, setShow] = useState<LoyaltyCard | null>(null);
   const blank = (): LoyaltyCard => ({ id: uid(), store: 'superzoo', name: '', code: '', format: 'EAN13', notes: '', uses: 0, created: new Date().toISOString() });
   const open = (c: LoyaltyCard) => { markCardUsed(c.id); setShow(c); };
+  // opened from the map ("Máš tu věrnostní kartu"): show cashier view right away
+  useEffect(() => { const id = sessionStorage.getItem('tlapka:openCard'); if (!id) return; sessionStorage.removeItem('tlapka:openCard'); const c = cards.find((x) => x.id === id); if (c) open(c); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div>
       <PageHeader title="Věrnostní karty" sub={cards.length ? `${cards.length} ${cards.length === 1 ? 'karta' : cards.length < 5 ? 'karty' : 'karet'} · sdílené s domácností` : 'Všechny zverimexy v kapse'} fab={<Fab label="Přidat kartu" onClick={() => setEdit(blank())} />} />
