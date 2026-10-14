@@ -12,13 +12,14 @@ import { SecondOpinion } from './V11';
 const Wallet = dynamic(() => import('./Wallet').then((m) => m.Wallet), { ssr: false });
 import { BannerSlot, Expenses, Paywall } from './Premium';
 import { FeedbackHost } from './feedback';
+import { TodayScreen } from './Today';
 const Privacy = dynamic(() => import('./Legal').then((m) => m.Privacy));
 const Terms = dynamic(() => import('./Legal').then((m) => m.Terms));
 const About = dynamic(() => import('./Legal').then((m) => m.About));
 import { CalendarScreen, Dashboard, Onboarding, PetDetail, PetsList, Reminders, Settings, type Tab } from './screens';
 
 const VetMap = dynamic(() => import('./VetMap'), { ssr: false, loading: () => <div className="h-[46dvh] rounded-[26px] bg-ink/5 animate-pulse mt-20" /> });
-const EXTRA: Tab[] = ['map', 'ai', 'expenses', 'second', 'cards', 'privacy', 'terms', 'about'];
+const EXTRA: Tab[] = ['today', 'map', 'ai', 'expenses', 'second', 'cards', 'privacy', 'terms', 'about'];
 const FROM_SETTINGS: Tab[] = ['privacy', 'terms', 'about'];
 
 const TABS: { id: Tab; l: string; i: 'home' | 'paw' | 'bell' | 'heart' | 'cog' }[] = [
@@ -56,6 +57,7 @@ function Shell() {
         {EXTRA.includes(tab) && <button onClick={() => (FROM_SETTINGS.includes(tab) ? (tab === 'about' ? nav('settings') : nav('about')) : nav('home'))} className="press -ml-1 mb-1 flex items-center gap-1 text-primary-d dark:text-primary font-semibold min-h-[44px] pr-3"><Icon name="back" /> {FROM_SETTINGS.includes(tab) ? (tab === 'about' ? 'Nastavení' : 'O aplikaci') : 'Přehled'}</button>}
         <div key={tab + (petId ?? '')} className="animate-screen">
           {tab === 'home' && <Dashboard go={(t) => nav(t)} openPet={(id) => nav('pets', id)} />}
+          {tab === 'today' && <TodayScreen />}
           {tab === 'map' && <VetMap initialNonstop={petId === 'nonstop'} />}
           {tab === 'ai' && <Aivet initialPet={petId ?? undefined} openMap={() => nav('map', 'nonstop')} />}
           {tab === 'pets' && (petId ? <PetDetail id={petId} back={() => history.length > 1 ? history.back() : nav('pets')} ask={() => nav('ai', petId)} /> : <PetsList openPet={(id) => nav('pets', id)} />)}

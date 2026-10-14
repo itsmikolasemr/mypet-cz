@@ -1,4 +1,5 @@
 'use client';
+import { applyTick, undoTick } from './today';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { TrashColl, TrashItem } from './types';
 import type { Allergy, AppData, LoyaltyCard, DocMeta, Medication, Pet, Reminder, Visit } from './types';
@@ -24,6 +25,7 @@ export function validate(x: unknown): AppData | null {
     allergies: Array.isArray(d.allergies) ? d.allergies : [],
     cards: Array.isArray(d.cards) ? d.cards : [],
     trash: Array.isArray(d.trash) ? d.trash : [],
+    daily: Array.isArray(d.daily) ? d.daily : [],
     settings: { theme: d.settings?.theme ?? 'system', onboarded: true, notify: !!d.settings?.notify, notifyHour: d.settings?.notifyHour ?? 9, dayBefore: d.settings?.dayBefore ?? true, weekly: d.settings?.weekly ?? true },
   };
 }
@@ -89,6 +91,19 @@ function useStoreImpl() {
     return () => m.removeEventListener('change', apply);
   }, [data.settings.theme, data.pets]);
 
+  // v1.2 Tlapka Den: keep widgets fresh + apply ticks made on the home-screen widget
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(() => { import('./widget').then((w) => w.pushWidget(data)).catch(() => {}); }, 300);
+    return () => clearTimeout(t);
+  }, [data.meds, data.daily, data.pets, data.reminders, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!ready) return;
+    const pull = async () => { const { pullWidgetTicks } = await import('./widget'); const ticks = await pullWidgetTicks(); if (!ticks.length) return; const { applyTick } = await import('./today'); setData((d) => ticks.reduce((acc, k) => applyTick(acc, k.id, 'widget', new Date(k.at)), d)); };
+    pull(); const v = () => { if (document.visibilityState === 'visible') pull(); };
+    document.addEventListener('visibilitychange', v); return () => document.removeEventListener('visibilitychange', v);
+  }, [ready]);
+
   // Every removal lands in a 30-day trash (grouped per action, e.g. pet + its records). Files stay on device until purge.
   const upd = useCallback((f: (d: AppData) => AppData) => setData((d) => withTrash(d, f(d))), []);
 
@@ -121,6 +136,8 @@ function useStoreImpl() {
           : { ...r, history: [...r.history, t], completedAt: t };
       }),
     })),
+    tickToday: (taskId: string, by?: string) => setData((d) => applyTick(d, taskId, by)),
+    untickToday: (taskId: string) => setData((d) => undoTick(d, taskId)),
     reopenReminder: (id: string) => upd((d) => ({ ...d, reminders: d.reminders.map((r) => (r.id === id ? { ...r, completedAt: undefined } : r)) })),
     saveVisit: (v: Visit) => upd((d) => ({ ...d, visits: d.visits.some((x) => x.id === v.id) ? d.visits.map((x) => (x.id === v.id ? v : x)) : [...d.visits, v] })),
     deleteVisit: (id: string) => upd((d) => ({ ...d, visits: d.visits.filter((v) => v.id !== id) })),

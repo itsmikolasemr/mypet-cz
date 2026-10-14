@@ -1,4 +1,6 @@
 'use client';
+import { TodayCard } from './Today';
+import { WrappedCard } from './Wrapped';
 import { Emo, GT } from './glyphs';
 import { createPortal } from 'react-dom';
 import { Account } from './Account';
@@ -52,12 +54,13 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
             <span className="flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 inline-flex items-center gap-1.5"><Emo e="📅" /> {upcoming.length} {upcoming.length === 1 ? 'úkol' : upcoming.length >= 2 && upcoming.length <= 4 ? 'úkoly' : 'úkolů'} / 30 dní</span>
             <span className={`flex-1 rounded-2xl px-3 py-2.5 text-[13px] font-semibold shadow-card dark:shadow-card-d ring-1 ${overdue.length ? 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:ring-red-500/20' : 'bg-surface dark:bg-surface-d ring-ink/5 dark:ring-white/10'}`}><span className="inline-flex items-center gap-1.5"><Emo e={overdue.length ? '⚠️' : '✨'} />{overdue.length ? `${overdue.length} po termínu` : 'Nic nemeškáš'}</span></span>
           </div>
+          <TodayCard open={() => go('today')} />
           {overdue.length > 0 && (
             <section className="space-y-2.5"><h2 className="font-semibold text-lg text-red-700 dark:text-red-400">Po termínu</h2>{overdue.map((r, i) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} hint={i === 0} onEdit={() => setEdit(r)} />)}</section>
           )}
           <section className="space-y-2.5">
             <div className="flex items-center justify-between"><h2 className="font-semibold text-lg">Nadcházející</h2><button className="text-sm font-semibold text-primary min-h-[44px] min-w-[44px] justify-center px-2 -mr-2 inline-flex items-center min-h-[44px] px-2 -mr-2 inline-flex items-center" onClick={() => setNewRem(true)}>+ Přidat</button></div>
-            {upcoming.length ? upcoming.slice(0, 5).map((r, i) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} hint={!overdue.length && i === 0} onEdit={() => setEdit(r)} />) : <Card className="p-4 text-sm text-muted text-center">Příštích 30 dní nic. 🎉</Card>}
+            {upcoming.length ? upcoming.slice(0, 5).map((r, i) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} hint={!overdue.length && i === 0} onEdit={() => setEdit(r)} />) : <Card className="p-4 text-sm text-muted text-center">Příštích 30 dní nic – máš klid.</Card>}
           </section>
           <section>
             <h2 className="font-semibold text-lg mb-2">Přidat</h2>
@@ -67,6 +70,7 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
               <ScanButton className="press min-h-[52px] rounded-2xl bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10 font-semibold text-[14px] flex flex-col items-center justify-center gap-0.5 px-1 leading-tight" />
             </div>
           </section>
+          <WrappedCard />
           <section>
             <h2 className="font-semibold text-lg mb-2">Pomocníci</h2>
             <div className="grid grid-cols-2 gap-2.5">
@@ -621,5 +625,5 @@ export function Onboarding() {
   );
 }
 
-export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses' | 'second' | 'cards' | 'privacy' | 'terms' | 'about';
+export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses' | 'second' | 'cards' | 'privacy' | 'terms' | 'about' | 'today';
 export type { Pet };

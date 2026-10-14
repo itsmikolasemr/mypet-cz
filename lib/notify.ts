@@ -57,12 +57,11 @@ export function weeklySummary(data: AppData) {
   const overdue = active.filter((r) => parse(r.dueDate).getTime() < t0.getTime());
   const done7 = data.reminders.reduce((n, r) => n + (r.history ?? []).filter((h) => Date.now() - parse(String(h).slice(0, 10)).getTime() < 7 * 86400000).length, 0);
   const items = week.slice(0, 5).map((r) => ({ title: r.title, pet: data.pets.find((p) => p.id === r.petId)?.name ?? '', date: r.dueDate }));
-  const line = week.length || overdue.length ? `${week.length ? `Tento týden ${week.length}× péče` : 'Tento týden nic nového'}${overdue.length ? `, ${overdue.length} po termínu` : ''}.${items[0] ? ` Nejbližší: ${items[0].title}${items[0].pet ? ' (' + items[0].pet + ')' : ''}.` : ''}` : 'Tento týden máš klid – všechno je hotové. 🐾';
+  const line = week.length || overdue.length ? `${week.length ? `Tento týden ${week.length}× péče` : 'Tento týden nic nového'}${overdue.length ? `, ${overdue.length} po termínu` : ''}.${items[0] ? ` Nejbližší: ${items[0].title}${items[0].pet ? ' (' + items[0].pet + ')' : ''}.` : ''}` : 'Tento týden máš klid – všechno je hotové.';
   return { week: week.length, overdue: overdue.length, done7, items, line, updated: new Date().toISOString() };
 }
 
 export async function syncNotifications(data: AppData) {
-  try { localStorage.setItem('tlapka:widget', JSON.stringify(weeklySummary(data))); } catch {}
   webTimers.forEach((t) => clearTimeout(t));
   webTimers = [];
   if (native()) {

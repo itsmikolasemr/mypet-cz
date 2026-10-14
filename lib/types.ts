@@ -74,6 +74,8 @@ export interface AppData {
   allergies: Allergy[];
   cards: LoyaltyCard[];
   trash?: TrashItem[];
+  /** v1.2: denní deník (krmení, venčení) – zdroj pro Tlapka Den a Wrapped */
+  daily?: DailyEntry[];
   settings: { theme: Theme; onboarded: boolean; notify: boolean; notifyHour: number; dayBefore?: boolean; weekly?: boolean };
 }
 
@@ -129,3 +131,7 @@ export interface LoyaltyCard {
   lastUsed?: string;
   created: string;
 }
+
+/** v1.2 – one ticked daily task (feeding / walk). Meds keep using Medication.given. */
+export type DailyKind = 'feed' | 'walk';
+export interface DailyEntry { id: string; petId: string; kind: DailyKind; day: string; slot: number; at: string; minutes?: number; place?: string; by?: string }
