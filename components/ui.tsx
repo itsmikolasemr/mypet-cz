@@ -167,3 +167,27 @@ export function Logo({ className = 'h-8' }: { className?: string }) {
     </span>
   );
 }
+
+const MONTHS_CZ = ['ledna', 'února', 'března', 'dubna', 'května', 'června', 'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'];
+/** Czech date picker (den. měsíc rok) – never mm/dd/yyyy regardless of browser locale. Value/onChange in ISO YYYY-MM-DD ('' = empty). */
+export function DateInput({ value, onChange, min, max, required, label }: { value: string; onChange: (v: string) => void; min?: string; max?: string; required?: boolean; label?: string }) {
+  const [y, m, d] = (value || '--').split('-');
+  const [part, setPart] = useState({ y: y || '', m: m || '', d: d || '' });
+  useEffect(() => { const [a, b, c] = (value || '--').split('-'); setPart({ y: a || '', m: b || '', d: c || '' }); }, [value]);
+  const now = new Date().getFullYear();
+  const y0 = min ? Number(min.slice(0, 4)) : now - 30, y1 = max ? Number(max.slice(0, 4)) : now + 5;
+  const years = Array.from({ length: Math.max(1, y1 - Math.min(y0, now - 30) + 1) }, (_, i) => y1 - i).filter((v) => v >= (min ? y0 : now - 30));
+  const dim = part.y && part.m ? new Date(Number(part.y), Number(part.m), 0).getDate() : 31;
+  const upd = (k: 'y' | 'm' | 'd', v: string) => {
+    const n = { ...part, [k]: v }; if (n.d && Number(n.d) > (n.y && n.m ? new Date(Number(n.y), Number(n.m), 0).getDate() : 31)) n.d = '';
+    setPart(n); if (n.y && n.m && n.d) onChange(`${n.y}-${n.m}-${n.d}`); else if (!n.y && !n.m && !n.d) onChange('');
+  };
+  const sel = 'min-h-[48px] rounded-2xl px-2 bg-ink/5 dark:bg-white/10 text-[16px] font-medium appearance-none text-center';
+  return (
+    <span className="grid grid-cols-[1fr_2fr_1.4fr] gap-2" role="group" aria-label={label ?? 'Datum'} data-date-input>
+      <select aria-label="Den" required={required} className={sel} value={part.d} onChange={(e) => upd('d', e.target.value)}><option value="">den</option>{Array.from({ length: dim }, (_, i) => String(i + 1).padStart(2, '0')).map((v) => <option key={v} value={v}>{Number(v)}.</option>)}</select>
+      <select aria-label="Měsíc" required={required} className={sel} value={part.m} onChange={(e) => upd('m', e.target.value)}><option value="">měsíc</option>{MONTHS_CZ.map((n, i) => <option key={n} value={String(i + 1).padStart(2, '0')}>{n}</option>)}</select>
+      <select aria-label="Rok" required={required} className={sel} value={part.y} onChange={(e) => upd('y', e.target.value)}><option value="">rok</option>{years.map((v) => <option key={v} value={String(v)}>{v}</option>)}</select>
+    </span>
+  );
+}

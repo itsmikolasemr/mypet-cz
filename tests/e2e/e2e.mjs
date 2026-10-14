@@ -6,7 +6,7 @@ const mk = async () => { const c = await b.newContext({ ...devices['iPhone 14'],
 const login = async (p, email) => { 
   await p.locator('nav[aria-label="Hlavní navigace"]').waitFor({ timeout: 20000 });
   await p.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: /^Nastavení/ }).click();
-  await p.getByText('Přihlásit heslem').waitFor({ timeout: 15000 }); await p.getByText('Přihlásit heslem').click(); await p.fill('input[type=email]', email); await p.fill('input[type=password]', PW);
+  await p.locator('main button', { hasText: /(Přihlásit|Spravovat) ›/ }).first().click(); await p.getByText('Přihlásit heslem').waitFor({ timeout: 15000 }); await p.getByText('Přihlásit heslem').click(); await p.fill('input[type=email]', email); await p.fill('input[type=password]', PW);
   await p.getByRole('button', { name: 'Přihlásit se', exact: true }).click();
   await p.getByText('Synchronizovat teď').waitFor({ timeout: 15000 });
 };
@@ -46,7 +46,7 @@ for (let i = 0; i < 30; i++) { const x = (await data(A)).reminders.map((r) => r.
 const aDue = (await data(A)).reminders.map((r) => r.id + r.dueDate + r.history.length).sort().join();
 R.realtimeBtoA = aDue === bDue; R.bDoneRem = bDue !== (await data(A)).reminders.map(() => '').join() ;
 // A renames a pet -> B realtime
-await A.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: /^Nastavení/ }).click(); await A.waitForTimeout(800);
+await A.locator('nav[aria-label="Hlavní navigace"]').getByRole('button', { name: /^Nastavení/ }).click(); await A.waitForTimeout(800); await A.locator('main button', { hasText: /(Přihlásit|Spravovat) ›/ }).first().click(); 
 await A.evaluate(() => 0);
 R.aDoseList = await A.locator('[data-dose]').allInnerTexts();
 // sitter (no account)

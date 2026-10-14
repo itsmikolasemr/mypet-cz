@@ -26,7 +26,7 @@ await A.locator('[aria-label^="Označit"]').first().waitFor();
 const d0 = await data(A);
 await A.evaluate(() => 0);
 await nav(A, 'Mazlíčci'); await A.getByText(d0.pets[1].name).first().click(); await A.waitForTimeout(500);
-await A.getByRole('button', { name: /Smazat/ }).last().click().catch(() => {}); await A.waitForTimeout(300);
+await A.getByRole('button', { name: 'Upravit' }).click(); await A.locator('[data-delete-pet]').click(); await A.waitForTimeout(300);
 if (await A.locator('[role=alertdialog]').count()) await A.locator('[role=alertdialog] button').last().click();
 await A.waitForTimeout(600);
 const d1 = await data(A); R.petDeleted = d0.pets.length - d1.pets.length; R.trashItems = (d1.trash || []).length;
@@ -39,7 +39,7 @@ R.api402 = await A.evaluate(async () => (await fetch('/api/ai', { method: 'POST'
 await nav(A, 'Mazlíčci'); await A.getByText(d1.pets[0].name).first().click(); await A.waitForTimeout(500); await A.getByRole('button', { name: 'Sdílet', exact: true }).click(); await A.waitForTimeout(300);
 await A.getByRole('button', { name: /^Otevřít/ }).click(); R.travelPaywall = await paywallOpen(A);
 // ---- account (free): pass link limit, sitter gated ----
-await nav(A, 'Nastavení'); await A.getByText('Přihlásit heslem').click(); await A.fill('input[type=email]', 'tlapka-e2e-a@example.com'); await A.fill('input[type=password]', PW);
+await nav(A, 'Nastavení'); await A.locator('main button', { hasText: /(Přihlásit|Spravovat) ›/ }).first().click(); await A.getByText('Přihlásit heslem').click(); await A.fill('input[type=email]', 'tlapka-e2e-a@example.com'); await A.fill('input[type=password]', PW);
 await A.getByRole('button', { name: 'Přihlásit se', exact: true }).click(); await A.getByText('Synchronizovat teď').waitFor({ timeout: 15000 }); await A.waitForTimeout(4000);
 await A.getByText('Odkaz pro hlídače').click(); R.sitterPaywallFree = await paywallOpen(A);
 await nav(A, 'Mazlíčci'); await A.getByText(d1.pets[0].name).first().click(); await A.waitForTimeout(500); await A.getByRole('button', { name: 'Sdílet', exact: true }).click(); await A.waitForTimeout(300);

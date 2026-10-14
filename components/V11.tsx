@@ -12,7 +12,7 @@ import { saveBlob } from '@/lib/docs';
 import { requestPermission, showNow } from '@/lib/notify';
 import { addDays, today, uid } from '@/lib/utils';
 import type { Pet, ReminderType } from '@/lib/types';
-import { Card, PageHeader, Sheet, Field, inputCls, Button } from './ui';
+import { Card, PageHeader, Sheet, Field, inputCls, Button, DateInput } from './ui';
 import { notice, toast } from './feedback';
 import { PremiumBadge } from './Premium';
 
@@ -65,12 +65,17 @@ const GUIDE: { b: string; steps: string[] }[] = [
 ];
 export function BatteryGuide() {
   const [open, setOpen] = useState<string | null>(null);
+  // only Android phones drop notifications to save battery; show just the detected brand (fallback: all Android brands)
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  if (!/Android/i.test(ua)) return null;
+  const brand = GUIDE.filter((g) => g.b.split(/[ /]+/).some((w) => w.length > 2 && new RegExp(w, 'i').test(ua)));
+  const list = brand.length ? brand : GUIDE.filter((g) => !/iPhone/.test(g.b));
   return (
     <Card className="p-4 space-y-2">
       <p className="font-semibold">🔔 Spolehlivé připomínky</p>
       <p className="text-[13px] text-muted">Některé telefony kvůli úspoře baterie oznámení zahazují. Vyzkoušej test a případně nastav výjimku.</p>
       <button className={soft} onClick={async () => { if (!(await requestPermission())) return notice('Oznámení nejsou povolena', 'Povol je v nastavení telefonu.'); await showNow('Tlapka – test připomínky', 'Funguje to! 🐾'); toast('Testovací oznámení odesláno'); }}>Poslat testovací oznámení</button>
-      {GUIDE.map((g) => (
+      {list.map((g) => (
         <div key={g.b}>
           <button aria-expanded={open === g.b} className="press w-full min-h-[44px] flex items-center justify-between text-left font-medium" onClick={() => setOpen(open === g.b ? null : g.b)}>{g.b}<span aria-hidden>{open === g.b ? '−' : '+'}</span></button>
           {open === g.b && <ol className="list-decimal pl-6 pb-2 text-[14px] space-y-1">{g.steps.map((s) => <li key={s}>{s}</li>)}</ol>}
@@ -158,7 +163,7 @@ export function ScanButton({ petId, className }: { petId?: string; className?: s
           <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); save(); }}>
             {data.pets.length > 1 && <Field label="Mazlíček"><select className={inputCls} value={pet} onChange={(e) => setPet(e.target.value)}>{data.pets.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></Field>}
             <div className="grid grid-cols-2 gap-2">
-              <Field label="Datum"><input type="date" className={inputCls} value={r.date ?? ''} onChange={(e) => set('date', e.target.value)} /></Field>
+              <Field label="Datum"><DateInput value={r.date ?? ''} onChange={(v) => set('date', v)} /></Field>
               <Field label="Cena (Kč)"><input inputMode="decimal" className={inputCls} value={r.cost ?? ''} onChange={(e) => set('cost', e.target.value ? Number(e.target.value.replace(',', '.')) : null)} /></Field>
             </div>
             <Field label="Klinika"><input className={inputCls} value={r.clinic ?? ''} onChange={(e) => set('clinic', e.target.value)} /></Field>
@@ -234,7 +239,7 @@ export function TravelChecklist({ pet }: { pet: Pet }) {
       <p className="font-semibold">✈️ Cestovní checklist</p>
       <div className="grid grid-cols-2 gap-2">
         <Field label="Kam"><select className={inputCls} value={dest} onChange={(e) => setDest(e.target.value as Dest)}><option value="eu">EU (běžně)</option><option value="special">FI, IE, MT, NO</option><option value="uk">Velká Británie</option><option value="third">Mimo EU</option></select></Field>
-        <Field label="Odjezd"><input type="date" className={inputCls} value={date} onChange={(e) => setDate(e.target.value)} /></Field>
+        <Field label="Odjezd"><DateInput value={date} onChange={(v) => setDate(v)} /></Field>
       </div>
       <ul className="space-y-2" data-travel>{items.map((i) => (
         <li key={i.t} className="flex gap-3"><span aria-hidden className="text-lg">{i.ok === true ? '✅' : i.ok === false ? '⚠️' : '☐'}</span><div><p className="font-medium">{i.t}<span className="sr-only">{i.ok === true ? ' – splněno' : i.ok === false ? ' – chybí' : ''}</span></p>{i.d && <p className="text-[13px] text-muted">{i.d}</p>}</div></li>))}</ul>
@@ -265,6 +270,25 @@ export function PrnRow({ med }: { med: import('@/lib/types').Medication }) {
         {st.last ? <>Naposledy {hm(st.last.at)}{st.last.by ? ` (${st.last.by})` : ''} · {st.ok ? 'lze znovu podat' : `bezpečně znovu po ${hm(st.nextAt!)}`}</> : med.minHours ? `Dle potřeby, nejdřív po ${med.minHours} h` : 'Dle potřeby'}
       </p>
       <button onClick={give} className="press min-h-[44px] px-3 rounded-xl font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">Podáno teď</button>
+    </div>
+  );
+}
+
+/** Pravidelné léky: odškrtávání dnešních dávek (Denně / 2× / 3× denně) s historií a jménem podávajícího. */
+export const dosesPerDay = (f: string) => (f === '3× denně' ? 3 : f === '2× denně' ? 2 : f === 'Denně ráno' || f === 'Denně večer' ? 1 : 0);
+export function DoseRow({ med }: { med: import('@/lib/types').Medication }) {
+  const { saveMed } = useStore(); const cloud = useCloud();
+  const n = dosesPerDay(med.frequency); if (!n) return null;
+  const day = new Date().toISOString().slice(0, 10);
+  const todays = (med.given ?? []).filter((g) => new Date(g.at).toLocaleDateString('sv') === new Date().toLocaleDateString('sv'));
+  const hm = (t: string) => new Date(t).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+  const give = () => { const prev = med; saveMed({ ...med, given: [...(med.given ?? []), { at: new Date().toISOString(), by: cloud.name }].slice(-120) }); toast(`${med.name}: dávka zapsána ✓`, () => saveMed(prev)); };
+  const streak = (() => { let s = 0; for (let i = 1; i < 60; i++) { const d = new Date(); d.setDate(d.getDate() - i); const k = d.toLocaleDateString('sv'); if ((med.given ?? []).filter((g) => new Date(g.at).toLocaleDateString('sv') === k).length >= n) s++; else break; } return s; })();
+  return (
+    <div className="flex items-center gap-3 px-3 pb-2.5 -mt-1" data-dose-row={med.id} data-day={day}>
+      <span className="flex gap-1" aria-label={`Dnes podáno ${todays.length} z ${n}`}>{Array.from({ length: n }, (_, i) => <span key={i} className={`w-6 h-6 rounded-full text-[12px] font-bold flex items-center justify-center ${i < todays.length ? 'bg-primary text-[#0F2540]' : 'ring-2 ring-ink/15 dark:ring-white/20 text-muted'}`}>{i < todays.length ? '✓' : i + 1}</span>)}</span>
+      <p className="flex-1 text-[13px] text-muted">{todays.length >= n ? `Dnes hotovo${streak ? ` · ${streak + 1} dní v řadě` : ''}` : todays.length ? `Naposledy ${hm(todays[todays.length - 1].at)}${todays[todays.length - 1].by ? ` (${todays[todays.length - 1].by})` : ''}` : 'Dnes zatím nepodáno'}</p>
+      {todays.length < n && <button onClick={give} className="press min-h-[44px] px-3 rounded-xl font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]">Podáno</button>}
     </div>
   );
 }

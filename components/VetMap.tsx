@@ -8,7 +8,7 @@ import { useStore } from '@/lib/store';
 import type { CardStore } from '@/lib/types';
 
 type Vet = { id: string; lat: number; lon: number; name: string; tags: Record<string, string>; dist: number; nonstop: boolean; park?: boolean; shop?: boolean };
-const BRNO = { lat: 49.1951, lon: 16.6068 };
+const PRAHA = { lat: 50.0755, lon: 14.4378 };
 const ENDPOINTS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
 
 const km = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
@@ -96,10 +96,10 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
 
 
   useEffect(() => {
-    if (!navigator.geolocation) { setLocNote('Poloha není dostupná – zobrazuji Brno.'); setCenter(BRNO); return; }
+    if (!navigator.geolocation) { setLocNote('Poloha není dostupná – zobrazuji Prahu.'); setCenter(PRAHA); return; }
     navigator.geolocation.getCurrentPosition(
       (p) => setCenter({ lat: p.coords.latitude, lon: p.coords.longitude }),
-      () => { setLocNote('Bez přístupu k poloze – zobrazuji Brno.'); setCenter(BRNO); },
+      () => { setLocNote('Bez přístupu k poloze – zobrazuji Prahu.'); setCenter(PRAHA); },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
     );
   }, []);

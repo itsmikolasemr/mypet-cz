@@ -24,7 +24,7 @@ export function validate(x: unknown): AppData | null {
     allergies: Array.isArray(d.allergies) ? d.allergies : [],
     cards: Array.isArray(d.cards) ? d.cards : [],
     trash: Array.isArray(d.trash) ? d.trash : [],
-    settings: { theme: d.settings?.theme ?? 'system', onboarded: true, notify: !!d.settings?.notify, notifyHour: d.settings?.notifyHour ?? 9 },
+    settings: { theme: d.settings?.theme ?? 'system', onboarded: true, notify: !!d.settings?.notify, notifyHour: d.settings?.notifyHour ?? 9, dayBefore: d.settings?.dayBefore ?? true, weekly: d.settings?.weekly ?? true },
   };
 }
 
@@ -72,7 +72,7 @@ function useStoreImpl() {
     if (!ready) return;
     const t = setTimeout(() => { syncNotifications(data).catch(() => {}); }, 400);
     return () => clearTimeout(t);
-  }, [data.reminders, data.pets, data.settings.notify, data.settings.notifyHour, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [data.reminders, data.pets, data.settings.notify, data.settings.notifyHour, data.settings.dayBefore, data.settings.weekly, ready]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const apply = () => {
@@ -81,7 +81,7 @@ function useStoreImpl() {
       const root = document.documentElement;
       root.classList.toggle('dark', dark);
       root.classList.toggle('glass', glass);
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#141917' : glass ? '#E9EAEE' : '#F7F5F2');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#141518' : glass ? '#C3C7CE' : '#E4E5E8');
     };
     apply();
     const m = matchMedia('(prefers-color-scheme: dark)');
@@ -105,6 +105,7 @@ function useStoreImpl() {
     deleteCard: (id: string) => upd((d) => ({ ...d, cards: d.cards.filter((x) => x.id !== id) })),
     addDoc: (m: DocMeta) => upd((d) => ({ ...d, docs: [...d.docs, m] })),
     deleteDoc: (id: string) => { upd((d) => ({ ...d, docs: d.docs.filter((x) => x.id !== id) })); },
+    setNotifyOpts: (o: { dayBefore?: boolean; weekly?: boolean }) => upd((d) => ({ ...d, settings: { ...d.settings, ...o } })),
     setNotify: (notify: boolean, notifyHour?: number) => upd((d) => ({ ...d, settings: { ...d.settings, notify, notifyHour: notifyHour ?? d.settings.notifyHour } })),
     addWeight: (petId: string, kg: number, date: string) => upd((d) => ({ ...d, pets: d.pets.map((p) => (p.id === petId ? { ...p, weights: [...p.weights, { id: uid(), date, kg }].sort((a, b) => a.date.localeCompare(b.date)) } : p)) })),
     deleteWeight: (petId: string, wid: string) => upd((d) => ({ ...d, pets: d.pets.map((p) => (p.id === petId ? { ...p, weights: p.weights.filter((w) => w.id !== wid) } : p)) })),

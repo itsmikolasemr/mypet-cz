@@ -5,7 +5,7 @@ import type { DocMeta, Pet, Reminder, Visit } from '@/lib/types';
 import { useStore } from '@/lib/store';
 import { MAX_DOC_BYTES, fmtDate, fmtShort, intervalName, parse, relDue, status, today, addDays, typeOf, uid } from '@/lib/utils';
 import { loadBlob, saveBlob } from '@/lib/docs';
-import { Avatar, Button, Card, Field, Icon, Sheet, StatusPill, inputCls } from './ui';
+import { Avatar, Button, Card, Field, Icon, Sheet, StatusPill, inputCls, DateInput } from './ui';
 
 const PAW = 'M8.5 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm7 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM5 15a1.8 1.8 0 1 0 0-3.6A1.8 1.8 0 0 0 5 15Zm14 0a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Zm-7-1c-2.5 0-5 3-5 5 0 1.4 1.2 2 2.5 2 1 0 1.6-.5 2.5-.5s1.5.5 2.5.5c1.3 0 2.5-.6 2.5-2 0-2-2.5-5-5-5Z';
 
@@ -202,7 +202,7 @@ export function Documents({ pet }: { pet: Pet }) {
         }}>
           <Field label="Název"><input className={inputCls} value={meta.name} onChange={(e) => setMeta({ ...meta, name: e.target.value })} /></Field>
           <div className="flex flex-wrap gap-2">{KINDS.map((k) => <button type="button" key={k.id} onClick={() => setMeta({ ...meta, kind: k.id })} className={`press rounded-full px-3 py-1.5 text-sm border ${meta.kind === k.id ? 'border-primary bg-primary/10 font-semibold' : 'border-ink/10 dark:border-white/10'}`}>{k.e} {k.n}</button>)}</div>
-          <Field label="Datum"><input type="date" className={inputCls} value={meta.date} onChange={(e) => setMeta({ ...meta, date: e.target.value })} /></Field>
+          <Field label="Datum"><DateInput value={meta.date} onChange={(v) => setMeta({ ...meta, date: v })} /></Field>
           <Button type="submit" className="w-full" disabled={busy}>{busy ? 'Ukládám…' : 'Uložit'}</Button>
         </form>
       </Sheet>

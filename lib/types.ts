@@ -74,7 +74,7 @@ export interface AppData {
   allergies: Allergy[];
   cards: LoyaltyCard[];
   trash?: TrashItem[];
-  settings: { theme: Theme; onboarded: boolean; notify: boolean; notifyHour: number };
+  settings: { theme: Theme; onboarded: boolean; notify: boolean; notifyHour: number; dayBefore?: boolean; weekly?: boolean };
 }
 
 export type TrashColl = 'pets' | 'reminders' | 'visits' | 'docs' | 'meds' | 'allergies' | 'cards';

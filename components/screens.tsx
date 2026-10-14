@@ -1,8 +1,9 @@
 'use client';
 import { createPortal } from 'react-dom';
 import { Account } from './Account';
+import { useCloud } from '@/lib/cloudsync';
 import { HandoverCard } from './Handover';
-import { BatteryGuide, ExportAll, PassShare, PrnRow, ScanButton, TrashSection, TravelChecklist } from './V11';
+import { BatteryGuide, DoseRow, ExportAll, PassShare, PrnRow, ScanButton, TrashSection, TravelChecklist } from './V11';
 import { ask as askDialog, notice, toast } from './feedback';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Pet, Reminder, Visit } from '@/lib/types';
@@ -19,7 +20,7 @@ import { usePremium } from '@/lib/premium';
 import { AdSlot, PremiumBadge } from './Premium';
 
 const sortRem = (a: Reminder, b: Reminder) => a.dueDate.localeCompare(b.dueDate);
-const greeting = () => { const h = new Date().getHours(); return h < 10 ? 'Dobré ráno' : h < 18 ? 'Dobrý den' : 'Dobrý večer'; };
+const greeting = () => { const h = new Date().getHours(); return h < 10 ? 'Dobré ráno' : h < 18 ? 'Ahoj' : 'Dobrý večer'; };
 
 /* ---------------- Dashboard ---------------- */
 export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id: string) => void }) {
@@ -109,7 +110,6 @@ export function Dashboard({ go, openPet }: { go: (t: Tab) => void; openPet: (id:
               </button>
             </div>
           </section>
-          <AdSlot id="home" />
           {nextVisit && (
             <section className="space-y-2.5"><h2 className="font-semibold text-lg">Příští návštěva</h2><VisitRow v={nextVisit} pet={pet(nextVisit.petId)} onClick={() => go('calendar')} /></section>
           )}
@@ -169,7 +169,7 @@ export function PetsList({ openPet }: { openPet: (id: string) => void }) {
 export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask?: () => void }) {
   const { data, deletePet, deleteWeight, addWeight } = useStore();
   const pet = data.pets.find((p) => p.id === id);
-  const [tab, setTab] = useState<'profil' | 'pece' | 'zdravi' | 'doklady' | 'sdilet'>(() => { const t = typeof window !== 'undefined' && sessionStorage.getItem('tlapka:petTab'); if (t) sessionStorage.removeItem('tlapka:petTab'); return t === 'doklady' || t === 'sdilet' || t === 'zdravi' ? t : 'pece'; });
+  const [tab, setTab] = useState<'profil' | 'pece' | 'zdravi' | 'doklady' | 'sdilet'>(() => { const t = typeof window !== 'undefined' && sessionStorage.getItem('tlapka:petTab'); if (t) sessionStorage.removeItem('tlapka:petTab'); return t === 'doklady' || t === 'sdilet' || t === 'zdravi' || t === 'profil' ? t : 'pece'; });
   const [edit, setEdit] = useState(false);
   const [rem, setRem] = useState<Reminder | null | 'new'>(null);
   const [vis, setVis] = useState<Visit | null | 'new'>(null);
@@ -186,7 +186,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
   return (
     <div>
       <div className="sticky z-30 flex items-center justify-between mb-4 -mx-1 px-1.5 py-1.5 rounded-full bg-surface/70 dark:bg-surface-d/70 backdrop-blur-2xl ring-1 ring-ink/5 dark:ring-white/10 shadow-card dark:shadow-card-d" style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}>
-        <button onClick={back} className="press flex items-center gap-1 text-primary font-semibold pl-2 pr-3 min-h-[44px] rounded-full"><Icon name="back" /> Zpět</button>
+        <button onClick={back} className="press flex items-center gap-1 text-primary font-semibold pl-2 pr-3 min-h-[44px] rounded-full"><Icon name="back" /> Mazlíčci</button>
         <button onClick={() => setEdit(true)} className="press flex items-center gap-1.5 text-primary font-semibold px-3 min-h-[44px] rounded-full"><Icon name="edit" className="w-4 h-4" /> Upravit</button>
       </div>
       {ambient && <div aria-hidden className="fixed inset-x-0 top-0 h-[55dvh] -z-10 pointer-events-none transition-opacity duration-700" style={{ background: `radial-gradient(100% 70% at 30% 0%, ${ambient}66, transparent 70%)` }} />}
@@ -203,7 +203,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
         <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-[#0F2540]/75">Zná profil, léky i alergie – {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
       </button>}
       <div className="sticky z-20 -mx-1 px-1 py-1 mb-1 bg-bg/80 dark:bg-bg-d/80 backdrop-blur-xl rounded-full" style={{ top: 'calc(env(safe-area-inset-top) + 72px)' }}>
-        <Segmented value={tab} onChange={setTab} options={[{ v: 'profil', l: 'Profil' }, { v: 'pece', l: 'Péče' }, { v: 'zdravi', l: 'Zdraví' }, { v: 'doklady', l: 'Doklady' }, { v: 'sdilet', l: 'Sdílet' }]} />
+        <Segmented value={tab} onChange={setTab} options={[{ v: 'pece', l: 'Péče' }, { v: 'zdravi', l: 'Zdraví' }, { v: 'doklady', l: 'Doklady' }, { v: 'sdilet', l: 'Sdílet' }, { v: 'profil', l: 'Profil' }]} />
       </div>
       <p className="text-[12px] text-muted text-center mt-1.5">{({ profil: 'Základní údaje a Aivet', pece: 'Připomínky: odčervení, očkování, drápky…', zdravi: 'Léky, alergie, návštěvy a váha', doklady: 'Faktury, zprávy, RTG snímky', sdilet: 'Zdravotní pas, karta pro hlídače, cesty' } as const)[tab]}</p>
       <div className="mt-5 space-y-3 stagger" key={tab}>
@@ -251,7 +251,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
                     </div>
                     <Icon name="chev" className="w-4 h-4 text-muted" />
                   </button>
-                  {m.frequency === 'Dle potřeby' && !ended && <PrnRow med={m} />}
+                  {m.frequency === 'Dle potřeby' && !ended && <PrnRow med={m} />}{m.frequency !== 'Dle potřeby' && !ended && <DoseRow med={m} />}
                   </div>
                 );
               })}</div>
@@ -279,8 +279,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
         </>)}
         {tab === 'doklady' && <Documents pet={pet} />}
       </div>
-      <Button variant="danger" className="w-full mt-8" onClick={async () => { if (await askDialog({ title: `Smazat ${pet.name}?`, text: 'Smažou se i všechny připomínky, návštěvy, léky, alergie a dokumenty. Nelze vrátit.', ok: 'Smazat', danger: true })) { deletePet(pet.id); back(); toast(`${pet.name} smazán${pet.sex === 'samice' ? 'a' : ''}`); } }}><Icon name="trash" /> Smazat mazlíčka</Button>
-      <PetForm open={edit} pet={pet} onClose={() => setEdit(false)} />
+      <PetForm open={edit} pet={pet} onClose={() => setEdit(false)} onDelete={async () => { if (await askDialog({ title: `Smazat ${pet.name}?`, text: 'Smažou se i připomínky, návštěvy, léky, alergie a dokumenty. Do 30 dní je obnovíš v Nastavení › Koš.', ok: 'Smazat', danger: true })) { setEdit(false); deletePet(pet.id); back(); toast(`${pet.name} smazán${pet.sex === 'samice' ? 'a' : ''}`); } }} />
       <ReminderForm open={rem !== null} reminder={rem && rem !== 'new' ? rem : undefined} petId={pet.id} onClose={() => setRem(null)} />
       <VisitForm open={vis !== null} visit={vis && vis !== 'new' ? vis : undefined} petId={pet.id} onClose={() => setVis(null)} />
       <WeightForm open={wt} petId={pet.id} onClose={() => setWt(false)} />
@@ -344,6 +343,7 @@ export function CalendarScreen() {
   const [mode, setMode] = useState<'mesic' | 'seznam'>('mesic');
   const [edit, setEdit] = useState<Visit | null | 'new'>(null);
   const [rem, setRem] = useState<Reminder | null>(null);
+  const [newRem, setNewRem] = useState(false);
   const pet = (id: string) => data.pets.find((p) => p.id === id);
   const days = useMemo(() => {
     const start = new Date(month); start.setDate(1 - ((month.getDay() + 6) % 7));
@@ -364,7 +364,8 @@ export function CalendarScreen() {
   return (
     <div>
       <PageHeader title="Kalendář" fab={data.pets.length ? <Fab label="Nová návštěva" onClick={() => setEdit('new')} /> : undefined} />
-      <Segmented value={mode} onChange={setMode} options={[{ v: 'mesic', l: 'Měsíc' }, { v: 'seznam', l: 'Návštěvy' }]} />
+      <Segmented value={mode} onChange={setMode} options={[{ v: 'mesic', l: 'Kalendář' }, { v: 'seznam', l: 'Historie návštěv' }]} />
+      {(data.reminders.length > 0 || data.visits.length > 0) && <button data-ics onClick={async () => { const { exportIcs } = await import('@/lib/ics'); const r = await exportIcs(data, data.settings.notifyHour); toast(r === 'shared' ? 'Kalendář odeslán' : 'Soubor tlapka-kalendar.ics stažen – otevři ho a přidej do kalendáře'); }} className="press mt-2 w-full min-h-[44px] rounded-2xl text-[14px] font-semibold text-primary bg-primary/10">📅 Přidat do kalendáře v telefonu (Apple, Google)</button>}
       {mode === 'mesic' ? (
         <div className="animate-screen">
           <Card className="p-3 mt-4">
@@ -387,16 +388,16 @@ export function CalendarScreen() {
                 return (
                   <button key={d} onClick={() => setSel(d)} className={`relative h-11 mx-0.5 rounded-xl text-sm font-medium transition ${isSel ? 'bg-primary-d text-[#0F2540]' : isT ? 'bg-primary/10 text-primary' : inM ? '' : 'text-muted'}`}>
                     {Number(d.slice(8))}
-                    {m && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">{m.v > 0 && <i className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white' : 'bg-primary'}`} />}{m.r > 0 && <i className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white/70' : 'bg-amber-500'}`} />}</span>}
+                    {m && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">{m.v > 0 && <i className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white' : 'bg-primary'}`} />}{m.r > 0 && <i className={`w-1.5 h-1.5 rounded-full ${isSel ? 'bg-white/70' : 'bg-ink/45 dark:bg-white/55'}`} />}</span>}
                   </button>
                 );
               })}
             </div></div>
-            <div className="flex gap-4 justify-center text-[12px] text-muted mt-2"><span className="flex items-center gap-1"><i className="w-1.5 h-1.5 rounded-full bg-primary" />Návštěva</span><span className="flex items-center gap-1"><i className="w-1.5 h-1.5 rounded-full bg-amber-500" />Připomínka</span></div>
+            <div className="flex gap-4 justify-center text-[12px] text-muted mt-2"><span className="flex items-center gap-1"><i className="w-1.5 h-1.5 rounded-full bg-primary" />Návštěva</span><span className="flex items-center gap-1"><i className="w-1.5 h-1.5 rounded-full bg-ink/45 dark:bg-white/55" />Připomínka</span></div>
           </Card>
           <div className="flex items-center justify-between mt-5 mb-2"><h2 className="font-semibold">{fmtDate(sel)}</h2>{data.pets.length > 0 && <button className="text-sm font-semibold text-primary min-h-[44px] min-w-[44px] justify-center px-2 -mr-2 inline-flex items-center min-h-[44px] px-2 -mr-2 inline-flex items-center" onClick={() => setEdit('new')}>+ Návštěva</button>}</div>
           <div className="space-y-2.5">
-            {!dayVisits.length && !dayRems.length && <p className="text-sm text-muted">Na tento den nic není.</p>}
+            {!dayVisits.length && !dayRems.length && <Card className="p-4 text-center"><p className="text-sm text-muted mb-3">Na tento den nic není. Chceš něco naplánovat?</p>{data.pets.length > 0 && <div className="grid grid-cols-2 gap-2"><button onClick={() => setNewRem(true)} className="press min-h-[44px] rounded-2xl font-semibold bg-primary/10 text-primary">+ Připomínka</button><button onClick={() => setEdit('new')} className="press min-h-[44px] rounded-2xl font-semibold bg-primary/10 text-primary">+ Návštěva</button></div>}</Card>}
             {dayVisits.map((v) => <VisitRow key={v.id} v={v} pet={pet(v.petId)} onClick={() => setEdit(v)} />)}
             {dayRems.map((r) => <ReminderRow key={r.id} r={r} pet={pet(r.petId)} onEdit={() => setRem(r)} />)}
           </div>
@@ -410,7 +411,7 @@ export function CalendarScreen() {
         </div>
       )}
       <VisitForm open={edit !== null} visit={edit && edit !== 'new' ? edit : undefined} date={sel} onClose={() => setEdit(null)} />
-      <ReminderForm open={!!rem} reminder={rem ?? undefined} onClose={() => setRem(null)} />
+      <ReminderForm open={!!rem || newRem} reminder={rem ?? undefined} date={sel} onClose={() => { setRem(null); setNewRem(false); }} />
     </div>
   );
 }
@@ -418,15 +419,19 @@ export function CalendarScreen() {
 /* ---------------- Settings ---------------- */
 const THEMES: { v: 'system' | 'light' | 'dark' | 'glass'; l: string; d: string; bg: string; pane: string; edge?: string; split?: boolean }[] = [
   { v: 'system', l: 'Auto', d: 'Podle nastavení telefonu – ve dne světlý, v noci tmavý.', bg: '#E4E5E8', pane: '#FFFFFF', split: true },
-  { v: 'light', l: 'Světlý', d: 'Teplý světlý vzhled.', bg: '#EAF3FC', pane: '#FFFFFF', edge: '0 2px 6px rgba(29,30,34,.12)' },
+  { v: 'light', l: 'Světlý', d: 'Čistý světlý vzhled.', bg: '#EAF3FC', pane: '#FFFFFF', edge: '0 2px 6px rgba(29,30,34,.12)' },
   { v: 'dark', l: 'Tmavý', d: 'Šetří oči i baterii v noci.', bg: '#141518', pane: '#1C222A' },
   { v: 'glass', l: 'Sklo', d: 'Matné sklo ve stylu iOS – průsvitné vrstvy nad šedým pozadím.', bg: 'linear-gradient(180deg,#F2F3F5,#DCDFE4)', pane: 'rgba(255,255,255,.7)', edge: 'inset 0 1px 0 #fff, 0 0 0 .5px rgba(60,64,72,.18)' },
 ];
 
 export function Settings() {
-  const { data, setTheme, setNotify, importData, reset, finishOnboarding } = useStore();
+  const { data, setTheme, setNotify, setNotifyOpts, importData, reset, finishOnboarding } = useStore();
   const prem = usePremium();
+  const cloud = useCloud();
+  const [acct, setAcct] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
+  const goTab = (t: string) => { history.pushState(null, '', '#' + t); dispatchEvent(new PopStateEvent('popstate')); };
+
   const [msg, setMsg] = useState('');
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 2500); };
   const exportJson = () => {
@@ -449,12 +454,15 @@ export function Settings() {
     <div>
       <PageHeader title="Nastavení" />
       <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-4 -mt-1">
-        {([['ucet-h', '👤 Účet'], ['vzhled-h', '🎨 Vzhled'], ['predplatne-h', '✦ Premium'], ['upozorneni-h', '🔔 Upozornění'], ['data-h', '📦 Data']] as const).map(([id, l]) => (
+        {([['vzhled-h', '🎨 Vzhled'], ['predplatne-h', '✦ Premium'], ['upozorneni-h', '🔔 Upozornění'], ['data-h', '📦 Data'], ['about-h', 'ℹ️ O aplikaci']] as const).map(([id, l]) => (
           <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="press shrink-0 rounded-full px-3.5 min-h-[40px] text-[13px] font-semibold bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">{l}</button>
         ))}
       </div>
       <div className="space-y-7 stagger">
-        <section aria-labelledby="ucet-h"><h2 id="ucet-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Účet a záloha</h2><Account /></section>
+        <section aria-labelledby="ucet-h"><h2 id="ucet-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Účet a záloha</h2>
+          <Card><Row icon="👤" title={cloud.session ? (cloud.name || cloud.session.user.email || 'Přihlášen') : 'Nepřihlášen'} sub={cloud.session ? (cloud.last ? `Zálohováno ${new Date(cloud.last).toLocaleString('cs-CZ', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })} · rodina, hlídač, smazání účtu` : 'Záloha, rodina, hlídač, smazání účtu') : 'Zálohuj data a sdílej péči s rodinou – volitelné'} right={<span className="text-sm font-bold text-primary whitespace-nowrap">{cloud.session ? 'Spravovat' : 'Přihlásit'} ›</span>} onClick={() => setAcct(true)} /></Card>
+          {acct && createPortal(<Sheet open={acct} onClose={() => setAcct(false)} title="Účet a záloha"><Account /></Sheet>, document.body)}
+        </section>
         <section aria-labelledby="vzhled-h"><h2 id="vzhled-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1">Vzhled</h2>
           <Card className="p-3">
             <div role="radiogroup" aria-label="Motiv aplikace" className="grid grid-cols-4 gap-2">
@@ -484,15 +492,17 @@ export function Settings() {
             </>) : (
               <Row icon="✦" title="Získat Premium" sub="Aivet bez omezení, bez reklam, PDF pas, výdaje · 14 dní zdarma" right={<span className="text-sm font-bold text-primary">79 Kč</span>} onClick={() => prem.openPaywall('obecne')} />
             )}
+            <Row icon="↻" title="Obnovit nákupy" sub="Máš Premium z jiného telefonu se stejným Apple ID / Google účtem?" onClick={async () => { const r = await prem.restore(); notice(r ? 'Nákup obnoven' : 'Nic k obnovení', r ? 'Premium je zase aktivní.' : 'K tomuto Apple ID / Google účtu jsme nenašli aktivní předplatné. Platby v obchodech zatím nejsou zapnuté (testovací verze).'); }} />
           </Card>
         </section>
         <section aria-labelledby="upozorneni-h"><h2 id="upozorneni-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1 scroll-mt-4">Upozornění</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
-            <Row icon="🔔" title="Připomínat termíny" sub={notifySupported() ? 'Upozornění v den termínu' : /iP(hone|ad|od)/.test(navigator.userAgent) ? 'Na iPhonu: Sdílet → Přidat na plochu, pak upozornění zapneš (iOS 16.4+)' : 'Tento prohlížeč upozornění nepodporuje'} onClick={toggleNotify}
+            <Row icon="🔔" title="Připomínat termíny" sub={notifySupported() ? `V den termínu v ${data.settings.notifyHour}:00` : /iP(hone|ad|od)/.test(navigator.userAgent) ? 'Na iPhonu: Sdílet → Přidat na plochu, pak upozornění zapneš (iOS 16.4+)' : 'Tento prohlížeč upozornění nepodporuje'} onClick={toggleNotify}
               right={<span className={`w-12 h-7 rounded-full p-0.5 transition ${data.settings.notify ? 'bg-primary' : 'bg-ink/15 dark:bg-white/20'}`}><span className={`block w-6 h-6 rounded-full bg-white shadow transition ${data.settings.notify ? 'translate-x-5' : ''}`} /></span>} />
             {data.settings.notify && (<>
               <div className="flex items-center gap-3 px-4 py-3"><span className="text-xl w-7 text-center">⏰</span><span className="flex-1 font-medium">Čas upozornění</span>
                 <select className="bg-transparent font-semibold text-primary" value={data.settings.notifyHour} onChange={(e) => setNotify(true, Number(e.target.value))}>{Array.from({ length: 16 }, (_, i) => i + 6).map((h) => <option key={h} value={h}>{h}:00</option>)}</select></div>
+              {([['dayBefore', '📆', 'Připomenout i den předem', 'Ať máš čas koupit přípravek'], ['weekly', '🗓️', 'Týdenní souhrn', 'V neděli v 18:00: co tě čeká tento týden']] as const).map(([k, ic, t, sub]) => { const on = data.settings[k] !== false; return <Row key={k} icon={ic} title={t} sub={sub} onClick={() => setNotifyOpts({ [k]: !on })} right={<span role="switch" aria-checked={on} aria-label={t} className={`w-12 h-7 rounded-full p-0.5 transition ${on ? 'bg-primary' : 'bg-ink/15 dark:bg-white/20'}`}><span className={`block w-6 h-6 rounded-full bg-white shadow transition ${on ? 'translate-x-5' : ''}`} /></span>} />; })}
               <Row icon="🧪" title="Poslat zkušební upozornění" onClick={() => showNow('🐾 Tlapka', 'Takhle ti připomenu odčervení a očkování.')} />
             </>)}
           </Card>
@@ -510,6 +520,13 @@ export function Settings() {
             const f = e.target.files?.[0]; e.target.value = ''; if (!f) return;
             try { const v = validate(JSON.parse(await f.text())); if (!v) throw 0; if (await askDialog({ ok: 'Importovat', title: 'Obnovit zálohu?', text: `Nahradí aktuální data. Importovat ${v.pets.length} ${plural(v.pets.length, 'mazlíčka', 'mazlíčky', 'mazlíčků')} a ${v.reminders.length} ${plural(v.reminders.length, 'připomínku', 'připomínky', 'připomínek')}?${v.docs.length ? ' Soubory dokumentů nejsou v záloze – záznamy dokumentů se nenahrají.' : ''}` })) { importData(v); flash('Záloha obnovena'); } } catch { flash('Neplatný soubor zálohy'); }
           }} />
+        </section>
+        <section aria-labelledby="about-h"><h2 id="about-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1 scroll-mt-4">O aplikaci</h2>
+          <Card className="divide-y divide-ink/5 dark:divide-white/5">
+            <Row icon="ℹ️" title="O aplikaci" sub="Verze, licence, kontakt" onClick={() => goTab('about')} />
+            <Row icon="🔒" title="Ochrana osobních údajů" onClick={() => goTab('privacy')} />
+            <Row icon="📜" title="Podmínky užívání" onClick={() => goTab('terms')} />
+          </Card>
         </section>
         <div className="text-center pt-4 pb-2 text-muted text-sm">
           <Logo className="h-9 mx-auto text-ink dark:text-white mb-2" />
@@ -568,5 +585,5 @@ export function Onboarding() {
   );
 }
 
-export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses' | 'second' | 'cards';
+export type Tab = 'home' | 'pets' | 'reminders' | 'calendar' | 'settings' | 'map' | 'ai' | 'expenses' | 'second' | 'cards' | 'privacy' | 'terms' | 'about';
 export type { Pet };

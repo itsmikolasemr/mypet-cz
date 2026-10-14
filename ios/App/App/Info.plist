@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Díky tomu uvidíš reklamy na věci pro mazlíčky místo náhodných. Zdravotní údaje tvých zvířat reklamním partnerům nikdy neposíláme.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Kamera slouží ke skenování věrnostních karet a dokladů.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

@@ -6,9 +6,9 @@ import { API_BASE } from './api';
 
 export type PlanId = 'monthly' | 'yearly' | 'family' | 'trial';
 export const PLANS: { id: Exclude<PlanId, 'trial'>; name: string; price: string; per: string; note?: string; best?: boolean }[] = [
-  { id: 'yearly', name: 'Ročně', price: '499 Kč', per: 'za rok', note: '≈ 42 Kč měsíčně · ušetříš 47 %', best: true },
+  { id: 'yearly', name: 'Ročně', price: '499 Kč', per: 'za rok', note: 'jen 41,58 Kč/měs · ušetříš 47 %', best: true },
   { id: 'monthly', name: 'Měsíčně', price: '79 Kč', per: 'za měsíc' },
-  { id: 'family', name: 'Rodina', price: '749 Kč', per: 'za rok', note: 'až 5 členů domácnosti' },
+  { id: 'family', name: 'Rodina', price: '749 Kč', per: 'za rok', note: 'Premium pro až 5 členů domácnosti · 12,48 Kč/osoba/měs' },
 ];
 export const FREE = { pets: 3, aivet: 3 };
 export const PRODUCT_IDS: Record<Exclude<PlanId, 'trial'>, string> = { monthly: 'tlapka_premium_monthly', yearly: 'tlapka_premium_yearly', family: 'tlapka_family_yearly' };
@@ -72,6 +72,7 @@ function usePremiumImpl() {
     isPremium, ent, deviceId: dev, trialLeft, paywall,
     openPaywall: (reason = 'obecne') => setPaywall(reason), closePaywall: () => setPaywall(null),
     setTrialLeft: (n: number) => { setTrialLeftS(n); localStorage.setItem(K_TRIAL, String(n)); },
+    restore: async () => { const p = await provider(); const e = await p.restore(deviceId()); if (e) save(e); return e; },
     purchase: async (plan: PlanId) => { const p = await provider(); const e = await p.purchase(plan, deviceId()); save(e); return e; },
     /** re-issue the test entitlement with the Supabase session so the DB flag matches (test mode only) */
     resyncTest: async () => { if (!ent?.test) return; const e = await MockProvider.purchase(ent.plan, deviceId()); save(e); },

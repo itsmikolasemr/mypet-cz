@@ -2,7 +2,7 @@
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import type { AppData } from './types';
-import { parse, typeOf } from './utils';
+import { parse } from './utils';
 
 const native = () => Capacitor.isNativePlatform();
 let webTimers: number[] = [];
@@ -28,26 +28,41 @@ const nid = (s: string) => {
 };
 
 function plan(data: AppData) {
-  const now = Date.now();
-  return data.reminders
-    .filter((r) => !r.completedAt)
-    .map((r) => {
-      const at = parse(r.dueDate);
-      at.setHours(data.settings.notifyHour, 0, 0, 0);
-      if (at.getTime() < now) at.setTime(now + 60_000); // overdue → remind in 1 min once
-      const pet = data.pets.find((p) => p.id === r.petId);
-      return {
-        id: nid(r.id + r.dueDate),
-        at,
-        title: `${typeOf(r.type).emoji} ${r.title}${pet ? ' – ' + pet.name : ''}`,
-        body: r.product ? `Přípravek: ${r.product}` : 'Čas na péči o mazlíčka.',
-      };
-    })
-    .filter((n) => n.at.getTime() - now < 60 * 86400000)
-    .slice(0, 60);
+  const now = Date.now(); const H = data.settings.notifyHour;
+  const out: { id: number; at: Date; title: string; body: string }[] = [];
+  for (const r of data.reminders.filter((x) => !x.completedAt)) {
+    const pet = data.pets.find((p) => p.id === r.petId);
+    const at = parse(r.dueDate); at.setHours(H, 0, 0, 0);
+    const due = at.getTime() < now;
+    if (due) at.setTime(now + 60_000); // overdue → remind in 1 min once
+    out.push({ id: nid(r.id + r.dueDate), at, title: `${r.title}${pet ? ' – ' + pet.name : ''}${due ? ' (po termínu)' : ''}`, body: r.product ? `Dnes: ${r.product}` : 'Dnes je čas na péči.' });
+    if (data.settings.dayBefore !== false && !due) {
+      const pre = new Date(at); pre.setDate(pre.getDate() - 1);
+      if (pre.getTime() > now) out.push({ id: nid('pre' + r.id + r.dueDate), at: pre, title: `Zítra: ${r.title}${pet ? ' – ' + pet.name : ''}`, body: r.product ? `Připrav si ${r.product}.` : 'Ať tě to zítra nepřekvapí.' });
+    }
+  }
+  if (data.settings.weekly !== false) {
+    const s = weeklySummary(data); const at = new Date(); at.setDate(at.getDate() + ((7 - at.getDay()) % 7)); at.setHours(18, 0, 0, 0);
+    if (at.getTime() <= now) at.setDate(at.getDate() + 7);
+    out.push({ id: nid('weekly' + at.toDateString()), at, title: 'Tlapka: tvůj týden', body: s.line });
+  }
+  return out.filter((n) => n.at.getTime() - now < 60 * 86400000).sort((x, y) => x.at.getTime() - y.at.getTime()).slice(0, 60);
+}
+
+/** Widget-ready weekly summary (also written to localStorage 'tlapka:widget' for a native home-screen widget). */
+export function weeklySummary(data: AppData) {
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0); const t7 = t0.getTime() + 7 * 86400000;
+  const active = data.reminders.filter((r) => !r.completedAt);
+  const week = active.filter((r) => { const d = parse(r.dueDate).getTime(); return d >= t0.getTime() && d < t7; }).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const overdue = active.filter((r) => parse(r.dueDate).getTime() < t0.getTime());
+  const done7 = data.reminders.reduce((n, r) => n + (r.history ?? []).filter((h) => Date.now() - parse(String(h).slice(0, 10)).getTime() < 7 * 86400000).length, 0);
+  const items = week.slice(0, 5).map((r) => ({ title: r.title, pet: data.pets.find((p) => p.id === r.petId)?.name ?? '', date: r.dueDate }));
+  const line = week.length || overdue.length ? `${week.length ? `Tento týden ${week.length}× péče` : 'Tento týden nic nového'}${overdue.length ? `, ${overdue.length} po termínu` : ''}.${items[0] ? ` Nejbližší: ${items[0].title}${items[0].pet ? ' (' + items[0].pet + ')' : ''}.` : ''}` : 'Tento týden máš klid – všechno je hotové. 🐾';
+  return { week: week.length, overdue: overdue.length, done7, items, line, updated: new Date().toISOString() };
 }
 
 export async function syncNotifications(data: AppData) {
+  try { localStorage.setItem('tlapka:widget', JSON.stringify(weeklySummary(data))); } catch {}
   webTimers.forEach((t) => clearTimeout(t));
   webTimers = [];
   if (native()) {

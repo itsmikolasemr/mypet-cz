@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import type { Allergy, Medication, Pet, Reminder, ReminderType, Severity, Sex, Species, Visit } from '@/lib/types';
 import { useStore } from '@/lib/store';
 import { BREEDS, INTERVALS, PRODUCTS, REMINDER_TYPES, SPECIES, addDays, num, resizeImage, today, typeOf, uid } from '@/lib/utils';
-import { Button, Field, Icon, Sheet, inputCls } from './ui';
+import { Button, Field, Icon, Sheet, inputCls, DateInput } from './ui';
 
-export function PetForm({ open, onClose, pet }: { open: boolean; onClose: () => void; pet?: Pet }) {
+export function PetForm({ open, onClose, pet, onDelete }: { open: boolean; onClose: () => void; pet?: Pet; onDelete?: () => void }) {
   const { savePet, addWeight } = useStore();
   const blank: Pet = { id: '', name: '', species: 'pes', breed: '', sex: 'nezname', birthDate: '', color: '', microchip: '', notes: '', weights: [], createdAt: today() };
   const [f, setF] = useState<Pet>(pet ?? blank);
@@ -51,7 +51,7 @@ export function PetForm({ open, onClose, pet }: { open: boolean; onClose: () => 
           <datalist id="breeds">{(BREEDS[f.species] ?? []).map((b) => <option key={b} value={b} />)}</datalist>
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Datum narození"><input type="date" className={inputCls} value={f.birthDate} max={today()} onChange={(e) => set('birthDate', e.target.value)} /></Field>
+          <Field label="Datum narození"><DateInput value={f.birthDate} max={today()} onChange={(v) => set('birthDate', v)} /></Field>
           <Field label="Pohlaví">
             <select className={inputCls} value={f.sex} onChange={(e) => set('sex', e.target.value as Sex)}>
               <option value="nezname">Neuvedeno</option><option value="samec">Samec</option><option value="samice">Samice</option>
@@ -65,14 +65,15 @@ export function PetForm({ open, onClose, pet }: { open: boolean; onClose: () => 
         </div>
         <Field label="Poznámky"><textarea rows={2} className={inputCls} value={f.notes} onChange={(e) => set('notes', e.target.value)} /></Field>
         <Button type="submit" className="w-full" disabled={!f.name.trim()}>{pet ? 'Uložit změny' : 'Přidat mazlíčka'}</Button>
+        {pet && onDelete && <button type="button" onClick={onDelete} className="press w-full min-h-[48px] mt-2 rounded-2xl font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-500/30" data-delete-pet><Icon name="trash" className="w-4 h-4 inline -mt-0.5" /> Smazat mazlíčka</button>}
       </form>
     </Sheet>
   );
 }
 
-export function ReminderForm({ open, onClose, reminder, petId }: { open: boolean; onClose: () => void; reminder?: Reminder; petId?: string }) {
+export function ReminderForm({ open, onClose, reminder, petId, date }: { open: boolean; onClose: () => void; reminder?: Reminder; petId?: string; date?: string }) {
   const { data, saveReminder, deleteReminder } = useStore();
-  const mk = (): Reminder => ({ id: uid(), petId: petId ?? data.pets[0]?.id ?? '', type: 'odcerveni', title: 'Odčervení', product: '', dueDate: addDays(today(), 1), intervalDays: 90, notes: '', history: [] });
+  const mk = (): Reminder => ({ id: uid(), petId: petId ?? data.pets[0]?.id ?? '', type: 'odcerveni', title: 'Odčervení', product: '', dueDate: date ?? addDays(today(), 1), intervalDays: 90, notes: '', history: [] });
   const [f, setF] = useState<Reminder>(reminder ?? mk());
   useEffect(() => { if (open) setF(reminder ?? mk()); }, [open, reminder]); // eslint-disable-line react-hooks/exhaustive-deps
   const set = <K extends keyof Reminder>(k: K, v: Reminder[K]) => setF((x) => ({ ...x, [k]: v }));
@@ -103,7 +104,7 @@ export function ReminderForm({ open, onClose, reminder, petId }: { open: boolean
           <datalist id="products">{(PRODUCTS[f.type] ?? []).map((b) => <option key={b} value={b} />)}</datalist>
         </Field>
         <div className="space-y-4">
-          <Field label="Termín"><input type="date" required className={inputCls} value={f.dueDate} onChange={(e) => set('dueDate', e.target.value)} /></Field>
+          <Field label="Termín"><DateInput value={f.dueDate} required onChange={(v) => set('dueDate', v)} /></Field>
           <Field label="Opakování">
             <select className={inputCls} value={f.intervalDays} onChange={(e) => set('intervalDays', Number(e.target.value))}>
               {INTERVALS.map((i) => <option key={i.d} value={i.d}>{i.n}</option>)}
@@ -135,7 +136,7 @@ export function VisitForm({ open, onClose, visit, petId, date }: { open: boolean
           </select>
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Datum"><input type="date" required className={inputCls} value={f.date} onChange={(e) => set('date', e.target.value)} /></Field>
+          <Field label="Datum"><DateInput value={f.date} required onChange={(v) => set('date', v)} /></Field>
           <Field label="Cena (Kč)"><input inputMode="decimal" className={inputCls} value={cost} onChange={(e) => setCost(e.target.value)} /></Field>
         </div>
         <Field label="Důvod"><input required className={inputCls} value={f.reason} onChange={(e) => set('reason', e.target.value)} placeholder="např. Preventivní prohlídka" /></Field>
@@ -159,7 +160,7 @@ export function WeightForm({ open, onClose, petId }: { open: boolean; onClose: (
       <form onSubmit={(e) => { e.preventDefault(); if (v > 0 && v < 2000) { addWeight(petId, v, date); onClose(); } }} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <Field label="Váha (kg)"><input autoFocus inputMode="decimal" className={inputCls} value={kg} onChange={(e) => setKg(e.target.value)} placeholder="0,0" /></Field>
-          <Field label="Datum"><input type="date" className={inputCls} value={date} max={today()} onChange={(e) => setDate(e.target.value)} /></Field>
+          <Field label="Datum"><DateInput value={date} max={today()} onChange={(v) => setDate(v)} /></Field>
         </div>
         <Button type="submit" className="w-full" disabled={!(v > 0 && v < 2000)}>Uložit</Button>
       </form>
@@ -202,8 +203,8 @@ export function MedForm({ open, onClose, med, petId }: { open: boolean; onClose:
           </Field>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Od"><input type="date" required className={inputCls} value={f.start} onChange={(e) => set('start', e.target.value)} /></Field>
-          <Field label="Do (volitelné)"><input type="date" className={inputCls} value={f.end} min={f.start} onChange={(e) => set('end', e.target.value)} /></Field>
+          <Field label="Od"><DateInput value={f.start} required onChange={(v) => set('start', v)} /></Field>
+          <Field label="Do (volitelné)"><DateInput value={f.end} min={f.start} onChange={(v) => set('end', v)} /></Field>
         </div>
         <div className={f.frequency === 'Dle potřeby' ? '' : 'hidden'}>
           <Field label="Nejdříve znovu po (hodinách)"><input inputMode="numeric" name="minHours" className={inputCls} value={f.minHours ?? ''} onChange={(e) => set('minHours', e.target.value ? Math.max(0, Math.min(168, Number(e.target.value) || 0)) : undefined)} placeholder="např. 8 – podle veterináře" /></Field>

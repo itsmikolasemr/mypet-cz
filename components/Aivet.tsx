@@ -65,7 +65,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
       const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', ...prem.headers() }, body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })), pet: profile() }) });
       const j = await r.json().catch(() => ({}));
       if (typeof j.trialLeft === 'number') prem.setTrialLeft(j.trialLeft);
-      if (r.status === 402) { prem.openPaywall('aivet'); throw new Error(`Vyčerpal jsi ${FREE.aivet} zkušební dotazy. S Premium se můžeš Aiveta ptát bez omezení. V nouzi ti Aivet vždy ukáže pohotovost zdarma.`); }
+      if (r.status === 402) { prem.setTrialLeft(0); throw new Error(`Zkušební dotazy jsou vyčerpané. Tvoje otázka zůstala uložená – s Premium (14 dní zdarma, tlačítko nahoře) ti Aivet odpoví hned. Když jde o akutní stav, otevři Mapu → 🚨 Nonstop, ta je vždy zdarma.`); }
       if (!r.ok) throw new Error(j.error === 'rate_limited_client' ? `Dosáhl jsi limitu dotazů (${j.window === 'den' ? 'denní' : 'na 10 minut'}). Zkus to za ${Math.max(1, Math.round((j.retryAfter ?? 60) / 60))} min.` : j.error === 'rate_limited' ? 'Aivet je teď přetížený, zkus to za chvíli.' : j.error === 'not_configured' ? 'Aivet ještě není nastavený.' : 'Odpověď se nepodařilo získat.');
       setMsgs([...next, { role: 'assistant', content: j.reply, emergency: !!j.emergency || local }]);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Chyba spojení.'); }
@@ -80,7 +80,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
       <PageHeader title="Aivet" sub="Aivet ti radí" />
       {!prem.isPremium && (
         <button onClick={() => prem.openPaywall('aivet')} className="press w-full mb-4 flex items-center justify-between gap-2 rounded-full px-4 min-h-[48px] text-sm bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">
-          <span>{prem.trialLeft > 0 ? <>{prem.trialLeft === 1 ? 'Zbývá' : 'Zbývají'} <b>{prem.trialLeft}</b> z {FREE.aivet} zkušebních dotazů</> : 'Zkušební dotazy vyčerpány'}</span>
+          <span>{prem.trialLeft > 0 ? <>{prem.trialLeft === 1 ? 'Zbývá' : 'Zbývají'} <b>{prem.trialLeft}</b> ze {FREE.aivet} zkušebních dotazů</> : 'Zkušební dotazy vyčerpány'}</span>
           <span className="font-semibold text-primary">Premium ›</span>
         </button>
       )}
