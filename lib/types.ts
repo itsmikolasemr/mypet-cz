@@ -20,8 +20,11 @@ export interface Pet {
   care?: PetCare;
   /** v1.2: vzpomínkový režim – mazlíček zemřel; odznaky, série a výzvy se zastaví, sbírka zůstane */
   memorial?: string;
+  /** v1.2: zásoba krmiva (affiliate nabídka, když dochází) */
+  food?: FoodStock;
 }
 
+export type FoodStock = { name: string; bagKg: number; dailyG: number; openedAt: string };
 export interface Feeding { id: string; what: string; amount: string; timesPerDay: number; times: string; notes?: string }
 export interface Contact { name: string; phone: string; note?: string }
 export interface PetCare {

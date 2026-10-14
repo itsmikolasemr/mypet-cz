@@ -10,6 +10,8 @@ import { API_BASE } from '@/lib/api';
 import { useStore } from '@/lib/store';
 import { getLang } from '@/lib/i18n';
 import type { CardStore } from '@/lib/types';
+import { isPromoted, promotedListings, type Listing } from '@/lib/revenue';
+import { PromotedLabel } from './Revenue';
 
 type Vet = { id: string; lat: number; lon: number; name: string; tags: Record<string, string>; dist: number; nonstop: boolean; park?: boolean; shop?: boolean; friendly?: boolean };
 const SVG = {"shop": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3.5 9.5 5 4.5h14l1.5 5M3.5 9.5a2.8 2.8 0 0 0 5.6 0 2.8 2.8 0 0 0 5.8 0 2.8 2.8 0 0 0 5.6 0M5 11.5V20h14v-8.5M10 20v-5h4v5\"/></svg>", "park": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3.5 17 11h-2.5l3.5 5H6l3.5-5H7ZM12 16v4.5\"/></svg>", "vet": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 3.5H5v5a4 4 0 0 0 8 0v-5h-1M9 12.5v2a5 5 0 0 0 10 0M17 14.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z\"/></svg>"} as const;
@@ -141,6 +143,8 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
   const layer = useRef<LayerGroup | null>(null);
   const [center, setCenter] = useState<{ lat: number; lon: number } | null>(null);
   const [locNote, setLocNote] = useState('');
+  const [promo, setPromo] = useState<Map<string, Listing>>(new Map());
+  useEffect(() => { promotedListings().then(setPromo); }, []);
   const [vets, setVets] = useState<Vet[]>([]);
   const [state, setState] = useState<'loading' | 'ok' | 'error'>('loading');
   const [nonstop, setNonstopRaw] = useState(initialNonstop);
@@ -284,7 +288,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
           <Card key={v.id} onClick={() => focus(v)} className="p-4 flex items-center gap-3.5">
             <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.shop ? 'bg-[#3A3D43]/12 dark:bg-[#C9D2DE]/15' : v.park ? 'bg-[#2F7D4A]/12 dark:bg-[#5FBF7F]/15' : v.nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] font-bold text-sm' : 'bg-primary/10'}`}>{v.shop ? <Emo e="🛍️" className="w-6 h-6" /> : v.park ? <Emo e="🌳" className="w-6 h-6" /> : v.nonstop ? '24/7' : <Emo e="🩺" className="w-6 h-6" />}</div>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold truncate">{v.name}</p>
+              <p className="font-semibold truncate flex items-center gap-1.5"><span className="truncate">{v.name}</span>{!v.park && !v.friendly && isPromoted(promo.get(v.id)) && <PromotedLabel />}</p>
               {!v.park && (() => { const o = openNow(v.tags); return o == null ? null : <p data-open={o ? 'yes' : 'no'} className={`text-[12px] font-bold ${o ? 'text-[#1F7A43] dark:text-[#6FD39A]' : 'text-muted'}`}>{o ? (v.nonstop ? 'Otevřeno teď · nonstop' : 'Otevřeno teď') : 'Teď zavřeno'}</p>; })()}
               <p className="text-[13px] text-muted truncate">{[v.dist < 1 ? `${Math.round(v.dist * 1000)} m` : `${v.dist.toFixed(1).replace('.', ',')} km`, v.friendly ? `${friendlyKind(v.tags)} · ${friendlyRule(v.tags)}` : v.park ? parkFacts(v.tags).join(', ') : address(v.tags), v.shop && data.cards.some((c) => c.store === v.tags.chain) ? '💳 máš kartu' : ''].filter(Boolean).join(' · ')}</p>
             </div>

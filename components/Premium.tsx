@@ -1,4 +1,5 @@
 'use client';
+import { PdfCardOffer } from './Revenue';
 import { loc } from '@/lib/i18n';
 import { Emo, GT } from './glyphs';
 import { useEffect, useMemo, useState } from 'react';
@@ -50,6 +51,7 @@ export function Paywall() {
         <p className="text-lg font-bold">{REASON[p.paywall ?? 'obecne'] ?? REASON.obecne}</p>
         <p className="text-sm text-muted">14 dní zdarma, pak zrušíš kdykoli jedním klepnutím.</p>
       </div>
+      <PdfCardOffer />
       <ul className="space-y-2.5 mb-5">
         {PERKS.map((x) => (
           <li key={x.t} className="flex gap-3 items-start"><span className="w-7 flex justify-center text-primary-d dark:text-primary">{EMOJI_GLYPH[x.e] ? <Glyph name={EMOJI_GLYPH[x.e]} /> : <span aria-hidden><Emo e={x.e} className="w-6 h-6" /></span>}</span>

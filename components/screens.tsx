@@ -6,6 +6,8 @@ import { Emo, GT } from './glyphs';
 import { createPortal } from 'react-dom';
 import { Account } from './Account';
 import { useCloud } from '@/lib/cloudsync';
+import { ONE_TIME, SPONSORED_ITEM } from '@/lib/revenue';
+import { FoodStockCard, InsuranceLinks, QrTagCard, SponsoredSlot } from './Revenue';
 import { Glyph, SPECIES_GLYPH, type GlyphName } from './glyphs';
 import { HandoverCard } from './Handover';
 import { BatteryGuide, DoseRow, ExportAll, PassShare, PrnRow, ScanButton, TrashSection, TravelChecklist } from './V11';
@@ -170,6 +172,7 @@ export function PetsList({ openPet }: { openPet: (id: string) => void }) {
         })}
       </div>
       {data.pets.length > 0 && <div className="mt-5"><AdSlot id="pets" /></div>}
+      {data.pets.length > 0 && <div className="mt-3"><SponsoredSlot item={SPONSORED_ITEM} /></div>}
       {!prem.isPremium && data.pets.length >= 3 && <p className="text-center text-[13px] text-muted mt-3">Zdarma až 3 mazlíčci · <button className="font-semibold text-primary" onClick={() => prem.openPaywall('pets')}>neomezeně s Premium</button></p>}
       <PetForm open={add} onClose={() => setAdd(false)} />
     </div>
@@ -225,15 +228,17 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
         </Card>
       )}
       <BadgesCard pet={pet} />
+      <InsuranceLinks />
         </>)}
         {tab === 'sdilet' && (<>
       <PassButton pet={pet} />
-      <div className="space-y-3"><CoOwnerCard pet={pet} /><ShareExtras pet={pet} /><HandoverCard pet={pet} /><PassShare pet={pet} /><TravelChecklist pet={pet} /></div>
+      <div className="space-y-3"><CoOwnerCard pet={pet} /><ShareExtras pet={pet} /><HandoverCard pet={pet} /><PassShare pet={pet} /><TravelChecklist pet={pet} /><QrTagCard pet={pet} /></div>
         </>)}
         {tab === 'pece' && (<>
           <Button variant="soft" className="w-full" onClick={() => setRem('new')}><Icon name="plus" /> Nová připomínka</Button>
           {!rems.length && <p className="text-sm text-muted text-center py-4">Žádné připomínky. Přidej třeba odčervení Milbemaxem.</p>}
           {rems.map((r) => <ReminderRow key={r.id} r={r} showPet={false} onEdit={() => setRem(r)} />)}
+          <FoodStockCard pet={pet} />
         </>)}
         {tab === 'zdravi' && (<>
           <Card className="p-4">
@@ -558,7 +563,7 @@ function PassButton({ pet }: { pet: Pet }) {
   const prem = usePremium(); const cloud = useCloud();
   const [busy, setBusy] = useState(false);
   const run = async (lang?: 'en' | 'de') => {
-    if (!prem.isPremium && !cloud.premium) return prem.openPaywall('pdf');
+    if (!prem.isPremium && !cloud.premium && !prem.owns(ONE_TIME.pdfCard.entitlement)) return prem.openPaywall('pdf');
     setBusy(true);
     try { const { healthPassPdf, saveOrShare } = await import('@/lib/pdf'); const b = await healthPassPdf(data, pet, lang); const where = await saveOrShare(b, `${lang === 'en' ? 'health-passport-' : lang === 'de' ? 'gesundheitspass-' : 'zdravotni-pas-'}${pet.name.normalize('NFD').replace(/[^\w-]/g, '').toLowerCase() || 'mazlicek'}.pdf`); toast(where.startsWith('file:') ? 'Zdravotní pas uložen do Dokumentů ✓' : 'Zdravotní pas stažen ✓'); }
     catch (e) { console.error(e); notice('PDF se nepodařilo vytvořit', 'Zkus to prosím znovu.'); } finally { setBusy(false); }

@@ -154,7 +154,7 @@ export function BadgeWatcher() {
       const n = newlyEarned(data, new Date(), server); if (!n.length) return;
       const at = new Date().toISOString();
       patch((d) => ({ ...d, badges: [...(d.badges ?? []), ...n.map((x) => ({ ...x, at }))] }));
-      const b = badgeOf(n[0].id); if (b) toast(`🏅 ${tr('Nový odznak')}: ${tr(b.name)}${n.length > 1 ? ` +${n.length - 1}` : ''}`);
+      const b = badgeOf(n[0].id); if (b) toast(`${tr('Nový odznak')}: ${tr(b.name)}${n.length > 1 ? ` +${n.length - 1}` : ''}`);
       if (cloud.session) n.forEach(async (x) => { const r = await claimBadge(x.id, x.petId); if (r.ok) feedBadge(x.id); });
     }, 1200);
     return () => clearTimeout(t);

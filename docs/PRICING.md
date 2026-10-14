@@ -13,3 +13,13 @@
 - Odznak „Zakládající Tlapkař“ uděluje server (webhook) – na klientovi ho získat nejde.
 - Ceny včetně DPH; obchodní podmínky aktualizovány (components/Legal.tsx).
 - Dar z Tlapky: 5 % příjmů z Premium věnuje firma útulku měsíce (tabulka `tl_shelter_of_month`); uživatelé nic neplatí, v aplikaci se nesbírá.
+
+## Jednorázové nákupy (v1.2, non-consumable)
+| Produkt | Cena | Product ID (App Store i Google Play) | Entitlement |
+|---|---|---|---|
+| PDF zdravotní karta (CZ/EN/DE, natrvalo) | 79 Kč | `tlapka_pdf_card_79` | `pdf_card` |
+
+- RevenueCat: produkt typu **Non-consumable** (App Store) / **in-app product** (Play), entitlement `pdf_card` (samostatný, NE `premium`). Offering `pdf_card` s jedním package `pdf`.
+- Appka: `lib/revenue.ts` (`ONE_TIME.pdfCard`), nákup `usePremium().buyOnce('pdfCard')`, nabídka v paywallu s důvodem `pdf` (`components/Revenue.tsx › PdfCardOffer`). PDF pas odemyká Premium (lokální nebo cloud) **nebo** `pdf_card`.
+- DB: `tl_purchases` (migrace `20261014150000_tlapka_v12_revenue.sql`, zatím jen lokálně) – zapisuje jen webhook (service role), uživatel čte své nákupy. Webhook `/api/billing-revenuecat` je potřeba doplnit o `NON_RENEWING_PURCHASE` → insert do `tl_purchases`.
+- Do zapnutí RevenueCat: v testovacím režimu se nákup zapíše jen lokálně, nic se neplatí; nativně `RevenueCatProvider.buyOnce` hlásí, že platby nejsou zapnuté.

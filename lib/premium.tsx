@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { API_BASE } from './api';
+import { markOwned, ONE_TIME, ownedOnce } from './revenue';
 
 export type PlanId = 'monthly' | 'yearly' | 'family' | 'founder' | 'trial';
 /** v1.2 ceník (kolo 3): 99 Kč/měs (1. měsíc 49 Kč), 699 Kč/rok, Rodina 999 Kč/rok až 6 lidí. 14 dní zdarma zůstává. */
@@ -29,6 +30,8 @@ export interface PurchaseProvider {
   available(): Promise<boolean>;
   purchase(plan: PlanId, deviceId: string): Promise<Entitlement>;
   restore(deviceId: string): Promise<Entitlement | null>;
+  /** non-consumable (např. PDF karta 79 Kč) – vrací entitlement id */
+  buyOnce(productId: string): Promise<string>;
 }
 
 /** TEST ONLY – grants a signed Premium token from /api/entitlement without any payment. */
@@ -46,6 +49,8 @@ export const MockProvider: PurchaseProvider = {
     return { plan, exp: j.exp, token: j.token, test: true, source: 'test' };
   },
   restore: async () => null,
+  /** TEST ONLY – jednorázový nákup se jen zapíše lokálně, nic se neplatí */
+  async buyOnce(productId) { const k = Object.values(ONE_TIME).find((x) => x.productId === productId); if (!k) throw new Error('Neznámý produkt.'); return k.entitlement; },
 };
 
 /** Ready for @revenuecat/purchases-capacitor: install the plugin, set NEXT_PUBLIC_RC_KEY, map PRODUCT_IDS. */
@@ -54,6 +59,7 @@ export const RevenueCatProvider: PurchaseProvider = {
   available: async () => Capacitor.isNativePlatform() && !!process.env.NEXT_PUBLIC_RC_KEY && Capacitor.isPluginAvailable('Purchases'),
   async purchase() { throw new Error('Platby přes App Store / Google Play zatím nejsou zapnuté.'); },
   async restore() { return null; },
+  async buyOnce() { throw new Error('Platby přes App Store / Google Play zatím nejsou zapnuté.'); },
 };
 
 const K_DEV = 'tlapka:device', K_ENT = 'tlapka:ent', K_TRIAL = 'tlapka:trialLeft';
@@ -77,6 +83,8 @@ function usePremiumImpl() {
   const save = (e: Entitlement | null) => { setEnt(e); if (e) localStorage.setItem(K_ENT, JSON.stringify(e)); else localStorage.removeItem(K_ENT); };
   const provider = useCallback(async () => ((await RevenueCatProvider.available()) ? RevenueCatProvider : MockProvider), []);
   const isPremium = !!ent && ent.exp > Date.now();
+  const [once, setOnce] = useState<string[]>([]);
+  useEffect(() => setOnce(ownedOnce()), []);
   return {
     isPremium, ent, deviceId: dev, trialLeft, paywall,
     openPaywall: (reason = 'obecne') => setPaywall(reason), closePaywall: () => setPaywall(null),
@@ -88,6 +96,9 @@ function usePremiumImpl() {
     deactivate: () => { save(null); authHeader().then((h) => { if (h.Authorization) return fetch(`${API_BASE}/api/entitlement`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...h }, body: JSON.stringify({ deviceId: deviceId(), deactivate: true }) }); }).catch(() => {}); },
     headers: (): Record<string, string> => ({ 'X-Tlapka-Device': dev || deviceId(), ...(isPremium && ent ? { 'X-Tlapka-Entitlement': ent.token } : {}) }),
     canAddPet: (count: number) => isPremium || count < FREE.pets,
+    /** jednorázové nákupy (non-consumable) */
+    owns: (ent: string) => once.includes(ent),
+    buyOnce: async (k: keyof typeof ONE_TIME) => { const p = await provider(); const ent = await p.buyOnce(ONE_TIME[k].productId); markOwned(ent); setOnce(ownedOnce()); return ent; },
   };
 }
 type P = ReturnType<typeof usePremiumImpl>;
