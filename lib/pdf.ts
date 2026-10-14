@@ -10,9 +10,10 @@ const SEX: Record<string, string> = { samec: 'samec', samice: 'samice', nezname:
 function drawMark(page: PDFPage, rgb: typeof RgbFn, x: number, y: number, s: number) {
   const k = s / 1024, r = 230 * k;
   page.drawSvgPath(`M${r},0 H${s - r} A${r},${r} 0 0 1 ${s},${r} V${s - r} A${r},${r} 0 0 1 ${s - r},${s} H${r} A${r},${r} 0 0 1 0,${s - r} V${r} A${r},${r} 0 0 1 ${r},0 Z`, { x, y: y + s, color: rgb(0.925, 0.937, 0.953) });
-  const toe = rgb(0.18, 0.192, 0.22);
-  for (const [cx, cy] of [[255.2, 410.2], [404.8, 295.4], [619.2, 295.4], [768.8, 410.2]]) page.drawCircle({ x: x + cx * k, y: y + s - cy * k, size: 55.1 * k, color: toe });
-  page.drawCircle({ x: x + 512 * k, y: y + s - 590 * k, size: 190 * k, color: rgb(0.498, 0.702, 0.91) });
+  const toe = rgb(0.227, 0.239, 0.263);
+  // toe beans: rotated ellipses (SVG rotation is clockwise with y down → negate for PDF's y-up)
+  for (const [cx, cy, a] of [[255, 424.7, -56], [411.1, 304.9, -19], [612.9, 304.9, 19], [769, 424.7, 56]]) page.drawEllipse({ x: x + cx * k, y: y + s - cy * k, xScale: 62 * k, yScale: 82 * k, rotate: { type: 'degrees', angle: -a } as never, color: toe });
+  page.drawCircle({ x: x + 512 * k, y: y + s - 598 * k, size: 200 * k, color: rgb(0.498, 0.702, 0.91) });
 }
 
 export async function healthPassPdf(data: AppData, pet: Pet): Promise<Blob> {

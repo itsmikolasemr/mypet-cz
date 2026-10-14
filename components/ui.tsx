@@ -163,8 +163,8 @@ export function PawMark({ className = 'h-8 w-8', animate = false, loop = false, 
   return (
     <svg viewBox="0 0 1024 1024" className={`${className} ${animate ? (loop ? 'paw-anim paw-loop' : 'paw-anim') : ''}`} {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })} data-pawmark>
       {tile && <rect width="1024" height="1024" rx="230" className="fill-[#ECEFF3] dark:fill-[#2E3138]" />}
-      {[[255.2, 410.2], [404.8, 295.4], [619.2, 295.4], [768.8, 410.2]].map(([cx, cy], i) => <circle key={i} cx={cx} cy={cy} r="55.1" className="paw-toe fill-[#2E3138] dark:fill-white" style={{ animationDelay: `${i * 90}ms` }} />)}
-      <circle cx="512" cy="590" r="190" fill="#7FB3E8" className="paw-pad" />
+      {[[255, 424.7, -56], [411.1, 304.9, -19], [612.9, 304.9, 19], [769, 424.7, 56]].map(([cx, cy, a], i) => <g key={i} transform={`rotate(${a} ${cx} ${cy})`}><ellipse cx={cx} cy={cy} rx="62" ry="82" className="paw-toe fill-[#3A3D43] dark:fill-white" style={{ animationDelay: `${i * 90}ms` }} /></g>)}
+      <circle cx="512" cy="598" r="200" fill="#7FB3E8" className="paw-pad" />
     </svg>
   );
 }
