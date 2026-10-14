@@ -458,3 +458,14 @@ do $$ declare f text; begin
   end loop; end $$;
 revoke all on function public.tl_feed_birthdays() from public, anon, authenticated;
 grant execute on function public.tl_feed_birthdays() to service_role;
+
+-- ───────── pricing v1.2: Rodina = až 6 lidí (free: owner + 1 partner) ─────────
+create or replace function tl_private.check_member_limit() returns trigger language plpgsql security definer set search_path = '' as $$
+declare n int := (select count(*) from public.tl_household_members where household_id = new.household_id);
+begin
+  if not tl_private.hh_premium(new.household_id) and n >= 2 then
+    raise exception 'tl_limit_members' using hint = 'Free plan: 1 partner. Premium Rodina: up to 6 people.';
+  end if;
+  if n >= 6 then raise exception 'tl_limit_members' using hint = 'Rodina: up to 6 people.'; end if;
+  return new;
+end $$;

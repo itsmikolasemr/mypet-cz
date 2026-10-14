@@ -4,14 +4,23 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { Capacitor } from '@capacitor/core';
 import { API_BASE } from './api';
 
-export type PlanId = 'monthly' | 'yearly' | 'family' | 'trial';
-export const PLANS: { id: Exclude<PlanId, 'trial'>; name: string; price: string; per: string; note?: string; best?: boolean }[] = [
-  { id: 'yearly', name: 'Ročně', price: '499 Kč', per: 'za rok', note: 'jen 41,58 Kč/měs · ušetříš 47 %', best: true },
-  { id: 'monthly', name: 'Měsíčně', price: '79 Kč', per: 'za měsíc' },
-  { id: 'family', name: 'Rodina', price: '749 Kč', per: 'za rok', note: 'Premium pro až 5 členů domácnosti · 12,48 Kč/osoba/měs' },
+export type PlanId = 'monthly' | 'yearly' | 'family' | 'founder' | 'trial';
+/** v1.2 ceník (kolo 3): 99 Kč/měs (1. měsíc 49 Kč), 699 Kč/rok, Rodina 999 Kč/rok až 6 lidí. 14 dní zdarma zůstává. */
+export const PRICES = { monthly: 99, monthlyIntro: 49, yearly: 699, family: 999, founder: 499, familyMembers: 6 } as const;
+/** "Zakládající Tlapkař": first 3 months after the store launch – yearly for 499 Kč, locked while the subscription runs + rare badge.
+ *  NEXT_PUBLIC_STORE_LAUNCH (YYYY-MM-DD) sets the window; before launch / when unset the offer is shown (pre-launch). */
+export const STORE_LAUNCH = process.env.NEXT_PUBLIC_STORE_LAUNCH || '';
+export const founderOpen = (now = new Date()) => { if (!STORE_LAUNCH) return true; const end = new Date(STORE_LAUNCH); end.setMonth(end.getMonth() + 3); return now < end; };
+export const PLANS: { id: Exclude<PlanId, 'trial'>; name: string; price: string; per: string; note?: string; best?: boolean; badge?: string }[] = [
+  { id: 'founder', name: 'Zakládající Tlapkař', price: '499 Kč', per: 'za rok', note: 'Cena zamčená navždy, dokud předplatné běží · jen 3 měsíce od spuštění · vzácný odznak', best: true, badge: 'jen teď' },
+  { id: 'yearly', name: 'Ročně', price: '699 Kč', per: 'za rok', note: 'méně než 59 Kč měsíčně · ušetříš 41 %', best: true },
+  { id: 'monthly', name: 'Měsíčně', price: '99 Kč', per: 'za měsíc', note: 'první měsíc za 49 Kč' },
+  { id: 'family', name: 'Rodina', price: '999 Kč', per: 'za rok', note: 'Premium až pro 6 lidí v domácnosti · neomezeně mazlíčků' },
 ];
+export const plansNow = (now = new Date()) => (founderOpen(now) ? PLANS.map((p) => (p.id === 'yearly' ? { ...p, best: false } : p)) : PLANS.filter((p) => p.id !== 'founder'));
 export const FREE = { pets: 3, aivet: 3 };
-export const PRODUCT_IDS: Record<Exclude<PlanId, 'trial'>, string> = { monthly: 'tlapka_premium_monthly', yearly: 'tlapka_premium_yearly', family: 'tlapka_family_yearly' };
+/** RevenueCat / store product ids (see docs/PRICING.md). monthly carries the 49 Kč first-month introductory offer in both stores. */
+export const PRODUCT_IDS: Record<Exclude<PlanId, 'trial'>, string> = { monthly: 'tlapka_premium_monthly_99', yearly: 'tlapka_premium_yearly_699', family: 'tlapka_family_yearly_999', founder: 'tlapka_founder_yearly_499' };
 export const ENTITLEMENT_ID = 'premium';
 
 export type Entitlement = { plan: PlanId; exp: number; token: string; test: boolean; source: string };

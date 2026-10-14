@@ -5,7 +5,7 @@ Stav k 14. 10. 2026 (větev v1.1). Tohle se nedá dokončit bez skutečných kl�
 ## Klíče a účty (nikdy je necommituj)
 | Co | Kde | Stav |
 |---|---|---|
-| `NEXT_PUBLIC_RC_KEY` + plugin `@revenuecat/purchases-capacitor` | RevenueCat, produkty `tlapka_premium_monthly`, `tlapka_premium_yearly`, `tlapka_family_yearly`, entitlement `premium` | provider + `restore()` připravené (lib/premium.tsx), nákup zatím hází „nejsou zapnuté“ |
+| `NEXT_PUBLIC_RC_KEY` + plugin `@revenuecat/purchases-capacitor` | RevenueCat, produkty `tlapka_premium_monthly_99` (intro 49 Kč), `tlapka_premium_yearly_699`, `tlapka_family_yearly_999` (6 lidí), `tlapka_founder_yearly_499` (jen 3 měsíce od spuštění), entitlement `premium` – viz docs/PRICING.md | provider + `restore()` připravené (lib/premium.tsx), nákup zatím hází „nejsou zapnuté“ |
 | `PREMIUM_DEV_MODE` | Netlify env | **v produkci MUSÍ být vypnuté** (testovací Premium zdarma) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Netlify env (jen server) | potřeba pro `/api/account/delete` – bez něj vrací 503 `not_configured` |
 | `GEMINI_API_KEY` | Netlify env | Aivet, sken |

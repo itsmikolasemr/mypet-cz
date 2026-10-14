@@ -496,10 +496,10 @@ export function Settings() {
         <section aria-labelledby="predplatne-h"><h2 id="predplatne-h" className="text-sm font-semibold uppercase tracking-wide text-muted mb-2 px-1 scroll-mt-4">Předplatné</h2>
           <Card className="divide-y divide-ink/5 dark:divide-white/5">
             {prem.isPremium && prem.ent ? (<>
-              <Row icon="✦" title="Tlapka Premium" sub={`${{ monthly: 'Měsíční', yearly: 'Roční', family: 'Rodinný', trial: 'Zkušební (14 dní)' }[prem.ent.plan]} tarif · platí do ${fmtDate(toISO(new Date(prem.ent.exp)))}`} right={<PremiumBadge />} onClick={() => prem.openPaywall('obecne')} />
+              <Row icon="✦" title="Tlapka Premium" sub={`${{ monthly: 'Měsíční', yearly: 'Roční', family: 'Rodinný', founder: 'Zakládající', trial: 'Zkušební (14 dní)' }[prem.ent.plan]} tarif · platí do ${fmtDate(toISO(new Date(prem.ent.exp)))}`} right={<PremiumBadge />} onClick={() => prem.openPaywall('obecne')} />
               {prem.ent.test && <Row icon="🧪" title="Vypnout testovací Premium" sub="TEST – vrátí appku do verze zdarma" onClick={() => prem.deactivate()} />}
             </>) : (
-              <Row icon="✦" title="Získat Premium" sub="Aivet bez omezení, bez reklam, PDF pas, výdaje · 14 dní zdarma" right={<span className="text-sm font-bold text-primary">79 Kč</span>} onClick={() => prem.openPaywall('obecne')} />
+              <Row icon="✦" title="Získat Premium" sub="Aivet bez omezení, bez reklam, PDF pas, výdaje · 14 dní zdarma" right={<span className="text-sm font-bold text-primary">99 Kč</span>} onClick={() => prem.openPaywall('obecne')} />
             )}
             <Row icon="↻" title="Obnovit nákupy" sub="Máš Premium z jiného telefonu se stejným Apple ID / Google účtem?" onClick={async () => { const r = await prem.restore(); notice(r ? 'Nákup obnoven' : 'Nic k obnovení', r ? 'Premium je zase aktivní.' : 'K tomuto Apple ID / Google účtu jsme nenašli aktivní předplatné. Platby v obchodech zatím nejsou zapnuté (testovací verze).'); }} />
           </Card>

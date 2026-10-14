@@ -15,7 +15,7 @@ export default async (req) => {
   if (b.verify) return new Response(JSON.stringify({ valid: !!(await verify(b.token, dev)) }), { headers: H });
   if (b.deactivate === true) { if (!devModeOn()) return new Response('{"error":"test_mode_off"}', { status: 403, headers: H }); return new Response(JSON.stringify({ ok: true, db: await syncDb(req, false).catch(() => false) }), { headers: H }); }
   if (!devModeOn() || b.test !== true) return new Response('{"error":"test_mode_off"}', { status: 403, headers: H });
-  const plan = ['monthly', 'yearly', 'family', 'trial'].includes(b.plan) ? b.plan : 'monthly';
+  const plan = ['monthly', 'yearly', 'family', 'founder', 'trial'].includes(b.plan) ? b.plan : 'monthly';
   const exp = Date.now() + (plan === 'trial' ? 14 : plan === 'monthly' ? 31 : 366) * DAY;
   const db = await syncDb(req, true, exp).catch((e) => { console.error('premium db sync', e.message); return false; });
   return new Response(JSON.stringify({ token: await sign({ dev, plan, exp, test: true }), plan, exp, db }), { headers: H });

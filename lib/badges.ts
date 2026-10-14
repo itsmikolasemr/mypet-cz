@@ -43,6 +43,7 @@ export const BADGES: Badge[] = [
   { id: 'family', name: 'Ve dvou se to lépe táhne', desc: 'Pozvaný člen rodiny nebo partner.', rarity: 'tecka', group: 'rodina', scope: 'owner', server: true },
   { id: 'sitter', name: 'Hlídač připraven', desc: 'Vyplněná karta pro hlídače.', rarity: 'tecka', group: 'rodina', scope: 'pet' },
   { id: 'party3', name: 'Tlapka parta', desc: '3 přátelé, kteří Tlapku opravdu používají.', rarity: 'bricho', group: 'rodina', scope: 'owner', server: true },
+  { id: 'founder', name: 'Zakládající Tlapkař', desc: 'Byl/a jsi u toho od začátku – roční předplatné v prvních 3 měsících.', rarity: 'zlata', group: 'rodina', scope: 'owner', server: true },
   { id: 'ambassador10', name: 'Ambasador tlapek', desc: '10 přátel v Tlapce.', rarity: 'tlapka', group: 'rodina', scope: 'owner', server: true },
   { id: 'wrapped', name: 'Wrapped hvězda', desc: 'Sdílený Tlapka Wrapped.', rarity: 'bricho', group: 'rodina', scope: 'pet' },
   { id: 'birthday', name: 'Všechno nejlepší!', desc: 'Narozeniny mazlíčka v Tlapce.', rarity: 'bricho', group: 'milniky', scope: 'pet' },
@@ -111,7 +112,7 @@ export function progress(b: Badge, data: AppData, pet: Pet | undefined, now = ne
     case 'abroad': return P(f[`abroad:${pid}`] ? 1 : 0, 1);
     case 'card1': return P(data.cards.length, 1);
     case 'cashier5': return P(data.cards.reduce((a, c) => a + Math.min(c.uses ?? 0, 999), 0), 5);
-    case 'family': case 'party3': case 'ambassador10': return P(server[b.id] ? 1 : 0, 1);
+    case 'family': case 'party3': case 'ambassador10': case 'founder': return P(server[b.id] ? 1 : 0, 1);
     case 'sitter': return P(pet?.care && (pet.care.feeding.length || pet.care.walks || pet.care.habits) ? 1 : 0, 1);
     case 'wrapped': return P(f[`wrapped:${pid}`] ? 1 : 0, 1);
     case 'birthday': { if (!pet?.birthDate) return P(0, 1); const created = pet.createdAt?.slice(0, 10) ?? today; const bd = pet.birthDate.slice(5); const y = now.getFullYear();

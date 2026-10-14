@@ -2,7 +2,7 @@
 import { loc } from '@/lib/i18n';
 import { Emo, GT } from './glyphs';
 import { useEffect, useMemo, useState } from 'react';
-import { usePremium, PLANS, FREE, type PlanId } from '@/lib/premium';
+import { usePremium, plansNow, FREE, PRICES, founderOpen, type PlanId } from '@/lib/premium';
 import { useStore } from '@/lib/store';
 import { fmtDate, plural } from '@/lib/utils';
 import { Card, PageHeader, Sheet } from './ui';
@@ -25,7 +25,7 @@ const COMPARE: [string, string, string, string][] = [
   ['Aivet', `${FREE.aivet}×`, '∞', '∞'],
   ['PDF pas + QR', '–', '✓', '✓'],
   ['Bez reklam', '–', '✓', '✓'],
-  ['Premium pro celou domácnost (5)', '–', '–', '✓'],
+  [`Premium pro celou domácnost (${PRICES.familyMembers})`, '–', '–', '✓'],
 ];
 const FREE_LIST = ['Až 3 mazlíčci', 'Připomínky a upozornění', 'Kalendář a návštěvy', 'Mapa veterin + nonstop pohotovost', 'Dokumenty a váha', `${FREE.aivet} zkušební dotazy Aivetovi`];
 
@@ -38,7 +38,8 @@ const REASON: Record<string, string> = { aivet: 'Ptej se Aiveta bez omezení', p
 
 export function Paywall() {
   const p = usePremium();
-  const [plan, setPlan] = useState<Exclude<PlanId, 'trial'>>('yearly');
+  const [plan, setPlan] = useState<Exclude<PlanId, 'trial'>>(founderOpen() ? 'founder' : 'yearly');
+  const PLANS = plansNow();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const buy = async (id: PlanId) => { setBusy(true); setErr(''); try { await p.purchase(id); p.closePaywall(); } catch (e) { setErr(e instanceof Error ? e.message : 'Nepovedlo se.'); } finally { setBusy(false); } };
@@ -58,14 +59,14 @@ export function Paywall() {
       <table data-compare className="w-full text-[13px] mb-5 rounded-2xl overflow-hidden ring-1 ring-ink/10 dark:ring-white/10">
         <thead><tr className="bg-ink/5 dark:bg-white/5"><th className="text-left font-semibold px-2.5 py-2">Co dostaneš</th><th className="px-1.5 font-semibold">Zdarma</th><th className="px-1.5 font-bold text-primary-d dark:text-primary">Premium</th><th className="px-1.5 font-semibold">Rodina</th></tr></thead>
         <tbody>{COMPARE.map(([f, a, b, c]) => <tr key={f} className="border-t border-ink/5 dark:border-white/5"><td className="px-2.5 py-1.5">{f}</td>{[a, b, c].map((v, i) => <td key={i} className={`text-center ${i === 1 ? 'font-bold bg-primary/10' : ''} ${v === '–' ? 'text-muted' : ''}`} aria-label={v === '✓' ? 'ano' : v === '–' ? 'ne' : v === '∞' ? 'neomezeně' : v}>{v}</td>)}</tr>)}
-          <tr className="border-t border-ink/10 dark:border-white/10 font-bold"><td className="px-2.5 py-2">Cena</td><td className="text-center">0 Kč</td><td className="text-center bg-primary/10 whitespace-nowrap">79 Kč/měs</td><td className="text-center whitespace-nowrap">749 Kč/rok</td></tr></tbody>
+          <tr className="border-t border-ink/10 dark:border-white/10 font-bold"><td className="px-2.5 py-2">Cena</td><td className="text-center">0 Kč</td><td className="text-center bg-primary/10 whitespace-nowrap">{PRICES.monthly} Kč/měs<span className="block text-[11px] font-semibold text-muted">{PRICES.yearly} Kč/rok</span></td><td className="text-center whitespace-nowrap">{PRICES.family} Kč/rok</td></tr></tbody>
       </table>
       <div role="radiogroup" aria-label="Tarif" className="space-y-2 mb-4">
         {PLANS.map((x) => (
           <button key={x.id} role="radio" aria-checked={plan === x.id} onClick={() => setPlan(x.id)}
             className={`press w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-left ring-2 transition ${plan === x.id ? 'ring-primary bg-primary/10' : 'ring-ink/10 dark:ring-white/10'}`}>
             <span className={`w-5 h-5 rounded-full border-2 ${plan === x.id ? 'border-primary bg-primary shadow-[inset_0_0_0_3px_white]' : 'border-ink/30 dark:border-white/30'}`} />
-            <span className="flex-1"><b>{x.name}</b>{x.best && <span className="ml-2 text-[12px] font-bold uppercase text-white bg-[#24609F] rounded-full px-1.5 py-0.5">nejvýhodnější</span>}{x.note && <span className="block text-[13px] text-muted">{x.note}</span>}</span>
+            <span className="flex-1"><b>{x.name}</b>{x.badge ? <span className="ml-2 pbadge inline-flex align-middle rounded-[5px] border border-[#7FB3E8]/60 bg-[#7FB3E8]/12 px-1.5 text-[10px] font-extrabold uppercase leading-[14px] tracking-[0.06em] text-[#3D7FC4] dark:text-[#A9CEF3]">{x.badge}</span> : x.best && <span className="ml-2 text-[11px] font-bold uppercase text-white bg-[#24609F] rounded-full px-1.5 py-0.5">nejvýhodnější</span>}{x.note && <span className="block text-[13px] text-muted">{x.note}</span>}</span>
             <span className="text-right"><b>{x.price}</b><span className="block text-[12px] text-muted">{x.per}</span></span>
           </button>
         ))}

@@ -52,7 +52,8 @@ export function Terms() {
       <p>Pomocník pro péči o domácí zvířata: připomínky, zdravotní deník, mapa, věrnostní karty a AI rádce Aivet. <b>Tlapka ani Aivet nejsou zdravotnický prostředek a nenahrazují veterináře.</b> V nouzi vždy volej veterinární pohotovost.</p>
       <H>2. Verze zdarma a Premium</H>
       <ul>
-        <li>Premium: 79 Kč měsíčně, 499 Kč ročně, Rodina 749 Kč ročně (až 5 členů domácnosti). Ceny včetně DPH.</li>
+        <li>Premium: 99 Kč měsíčně (první měsíc 49 Kč), 699 Kč ročně, Rodina 999 Kč ročně (až 6 lidí v domácnosti). Ceny včetně DPH.</li>
+        <li>Zakládající Tlapkař: po dobu 3 měsíců od spuštění v obchodech lze sjednat roční předplatné za 499 Kč. Tato cena platí pro každé další obnovení, dokud předplatné nepřerušíš nebo nezrušíš; po zrušení a novém sjednání platí aktuální ceník.</li>
         <li>Zkušební období 14 dní zdarma; pokud ho nezrušíš nejméně 24 hodin před koncem, změní se na placené předplatné.</li>
         <li>Předplatné se automaticky obnovuje, dokud ho nezrušíš v nastavení App Store / Google Play (nejpozději 24 h před koncem období). Platba se strhne z účtu Apple/Google.</li>
         <li>Obnovení nákupu na novém zařízení: Nastavení › Předplatné › Obnovit nákupy.</li>
