@@ -36,6 +36,7 @@ Jednoduchá ikona tlapky (outline styl, barva #2E7D6F, 2px stroke) + wordmark "M
 - Tlačítka: primary zelená, secondary outline
 - Formuláře: velké inputy, české labely, validace v reálném čase
 - Timeline: vertikální, body s ikonami (očkování, odčervení)
+- Emergency karta: tmavý gradient primární, bílý QR placeholder (brzy reálný QR)
 
 ## Tón
 Čeština, tykání, klidný, užitečný. Krátké věty. "Tvůj mazlíček má připomínku odčervení."

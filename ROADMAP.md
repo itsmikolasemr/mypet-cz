@@ -4,7 +4,7 @@
 - [x] Návrh vizuální identity (paleta, typografie, logo, ikony zvířat) — DESIGN.md
 - [ ] Pojmenování — 10+ kandidátů, výběr top 3 s odůvodněním (doporučení: Mazlík / Mazel)
 - [x] Datový model: Pet, VetVisit, Deworming, Vaccination, Document, Reminder
-- [x] Katalog zvířat: druhy, plemena, rasy (rozšířeno)
+- [x] Katalog zvířat: druhy, plemena, rasy (rozšířeno o další populární plemena)
 - [x] SEO základy (SEO.md)
 - [x] Profil mazlíčka: jméno, druh, plemeno, datum narození, pohlaví (localStorage CRUD hotovo)
 - [x] Nahrávání dokumentů: základní metadata (faktury, doklady, pas, vyšetření) — bez OCR
@@ -24,7 +24,7 @@
 - [ ] Interaktivní mapa (Leaflet/Mapbox)
 - [ ] Aktuální pohotovostní čísla (reálná data)
 - [ ] Affiliate: Granulebardog, SuperKotlik, Happypet
-- [x] SEO obsah: průvodci (sample odčervení + očkování hotové)
+- [x] SEO obsah: průvodci (sample odčervení + očkování + váha hotové)
 
 ## Fáze 3 — Integrace
 - [ ] CEP (Centrální evidence psů) integrace

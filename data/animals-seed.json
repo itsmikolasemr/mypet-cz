@@ -3,47 +3,47 @@
     {
       "id": "pes",
       "name": "Pes",
-      "breeds": ["Německý ovčák", "Labrador retriever", "Zlatý retriever", "Jezevčík", "Border collie", "Čivava", "Jack Russell teriér", "Bulldog", "Pudl", "Yorkshire teriér", "Maltezer", "Shiba inu", "Kříženec", "Jiné"]
+      "breeds": ["Německý ovčák", "Labrador retriever", "Zlatý retriever", "Jezevčík", "Border collie", "Čivava", "Jack Russell teriér", "Bulldog", "Pudl", "Yorkshire teriér", "Maltezer", "Shiba inu", "Francouzský buldoček", "Beagle", "Husky", "Kříženec", "Jiné"]
     },
     {
       "id": "kocka",
       "name": "Kočka",
-      "breeds": ["Britská krátkosrstá", "Maine Coon", "Perská", "Siamská", "Ragdoll", "Sphynx", "Bengálská", "Ruská modrá", "Norská lesní", "Kříženec", "Jiné"]
+      "breeds": ["Britská krátkosrstá", "Maine Coon", "Perská", "Siamská", "Ragdoll", "Sphynx", "Bengálská", "Ruská modrá", "Norská lesní", "Skotská klapouchá", "Kříženec", "Jiné"]
     },
     {
       "id": "kralik",
       "name": "Králík",
-      "breeds": ["Zakrslý", "Belgický obr", "Holandský", "Angorský", "Kříženec", "Jiné"]
+      "breeds": ["Zakrslý", "Belgický obr", "Holandský", "Angorský", "Rex", "Kříženec", "Jiné"]
     },
     {
       "id": "morce",
       "name": "Morče",
-      "breeds": ["Standardní", "Peruánské", "Abyssinian", "Skinny", "Jiné"]
+      "breeds": ["Standardní", "Peruánské", "Abyssinian", "Skinny", "Americké", "Jiné"]
     },
     {
       "id": "fretka",
       "name": "Fretka",
-      "breeds": ["Standardní", "Albín", "Jiné"]
+      "breeds": ["Standardní", "Albín", "Angorská", "Jiné"]
     },
     {
       "id": "ptak",
       "name": "Pták",
-      "breeds": ["Papoušek", "Kanár", "Andulka", "Agapornis", "Korela", "Jiné"]
+      "breeds": ["Papoušek", "Kanár", "Andulka", "Agapornis", "Korela", "Ara", "Jiné"]
     },
     {
       "id": "plaz",
       "name": "Plaz",
-      "breeds": ["Ještěrka", "Had", "Želva", "Chameleon", "Gekon", "Jiné"]
+      "breeds": ["Ještěrka", "Had", "Želva", "Chameleon", "Gekon", "Leguán", "Jiné"]
     },
     {
       "id": "ryba",
       "name": "Ryba",
-      "breeds": ["Akvárijní", "Koi", "Zlatá rybička", "Jiné"]
+      "breeds": ["Akvárijní", "Koi", "Zlatá rybička", "Betta", "Jiné"]
     },
     {
       "id": "kun",
       "name": "Kůň",
-      "breeds": ["Český teplokrevník", "Arabský", "Hafling", "Jiné"]
+      "breeds": ["Český teplokrevník", "Arabský", "Hafling", "Quarter Horse", "Jiné"]
     }
   ]
 }
