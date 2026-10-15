@@ -29,7 +29,7 @@ async function shareOrSave(b: Blob, name: string, text?: string) {
   download(b, name);
 }
 const needAuth = (e: string) => (/invalid code|expired/i.test(e) ? 'Kód neplatí nebo vypršel.' : e === 'auth' ? 'Nejdřív se přihlas v Nastavení › Účet a záloha.' : e === 'server' ? 'Komunitní funkce ještě nejsou na serveru zapnuté.' : 'Nepovedlo se, zkus to znovu.');
-const RAR_CLS: Record<Rarity, string> = { tecka: 'bg-ink/5 dark:bg-white/10', bricho: 'bg-[#7FB3E8]/15', tlapka: 'bg-[#7FB3E8]/30', zlata: 'bg-[#E9D9A6]/50 dark:bg-[#E9D9A6]/25', sezonni: 'bg-[#BFE3D6]/50 dark:bg-[#BFE3D6]/20' };
+const RAR_CLS: Record<Rarity, string> = { tecka: 'bg-ink/5 dark:bg-white/10', bricho: 'bg-[#7FB3E8]/15 dark:bg-[#7FB3E8]/12', tlapka: 'bg-[#7FB3E8]/30 dark:bg-[#7FB3E8]/16', zlata: 'bg-[#E9D9A6]/50 dark:bg-[#E9D9A6]/12', sezonni: 'bg-[#BFE3D6]/50 dark:bg-[#BFE3D6]/12' };
 
 /* ───────── Fair share (Today / Dashboard) ───────── */
 export function FairShareCard() {
@@ -40,7 +40,7 @@ export function FairShareCard() {
   return (
     <Card className="p-4" >
       <div data-fairshare className="flex items-center justify-between"><H e="👥" t="Kdo se dnes staral" sub={fs.solo ? 'Až se přidá partner, uvidíte spravedlivé rozdělení péče.' : 'Posledních 7 dní, krmení, venčení i léky.'} />
-        <button onClick={() => setEdit(true)} className="text-[13px] font-semibold text-primary min-h-[44px] px-2">{name || 'Já'}</button></div>
+        <button onClick={() => setEdit(true)} className="text-[13px] font-semibold text-primary min-h-[44px] min-w-[44px] px-2">{name || 'Já'}</button></div>
       {fs.share.length > 0 ? (
         <ul className="space-y-2">{fs.share.map((r) => (
           <li key={r.name}><div className="flex justify-between text-[13px]"><b>{r.name}</b><span className="text-muted tabular-nums">{`${tr('dnes')} ${r.today} · ${tr('týden')} ${r.week} (${r.pct} %)`}</span></div>
@@ -128,19 +128,19 @@ export function BadgesCard({ pet }: { pet: Pet }) {
   return (
     <Card className="p-4" >
       <div data-badges className="flex items-center justify-between"><H e="🏅" t="Odznaky" sub={`${earned.size} ${tr('z')} ${BADGES.length}${pet.memorial ? ' · vzpomínkový profil, odznaky jsou zamrzlé' : ''}`} />
-        <button className="text-[13px] font-semibold text-primary min-h-[44px] px-2" onClick={() => setAll(!all)}>{all ? 'Jen získané' : 'Všechny'}</button></div>
+        <button className="text-[13px] font-semibold text-primary min-h-[44px] min-w-[44px] px-2" onClick={() => setAll(!all)}>{all ? 'Jen získané' : 'Všechny'}</button></div>
       {nb && !pet.memorial && <p className="text-[13px] mb-2 tabular-nums">{tr('Nejblíž:')} <b>{tr(nb.b.name)}</b> · {nb.p.have}/{nb.p.need}</p>}
       {!list.length ? <p className="text-[13px] text-muted">Zatím žádný. První získáš odškrtnutím úkolu v Tlapka Dni.</p> : (
         <ul className="grid grid-cols-2 gap-2">{list.map((b) => { const got = earned.has(b.id); const p = progress(b, data, pet);
-          return <li key={b.id} className={`rounded-2xl p-2.5 ${RAR_CLS[b.rarity]} ${got ? '' : 'opacity-60'}`}>
+          return <li key={b.id} className={`rounded-2xl p-2.5 ${RAR_CLS[b.rarity]} ${got ? '' : 'border border-dashed border-ink/25 dark:border-white/30'}`}>
             <p className="text-[13px] font-bold leading-tight">{b.name}</p>
-            <p className="text-[11px] uppercase tracking-[0.06em] font-bold text-[#3D7FC4] dark:text-[#A9CEF3] mt-0.5">{RARITY[b.rarity].name}</p>{!b.noReward && RARITY[b.rarity].reward && <p className="text-[11px] font-semibold text-muted">{RARITY[b.rarity].reward}</p>}
+            <p className="text-[12px] uppercase tracking-[0.06em] font-bold text-[#2C68A8] dark:text-[#A9CEF3] mt-0.5">{RARITY[b.rarity].name}</p>{!b.noReward && RARITY[b.rarity].reward && <p className="text-[12px] font-semibold text-muted">{RARITY[b.rarity].reward}</p>}
             <p className="text-[12px] text-muted leading-snug mt-0.5">{b.desc}</p>
-            {!got && <p className="text-[11px] text-muted mt-0.5">{b.server ? 'ověřuje server' : `${Math.min(p.have, p.need)}/${p.need}`}</p>}
+            {!got && <p className="text-[12px] text-muted mt-0.5">{b.server ? 'ověřuje server' : `${Math.min(p.have, p.need)}/${p.need}`}</p>}
           </li>; })}</ul>
       )}
       <label className="flex items-center gap-2 text-[13px] mt-3 min-h-[44px]"><input type="checkbox" checked={!!pet.memorial} onChange={(e) => patch((d) => ({ ...d, pets: d.pets.map((x) => (x.id === pet.id ? { ...x, memorial: e.target.checked ? new Date().toISOString().slice(0, 10) : undefined } : x)) }))} /> Vzpomínkový profil (bez připomínek odznaků)</label>
-      <p className="text-[11px] text-muted">{GROUPS.zdravi}: odměňujeme péči podle plánu, nikdy počet léků, návštěv veterináře ani změnu váhy.</p>
+      <p className="text-[12px] text-muted">{GROUPS.zdravi}: odměňujeme péči podle plánu, nikdy počet léků, návštěv veterináře ani změnu váhy.</p>
     </Card>
   );
 }
@@ -303,7 +303,7 @@ export function Tlapkari() {
             <div className="h-1.5 rounded-full bg-ink/5 dark:bg-white/10 mt-1"><div className="h-1.5 rounded-full bg-primary" style={{ width: `${(lvl.i / 5) * 100}%` }} /></div></div>
           <Button variant="soft" onClick={() => (cloud.session ? setEdit(true) : notice('Profil Tlapkaře', needAuth('auth')))}>Upravit</Button>
         </div>
-        <p className="text-[11px] text-muted mt-2">Úrovně: Štěňátko → Tlapkař → Výběhový štamgast → Parťák party → Legenda tlapek. Jen kosmetika, nic neodemykají.</p>
+        <p className="text-[12px] text-muted mt-2">Úrovně: Štěňátko → Tlapkař → Výběhový štamgast → Parťák party → Legenda tlapek. Jen kosmetika, nic neodemykají.</p>
       </Card>
       <Card className="p-4 space-y-2">
         <H e="🔳" t="Kamarádi přes QR" sub="Ve výběhu si navzájem načtěte QR fotoaparátem. Kód platí 15 minut." />

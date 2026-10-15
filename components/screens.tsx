@@ -163,7 +163,7 @@ export function PetsList({ openPet }: { openPet: (id: string) => void }) {
               <Avatar pet={p} size="w-16 h-16" text="text-3xl" />
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-lg leading-tight flex items-center gap-2">{p.name}{data.allergies.some((a) => a.petId === p.id) && <span className="text-[12px] font-bold rounded-full px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400"><GT t="⚠️ Alergie" /></span>}</p>
-                <p className="text-[13px] text-muted truncate">{[p.breed || speciesOf(p.species).name, age(p.birthDate), w && `${w.kg.toLocaleString(loc())} kg`].filter(Boolean).join(' · ')}</p>
+                <p className="text-[13px] text-muted line-clamp-2">{[p.breed || speciesOf(p.species).name, age(p.birthDate), w && `${w.kg.toLocaleString(loc())} kg`].filter(Boolean).join(' · ')}</p>
                 {next && <p className={`text-[13px] mt-0.5 font-medium ${status(next) === 'overdue' ? 'text-red-600 dark:text-red-400' : 'text-primary'}`}>{next.title} · {fmtDate(next.dueDate)}</p>}
               </div>
               <Icon name="chev" className="w-4 h-4 text-muted" />
@@ -198,7 +198,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
   const info: [string, string][] = ([['Druh', speciesOf(pet.species).name], ['Plemeno', pet.breed], [pet.sex === 'samice' ? 'Narozena' : pet.sex === 'samec' ? 'Narozen' : 'Datum narození', pet.birthDate && `${fmtDate(pet.birthDate)} (${age(pet.birthDate)})`], ['Pohlaví', pet.sex === 'samec' ? 'Samec' : pet.sex === 'samice' ? 'Samice' : ''], ['Barva', pet.color], ['Čip', pet.microchip]] as [string, string][]).filter(([, v]) => v);
   return (
     <div>
-      <div className="sticky z-30 flex items-center justify-between mb-4 -mx-1 px-1.5 py-1.5 rounded-full bg-surface/70 dark:bg-surface-d/70 backdrop-blur-2xl ring-1 ring-ink/5 dark:ring-white/10 shadow-card dark:shadow-card-d" style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}>
+      <div className="sticky z-30 flex items-center justify-between mb-4 -mx-1 px-1.5 py-1.5 rounded-full hdr backdrop-blur-2xl ring-1 ring-ink/5 dark:ring-white/10 shadow-card dark:shadow-card-d" style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}>
         <button onClick={back} className="press flex items-center gap-1 text-primary font-semibold pl-2 pr-3 min-h-[44px] rounded-full"><Icon name="back" /> Mazlíčci</button>
         <button onClick={() => setEdit(true)} className="press flex items-center gap-1.5 text-primary font-semibold px-3 min-h-[44px] rounded-full"><Icon name="edit" className="w-4 h-4" /> Upravit</button>
       </div>
@@ -215,7 +215,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
         <span className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl"><Emo e="🩺" className="w-6 h-6" /></span>
         <span className="flex-1"><b className="block">Zeptej se Aiveta</b><span className="text-sm text-[#0F2540]/75">Zná profil, léky i alergie – {pet.name}</span></span><Icon name="chev" className="w-4 h-4" />
       </button>}
-      <div className="sticky z-20 -mx-1 px-1 py-1 mb-1 bg-bg/80 dark:bg-bg-d/80 backdrop-blur-xl rounded-full" style={{ top: 'calc(env(safe-area-inset-top) + 72px)' }}>
+      <div className="sticky z-20 -mx-1 px-1 py-1 mb-1 hdr-tabs backdrop-blur-xl rounded-full" style={{ top: 'calc(env(safe-area-inset-top) + 68px)' }}>
         <Segmented value={tab} onChange={setTab} options={[{ v: 'pece', l: 'Péče' }, { v: 'zdravi', l: 'Zdraví' }, { v: 'doklady', l: 'Doklady' }, { v: 'sdilet', l: 'Sdílet' }, { v: 'profil', l: 'Profil' }]} />
       </div>
       <p className="text-[12px] text-muted text-center mt-1.5">{({ profil: 'Základní údaje a Aivet', pece: 'Připomínky: odčervení, očkování, drápky…', zdravi: 'Léky, alergie, návštěvy a váha', doklady: 'Faktury, zprávy, RTG snímky', sdilet: 'Zdravotní pas, karta pro hlídače, cesty' } as const)[tab]}</p>
@@ -288,7 +288,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
               <div key={w.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
                 <span className="text-muted">{fmtDate(w.date)}</span>
                 <span className="font-semibold tabular-nums ml-auto mr-3">{w.kg.toLocaleString(loc())} kg</span>
-                <button aria-label="Smazat" onClick={() => { const prev = w; deleteWeight(pet.id, w.id); toast('Záznam váhy smazán', () => addWeight(pet.id, prev.kg, prev.date)); }} className="text-muted p-1"><Icon name="x" className="w-4 h-4" /></button>
+                <button aria-label="Smazat" onClick={() => { const prev = w; deleteWeight(pet.id, w.id); toast('Záznam váhy smazán', () => addWeight(pet.id, prev.kg, prev.date)); }} className="text-muted w-11 h-11 -my-2 -mr-2 flex items-center justify-center"><Icon name="x" className="w-4 h-4" /></button>
               </div>
             ))}
           </Card>
@@ -607,7 +607,7 @@ export function Onboarding() {
   const steps = 4;
   const glyphBox = (g: GlyphName) => <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] flex items-center justify-center shadow-xl shadow-primary/30 mb-7"><Glyph name={g} className="w-14 h-14" /></div>;
   return (
-    <div data-onboarding={step} style={{ paddingBottom: "calc(max(env(safe-area-inset-bottom), 16px) + var(--badge, 0px))" }} className="min-h-[100dvh] flex flex-col px-6 pt-safe bg-gradient-to-b from-[#DCEBFA] to-bg dark:from-[#1E2733] dark:to-bg-d">
+    <main data-onboarding={step} style={{ paddingBottom: "calc(max(env(safe-area-inset-bottom), 16px) + var(--badge, 0px))" }} className="min-h-[100dvh] flex flex-col px-6 pt-safe bg-gradient-to-b from-[#DCEBFA] to-bg dark:from-[#1E2733] dark:to-bg-d">
       <div className="pt-10 flex items-center justify-between"><Logo className="h-10 text-ink dark:text-white" /><span className="text-sm text-muted" aria-live="polite">{step + 1} / {steps}</span></div>
       <div className="flex-1 flex flex-col justify-center animate-screen py-6" key={step}>
         {step === 0 && <><div className="w-28 h-28 mb-7 drop-shadow-xl"><PawMark animate className="w-full h-full" label="Tlapka" /></div><h1 className="text-[30px] leading-tight font-bold tracking-tight">Vítej v Tlapce</h1><p className="text-lg text-muted mt-3">Odčervení, klíšťata, očkování i léky – Tlapka ti včas připomene. Nastavíme to spolu za minutu.</p></>}
@@ -636,7 +636,7 @@ export function Onboarding() {
       {step === 1 && <div className="flex gap-3"><Button variant="ghost" className="flex-1" onClick={() => setStep(0)}>Zpět</Button><Button className="flex-1" disabled={!name.trim()} onClick={() => setStep(2)}>Další</Button></div>}
       {step === 2 && <div className="flex gap-3"><Button variant="ghost" className="flex-1" onClick={() => setStep(1)}>Zpět</Button><Button className="flex-1" onClick={() => setStep(3)}>Další</Button></div>}
       {step === 3 && <div className="space-y-3"><Button className="w-full py-4" data-allow-notify onClick={() => done(true)}>Povolit upozornění</Button><Button variant="ghost" className="w-full" onClick={() => done(false)}>Teď ne</Button></div>}
-    </div>
+    </main>
   );
 }
 

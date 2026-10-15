@@ -32,7 +32,7 @@ const FREE_LIST = ['Až 3 mazlíčci', 'Připomínky a upozornění', 'Kalendá�
 
 export function PremiumBadge({ small = false }: { small?: boolean }) {
   void small
-  return <span className="pbadge inline-flex shrink-0 items-center align-middle whitespace-nowrap rounded-[5px] border border-[#7FB3E8]/60 bg-[#7FB3E8]/12 px-1.5 py-[1px] text-[11px] font-extrabold uppercase leading-[14px] tracking-[0.06em] text-[#3D7FC4] dark:text-[#A9CEF3]">Premium</span>
+  return <span className="pbadge inline-flex shrink-0 items-center align-middle whitespace-nowrap rounded-[5px] border border-[#7FB3E8]/60 bg-[#7FB3E8]/12 px-1.5 py-[1px] text-[11px] font-extrabold uppercase leading-[14px] tracking-[0.06em] text-[#2C68A8] dark:text-[#A9CEF3]">Premium</span>
 }
 
 const REASON: Record<string, string> = { aivet: 'Ptej se Aiveta bez omezení', pets: `Zdarma můžeš mít ${FREE.pets} mazlíčky`, pdf: 'Zdravotní pas v PDF je součástí Premium', expenses: 'Přehled výdajů je součástí Premium', obecne: 'Víc péče, méně starostí' };
@@ -58,17 +58,17 @@ export function Paywall() {
             <span className="flex-1"><b className="text-[14px]">{x.t}</b>{x.soon && <span className="ml-1.5 align-middle text-[12px] font-bold uppercase rounded-full px-1.5 py-0.5 bg-ink/10 dark:bg-white/15">brzy</span>}<span className="block text-[13px] text-muted">{x.d}</span></span></li>
         ))}
       </ul>
-      <table data-compare className="w-full text-[13px] mb-5 rounded-2xl overflow-hidden ring-1 ring-ink/10 dark:ring-white/10">
-        <thead><tr className="bg-ink/5 dark:bg-white/5"><th className="text-left font-semibold px-2.5 py-2">Co dostaneš</th><th className="px-1.5 font-semibold">Zdarma</th><th className="px-1.5 font-bold text-primary-d dark:text-primary">Premium</th><th className="px-1.5 font-semibold">Rodina</th></tr></thead>
-        <tbody>{COMPARE.map(([f, a, b, c]) => <tr key={f} className="border-t border-ink/5 dark:border-white/5"><td className="px-2.5 py-1.5">{f}</td>{[a, b, c].map((v, i) => <td key={i} className={`text-center ${i === 1 ? 'font-bold bg-primary/10' : ''} ${v === '–' ? 'text-muted' : ''}`} aria-label={v === '✓' ? 'ano' : v === '–' ? 'ne' : v === '∞' ? 'neomezeně' : v}>{v === '✓' ? <Emo e="✓" className="w-4 h-4 inline-block text-primary-d dark:text-primary" /> : v}</td>)}</tr>)}
-          <tr className="border-t border-ink/10 dark:border-white/10 font-bold"><td className="px-2.5 py-2">Cena</td><td className="text-center">0 Kč</td><td className="text-center bg-primary/10 whitespace-nowrap">{PRICES.monthly} Kč/měs<span className="block text-[11px] font-semibold text-muted">{PRICES.yearly} Kč/rok</span></td><td className="text-center whitespace-nowrap">{PRICES.family} Kč/rok</td></tr></tbody>
+      <table data-compare className="w-full text-[13px] mb-5 scroll-mt-20 rounded-2xl overflow-hidden ring-1 ring-ink/10 dark:ring-white/10">
+        <thead><tr className="bg-ink/5 dark:bg-white/5"><th className="text-left font-semibold px-2.5 py-2">Co dostaneš</th><th className="px-1.5 font-semibold">Zdarma</th><th className="px-1.5 font-bold text-primary-d dark:text-primary">Premium</th><th className="px-1.5 pr-3 font-semibold">Rodina</th></tr></thead>
+        <tbody>{COMPARE.map(([f, a, b, c]) => <tr key={f} className="border-t border-ink/5 dark:border-white/5"><td className="px-2.5 py-1.5">{f}</td>{[a, b, c].map((v, i) => <td key={i} className={`text-center ${i === 2 ? 'pr-2' : ''} ${i === 1 ? 'font-bold bg-primary/10' : ''} ${v === '–' ? 'text-muted' : ''}`} aria-label={v === '✓' ? 'ano' : v === '–' ? 'ne' : v === '∞' ? 'neomezeně' : v}>{v === '✓' ? <Emo e="✓" className="w-4 h-4 inline-block text-primary-d dark:text-primary" /> : v}</td>)}</tr>)}
+          <tr className="border-t border-ink/10 dark:border-white/10 font-bold"><td className="px-2.5 py-2">Cena</td><td className="text-center">0 Kč</td><td className="text-center bg-primary/10 whitespace-nowrap">{PRICES.monthly} Kč/měs<span className="block text-[12px] font-semibold text-muted">{PRICES.yearly} Kč/rok</span></td><td className="text-center whitespace-nowrap pl-1 pr-3">{PRICES.family} Kč/rok</td></tr></tbody>
       </table>
       <div role="radiogroup" aria-label="Tarif" className="space-y-2 mb-4">
         {PLANS.map((x) => (
           <button key={x.id} role="radio" aria-checked={plan === x.id} onClick={() => setPlan(x.id)}
             className={`press w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-left ring-2 transition ${plan === x.id ? 'ring-primary bg-primary/10' : 'ring-ink/10 dark:ring-white/10'}`}>
             <span className={`w-5 h-5 rounded-full border-2 ${plan === x.id ? 'border-primary bg-primary shadow-[inset_0_0_0_3px_white]' : 'border-ink/30 dark:border-white/30'}`} />
-            <span className="flex-1"><b>{x.name}</b>{x.badge ? <span className="ml-2 pbadge inline-flex align-middle rounded-[5px] border border-[#7FB3E8]/60 bg-[#7FB3E8]/12 px-1.5 text-[11px] font-extrabold uppercase leading-[14px] tracking-[0.06em] text-[#3D7FC4] dark:text-[#A9CEF3]">{x.badge}</span> : x.best && <span className="ml-2 text-[11px] font-bold uppercase text-white bg-[#24609F] rounded-full px-1.5 py-0.5">nejvýhodnější</span>}{x.note && <span className="block text-[13px] text-muted">{x.note}</span>}</span>
+            <span className="flex-1"><b>{x.name}</b>{x.badge ? <span className="ml-2 pbadge inline-flex align-middle rounded-[5px] border border-[#7FB3E8]/60 bg-[#7FB3E8]/12 px-1.5 text-[11px] font-extrabold uppercase leading-[14px] tracking-[0.06em] text-[#2C68A8] dark:text-[#A9CEF3]">{x.badge}</span> : x.best && <span className="ml-2 text-[11px] font-bold uppercase text-white bg-[#24609F] rounded-full px-1.5 py-0.5">nejvýhodnější</span>}{x.note && <span className="block text-[13px] text-muted">{x.note}</span>}</span>
             <span className="text-right"><b>{x.price}</b><span className="block text-[12px] text-muted">{x.per}</span></span>
           </button>
         ))}
@@ -79,7 +79,7 @@ export function Paywall() {
       <button disabled={busy} data-restore onClick={async () => { setBusy(true); setErr(''); try { const r = await p.restore(); if (r) p.closePaywall(); else setErr('Nenašli jsme žádný aktivní nákup k obnovení.'); } catch { setErr('Obnovení se nepovedlo.'); } finally { setBusy(false); } }} className="press w-full min-h-[44px] mt-1 text-sm font-semibold text-[#24609F] dark:text-primary">Obnovit nákupy</button>
       <p className="text-[12px] text-muted text-center leading-snug">Po zkušební době se předplatné automaticky obnovuje za uvedenou cenu, dokud ho nezrušíš nejméně 24 h před koncem období v nastavení App Store / Google Play. <a href="#terms" onClick={p.closePaywall} className="underline inline-flex items-center min-h-[44px] px-1">Podmínky</a> · <a href="#privacy" onClick={p.closePaywall} className="underline inline-flex items-center min-h-[44px] px-1">Soukromí</a></p>
       <p className="mt-3 rounded-xl bg-amber-100 text-amber-900 dark:bg-amber-400/15 dark:text-amber-200 text-[12px] px-3 py-2 text-center"><GT t="🧪 TESTOVACÍ REŽIM – nic se neplatí. Platby přes App Store / Google Play (RevenueCat) zatím nejsou zapnuté." /></p>
-      <details className="mt-4 text-sm"><summary className="text-muted cursor-pointer">Co zůstává zdarma navždy</summary>
+      <details className="mt-4 text-sm"><summary className="text-muted cursor-pointer min-h-[44px] flex items-center">Co zůstává zdarma navždy</summary>
         <ul className="mt-2 grid grid-cols-2 gap-1.5 text-[13px]">{FREE_LIST.map((f) => <li key={f} className="flex gap-1.5 items-start leading-snug"><Emo e="✓" className="w-4 h-4 mt-0.5 shrink-0 text-primary-d dark:text-primary" /><span>{f}</span></li>)}</ul>
         <p className="text-[13px] text-muted mt-2">Nouzové funkce (mapa nonstop pohotovostí a varování v Aivetovi) nikdy nezamkneme.</p></details>
     </Sheet>
@@ -152,14 +152,14 @@ export function Expenses() {
       <PageHeader title="Výdaje" sub="Z cen návštěv u veterináře" action={p.isPremium ? <PremiumBadge /> : undefined} />
       {!p.isPremium && <div data-free-total className="mb-4"><Card className="p-5"><p className="text-sm text-muted">Celkem v roce {Y}</p><p className="text-[30px] font-bold tracking-tight leading-tight">{kc(realTotal)}</p><p className="text-[13px] text-muted">{realY.length ? `${realY.length} ${plural(realY.length, 'placená návštěva', 'placené návštěvy', 'placených návštěv')}` : 'Cenu doplníš u návštěvy v kalendáři.'}</p></Card></div>}
       <div className={`space-y-4 ${p.isPremium ? '' : 'blur-[5px] pointer-events-none select-none'}`} inert={!p.isPremium}>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">{years.map((y) => <button key={y} onClick={() => setYear(y)} className={`press rounded-full px-3.5 py-1.5 text-sm font-semibold ${y === year ? 'bg-primary-d text-[#0F2540]' : 'bg-surface dark:bg-surface-d ring-1 ring-ink/10 dark:ring-white/10'}`}>{y}</button>)}</div>
+        <div className="flex gap-2 overflow-x-auto no-scrollbar">{years.map((y) => <button key={y} onClick={() => setYear(y)} className={`press rounded-full px-4 min-h-[44px] text-sm font-semibold ${y === year ? 'bg-primary-d text-[#0F2540]' : 'bg-surface dark:bg-surface-d ring-1 ring-ink/10 dark:ring-white/10'}`}>{y}</button>)}</div>
         <Card className="p-5">
           <p className="text-sm text-muted">Celkem v roce {year}</p>
           <p className="text-[30px] font-bold tracking-tight leading-tight">{kc(total)}</p>
           <p className="text-[13px] text-muted">{inY.length ? `${inY.length} ${plural(inY.length, 'placená návštěva', 'placené návštěvy', 'placených návštěv')} · průměr ${kc(total / inY.length)}` : 'Žádné placené návštěvy'}</p>
-          <div className="mt-4 flex items-end gap-1.5 h-28" role="img" aria-label={`Výdaje po měsících v roce ${year}`}>
+          <div className="mt-4 flex items-end gap-1 h-28" role="img" aria-label={`Výdaje po měsících v roce ${year}`}>
             {months.map((m, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+              <div key={i} className="flex-1 min-w-0 flex flex-col items-center gap-1 h-full justify-end">
                 <div className="w-full rounded-t-lg bg-gradient-to-t from-[#7FB3E8] to-[#A9CEF3] transition-[height] duration-500" style={{ height: `${(m / max) * 100}%`, minHeight: m ? 4 : 0 }} title={kc(m)} />
                 <span className="text-[12px] text-muted">{MN[i]}</span>
               </div>

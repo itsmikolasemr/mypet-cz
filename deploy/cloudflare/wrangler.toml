@@ -1,0 +1,20 @@
+# Local-only config (NOT deployed by anyone yet). Preview: `npx wrangler dev -c deploy/cloudflare/wrangler.toml` after `npm run build`.
+# Deploy later (needs a free Cloudflare account): `npx wrangler deploy -c deploy/cloudflare/wrangler.toml`
+name = "tlapka"
+main = "worker.mjs"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
+
+[assets]
+directory = "../../out"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+not_found_handling = "404-page"
+
+[alias]
+"@netlify/blobs" = "./blobs-stub.mjs"
+
+[triggers]
+crons = ["15 3 * * *"]
+
+# Secrets (set with `wrangler secret put NAME`): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY (see docs/RELEASE-1.2.md "Env vars").

@@ -23,7 +23,7 @@ module.exports = {
         float: '0 2px 6px rgba(29,30,34,.06), 0 12px 28px -6px rgba(29,30,34,.18), 0 32px 64px -24px rgba(29,30,34,.28)',
         'float-d': '0 2px 6px rgba(0,0,0,.4), 0 14px 32px -6px rgba(0,0,0,.6), 0 36px 72px -24px rgba(0,0,0,.7)',
       },
-      fontSize: { xs: ['11px','15px'], sm: ['13px','18px'], base: ['15px','21px'], lg: ['16px','22px'], xl: ['18px','24px'], '2xl': ['21px','27px'], '3xl': ['25px','30px'], '4xl': ['30px','34px'] },
+      fontSize: { xs: ['12px','16px'], sm: ['13px','18px'], base: ['15px','21px'], lg: ['16px','22px'], xl: ['18px','24px'], '2xl': ['21px','27px'], '3xl': ['25px','30px'], '4xl': ['30px','34px'] },
       borderRadius: { '4xl': '2rem' },
     },
   },

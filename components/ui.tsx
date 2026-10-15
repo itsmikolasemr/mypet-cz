@@ -136,7 +136,7 @@ export function PageHeader({ title, sub, action, fab }: { title: string; sub?: s
   return (
     <>
       <div className="sticky z-30 -mx-2 mb-5" style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}>
-        <div className={`flex items-center justify-between gap-3 rounded-[26px] px-4 transition-all duration-300 ${scrolled ? 'py-2.5 bg-surface/70 dark:bg-surface-d/70 backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-ink/5 dark:ring-white/10 shadow-float dark:shadow-float-d' : 'py-2'}`}>
+        <div className={`flex items-center justify-between gap-3 rounded-[26px] px-4 transition-all duration-300 ${scrolled ? 'py-2.5 hdr backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-ink/5 dark:ring-white/10 shadow-float dark:shadow-float-d' : 'py-2'}`}>
           <div className="min-w-0">
             {sub && <p className={`text-sm text-muted first-letter:uppercase transition-all duration-300 ${scrolled ? 'h-0 opacity-0' : 'h-5 opacity-100'} overflow-hidden`}>{sub}</p>}
             <h1 className={`font-bold tracking-tight truncate transition-all duration-300 ${scrolled ? 'text-lg' : 'text-[26px] leading-tight'}`}>{title}</h1>

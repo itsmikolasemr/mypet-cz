@@ -128,7 +128,7 @@ export default function Aivet({ initialPet, openMap }: { initialPet?: string; op
             {!msgs.length && (
               <div className="animate-fade">
                 <p className="text-center text-muted text-sm mb-3">Popiš, co se děje. Odpovím, jak postupovat a jestli je potřeba k veterináři.</p>
-                <div className="flex flex-wrap gap-2 justify-center">{SUGGEST.map((s) => <button key={s} onClick={() => send(s)} className="press rounded-full px-3.5 py-2 text-sm bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">{s}</button>)}</div>
+                <div className="flex flex-wrap gap-2 justify-center">{SUGGEST.map((s) => <button key={s} onClick={() => send(s)} className="press rounded-full px-3.5 min-h-[44px] text-sm bg-surface dark:bg-surface-d shadow-card dark:shadow-card-d ring-1 ring-ink/5 dark:ring-white/10">{s}</button>)}</div>
               </div>
             )}
             {msgs.map((m, i) => (

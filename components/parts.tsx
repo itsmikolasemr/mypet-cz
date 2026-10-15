@@ -101,7 +101,7 @@ export function VisitRow({ v, pet, onClick }: { v: Visit; pet?: Pet; onClick: ()
     <Card onClick={onClick} className="p-4 flex gap-3.5 items-start">
       <div className="w-12 shrink-0 text-center rounded-xl bg-secondary/20 py-1.5">
         <div className="text-lg font-bold leading-none">{Number(v.date.slice(8))}</div>
-        <div className="text-[12px] uppercase text-muted">{parse(v.date).toLocaleDateString(loc(), { month: 'short' })}</div>
+        <div className="text-[12px] uppercase text-[#565B63] dark:text-[#D5D9DF]">{parse(v.date).toLocaleDateString(loc(), { month: 'short' })}</div>
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{v.reason}</p>
@@ -134,12 +134,12 @@ export function WeightChart({ pet }: { pet: Pet }) {
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Graf váhy">
         <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7FB3E8" stopOpacity=".28" /><stop offset="1" stopColor="#7FB3E8" stopOpacity="0" /></linearGradient></defs>
-        {[0, 0.5, 1].map((f) => { const k = lo + (hi - lo) * f; return <g key={f}><line x1={px} x2={W - px} y1={Y(k)} y2={Y(k)} className="stroke-ink/10 dark:stroke-white/10" strokeDasharray="3 4" /><text x={2} y={Y(k) + 3} className="fill-muted" fontSize="9">{k.toFixed(1)}</text></g>; })}
+        {[0, 0.5, 1].map((f) => { const k = lo + (hi - lo) * f; return <g key={f}><line x1={px} x2={W - px} y1={Y(k)} y2={Y(k)} className="stroke-ink/10 dark:stroke-white/10" strokeDasharray="3 4" /><text x={2} y={Y(k) + 3} className="fill-muted" fontSize="11">{k.toFixed(1)}</text></g>; })}
         <polygon points={`${X(w[0].date)},${H - py} ${pts} ${X(last.date, w.length - 1)},${H - py}`} fill="url(#g)" />
         <polyline points={pts} fill="none" stroke="#7FB3E8" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" className="draw" />
         {w.map((x, i) => <circle key={x.id} cx={X(x.date, i)} cy={Y(x.kg)} r="3.5" fill="#7FB3E8" className="stroke-surface dark:stroke-surface-d" strokeWidth="2" />)}
-        <text x={px} y={H - 2} fontSize="9" className="fill-muted">{fmtShort(w[0].date)}</text>
-        <text x={W - px} y={H - 2} fontSize="9" textAnchor="end" className="fill-muted">{fmtShort(last.date)}</text>
+        <text x={px} y={H - 2} fontSize="11" className="fill-muted">{fmtShort(w[0].date)}</text>
+        <text x={W - px} y={H - 2} fontSize="11" textAnchor="end" className="fill-muted">{fmtShort(last.date)}</text>
       </svg>
     </div>
   );

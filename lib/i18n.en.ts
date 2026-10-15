@@ -2,6 +2,14 @@
 import { tr } from './i18n';
 
 export const EN: Record<string, string> = {
+"Cena": "Price",
+"Tarif": "Plan",
+"ano": "yes",
+"ne": "no",
+"Filtry mapy": "Map filters",
+"Upravit kartu": "Edit card",
+"Kč/měs": "CZK/mo",
+"Kč/rok": "CZK/yr",
 "Vítej v Tlapce": "Welcome to Tlapka",
 "Odčervení, klíšťata, očkování i léky – Tlapka ti včas připomene. Nastavíme to spolu za minutu.": "Deworming, ticks, vaccinations and meds – Tlapka reminds you in time. Let's set it up together in a minute.",
 "Začít": "Get started",
@@ -400,7 +408,7 @@ export const EN: Record<string, string> = {
 "Útulek měsíce:": "Shelter of the month:",
 "předáno": "donated",
 "potvrzení": "receipt",
-"Prvního útulka měsíce vybereme po spuštění. Částku a potvrzení o převodu tu vždy zveřejníme.": "We'll pick the first shelter of the month after launch. We'll always publish the amount and the transfer receipt here.",
+"Prvního útulku měsíce vybereme po spuštění. Částku a potvrzení o převodu tu vždy zveřejníme.": "We'll pick the first shelter of the month after launch. We'll always publish the amount and the transfer receipt here.",
 "Hledají domov": "Looking for a home",
 "Jen z ověřených útulků. Kontakt vede přímo na útulek.": "Verified shelters only. Contact goes straight to the shelter.",
 "Zatím tu nikdo není. Útulky teprve ověřujeme.": "Nobody here yet. We're still verifying shelters.",

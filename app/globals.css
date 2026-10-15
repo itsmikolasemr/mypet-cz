@@ -210,3 +210,21 @@ html.glass [role="radio"][aria-checked="true"] .text-muted { color: #17191D; }
 /* Inter (v1.2): tabular figures wherever numbers line up – tables, counters, progress, prices, dates */
 table, td, th, [data-num], .tabular-nums, [role="progressbar"], time { font-variant-numeric: tabular-nums; }
 body { font-feature-settings: "cv11"; } /* Inter cv11: single-storey a – softer, friendlier with the brand */
+
+/* sticky headers: near-opaque in every theme so scrolled-through text never shows */
+.hdr { background: rgba(255,255,255,.96); }
+.hdr-tabs { background: rgba(228,229,232,.95); }
+html.dark .hdr { background: rgba(31,33,37,.96); }
+html.dark .hdr-tabs { background: rgba(20,21,24,.95); }
+html.glass .hdr { background: linear-gradient(160deg, rgba(248,249,250,.97), rgba(234,236,240,.96)) !important; }
+html.glass .hdr-tabs { background: rgba(214,217,222,.96) !important; box-shadow: none !important; }
+.hdr-cover { position: fixed; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top) + 8px); z-index: 25; pointer-events: none; opacity: 0; transition: opacity .2s;
+  background: rgba(228,229,232,.92); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+html.dark .hdr-cover { background: rgba(20,21,24,.92); }
+html.glass .hdr-cover { background: rgba(191,195,202,.92); }
+html.scrolled .hdr-cover { opacity: 1; }
+/* text-primary-d (#5E9BDC) is only 2.9:1 on white – darker blue for text on light surfaces (dark keeps dark:text-primary) */
+html:not(.dark) .text-primary-d { color: #24609F; }
+html.glass .text-primary-d { color: #1A4F86; }
+html.glass .leaflet-control-attribution { background: rgba(244,245,247,.9) !important; color: #2A2F36; }
+html.glass .leaflet-control-attribution a { color: #1A4F86; }

@@ -2,18 +2,19 @@
 import { useEffect, useState } from 'react';
 import { StoreProvider, useStore } from '@/lib/store';
 import { status } from '@/lib/utils';
-import { Icon } from './ui';
+import { Icon, Logo } from './ui';
 import dynamic from 'next/dynamic';
-import Aivet from './Aivet';
+const Aivet = dynamic(() => import('./Aivet'), { loading: () => <div className="h-40 rounded-[26px] bg-ink/5 dark:bg-white/5 animate-pulse mt-4" /> });
 import { PremiumProvider } from '@/lib/premium';
 import { CloudProvider } from '@/lib/cloudsync';
-import { SharedPage } from './Shared';
-import { SecondOpinion } from './V11';
+const SharedPage = dynamic(() => import('./Shared').then((m) => m.SharedPage), { loading: () => <div className="h-40 rounded-[26px] bg-ink/5 dark:bg-white/5 animate-pulse mt-4" /> });
+const SecondOpinion = dynamic(() => import('./V11').then((m) => m.SecondOpinion), { loading: () => <div className="h-40 rounded-[26px] bg-ink/5 dark:bg-white/5 animate-pulse mt-4" /> });
 const Wallet = dynamic(() => import('./Wallet').then((m) => m.Wallet), { ssr: false });
 import { BannerSlot, Expenses, Paywall } from './Premium';
 import { FeedbackHost } from './feedback';
-import { TodayScreen } from './Today';
-import { BadgeWatcher, GrowthLinks, Tlapkari } from './Growth';
+const TodayScreen = dynamic(() => import('./Today').then((m) => m.TodayScreen), { loading: () => <div className="h-40 rounded-[26px] bg-ink/5 dark:bg-white/5 animate-pulse mt-4" /> });
+import { BadgeWatcher, GrowthLinks } from './Growth';
+const Tlapkari = dynamic(() => import('./Growth').then((m) => m.Tlapkari), { loading: () => <div className="h-40 rounded-[26px] bg-ink/5 dark:bg-white/5 animate-pulse mt-4" /> });
 import { useCloud } from '@/lib/cloudsync';
 import { captureRef, claimPendingRef } from '@/lib/growth';
 function RefCapture() { const c = useCloud(); useEffect(() => { captureRef(); }, []); useEffect(() => { if (c.session) claimPendingRef().then((r) => { if (r?.ok) import('./feedback').then((f) => f.notice('Vítej v Tlapce', `Od kamaráda máš ${r.days} dní Premium.`)); }); }, [c.session]); return null; }
@@ -57,17 +58,19 @@ function Shell() {
     f(); const mo = new MutationObserver(f); mo.observe(document.body, { childList: true }); const t = setInterval(f, 2000); setTimeout(() => clearInterval(t), 12000);
     return () => { mo.disconnect(); clearInterval(t); };
   }, []);
+  useEffect(() => { const f = () => document.documentElement.classList.toggle('scrolled', scrollY > 6); f(); addEventListener('scroll', f, { passive: true }); return () => removeEventListener('scroll', f); }, []);
   useEffect(() => { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('/sw.js').catch(() => {}); }, []);
   const nav = (t: Tab, p: string | null = null) => {
     const h = `#${t}${p ? '/' + p : ''}`; if (location.hash !== h) { history.pushState(null, '', h); dispatchEvent(new HashChangeEvent('hashchange')); }
     setTab(t); setPetId(p); window.scrollTo({ top: 0 });
   };
   if (share) return <SharedPage token={share} />;
-  if (!ready) return <div className="min-h-[100dvh]" />;
+  if (!ready) return <main data-splash data-notr className="min-h-[100dvh] flex items-center justify-center"><Logo className="h-20" /></main>;
   if (!data.settings.onboarded) return <Onboarding />;
   const overdue = data.reminders.filter((r) => status(r) === 'overdue').length;
   return (
     <div className="min-h-[100dvh]">
+      <div aria-hidden className="hdr-cover" />
       <main className="max-w-md mx-auto overflow-x-clip px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-[calc(env(safe-area-inset-bottom)+var(--badge,0px)+var(--banner,0px)+132px)]">
         {EXTRA.includes(tab) && <button onClick={() => (FROM_SETTINGS.includes(tab) ? (tab === 'about' ? nav('settings') : nav('about')) : nav('home'))} className="press -ml-1 mb-1 flex items-center gap-1 text-primary-d dark:text-primary font-semibold min-h-[44px] pr-3"><Icon name="back" /> {FROM_SETTINGS.includes(tab) ? (tab === 'about' ? 'Nastavení' : 'O aplikaci') : 'Přehled'}</button>}
         <div key={tab + (petId ?? '')} className="animate-screen">

@@ -184,7 +184,7 @@ export function subscribeHousehold(hh: string, onChange: () => void) {
   };
   for (const tb of [...Object.values(TABLE), 'tl_dose_logs']) ch.on('postgres_changes', { event: '*', schema: 'public', table: tb, filter: `household_id=eq.${hh}` }, f);
   ch.subscribe();
-  return () => { cloud().removeChannel(ch); };
+  return () => { clearTimeout(t); cloud().removeChannel(ch); };
 }
 
 export async function recentDoses(hh: string, petId?: string) {

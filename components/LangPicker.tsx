@@ -19,7 +19,7 @@ export function LangPicker() {
             <button key={v} role="radio" aria-checked={on} onClick={() => { if (!on) { setCur(v); setLang(v); } }}
               className={`press min-h-[44px] rounded-2xl px-2 py-2 text-center ring-2 transition ${on ? 'ring-primary bg-primary/10' : 'ring-ink/10 dark:ring-white/10'}`}>
               <span className="block text-[13px] font-semibold" {...(v !== 'auto' ? { 'data-notr': '' } : {})}>{on && <span aria-hidden className="inline-block w-1.5 h-1.5 rounded-full bg-[#3D7FC4] dark:bg-[#A9CEF3] mr-1 align-middle" />}{l}</span>
-              <span className="block text-[11px] text-muted" data-notr>{s}</span>
+              <span className="block text-[12px] text-muted" data-notr>{s}</span>
             </button>
           );
         })}

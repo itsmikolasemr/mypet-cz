@@ -5,8 +5,14 @@
  * attributes using the EN dictionary (exact strings) plus regex rules for templated strings (numbers, names, dates).
  * Language: localStorage 'tlapka:lang' → otherwise device language (cs/sk → cs, anything else → en).
  */
-import { EN, EN_RULES, EN_INLINE } from './i18n.en';
-import { DE } from './i18n.de';
+import type * as EnMod from './i18n.en';
+import type * as DeMod from './i18n.de';
+// Dictionaries are loaded on demand (only English / document-language users pay for ~90 KB of strings).
+let EN: typeof EnMod.EN = {}; let EN_RULES: typeof EnMod.EN_RULES = []; let EN_INLINE: typeof EnMod.EN_INLINE = []; let DE: typeof DeMod.DE = {};
+let dictP: Promise<void> | null = null;
+export function ensureDict(): Promise<void> {
+  return (dictP ??= Promise.all([import('./i18n.en'), import('./i18n.de')]).then(([e, d]) => { EN = e.EN; EN_RULES = e.EN_RULES; EN_INLINE = e.EN_INLINE; DE = d.DE; }));
+}
 
 export type Lang = 'cs' | 'en';
 const KEY = 'tlapka:lang';
@@ -32,7 +38,7 @@ export const loc = () => (docLang === 'de' ? 'de-DE' : docLang === 'en' ? 'en-GB
 export type DocLang = Lang | 'de';
 let docLang: DocLang | null = null;
 export const curLang = (): DocLang => docLang ?? getLang();
-export async function withLang<T>(l: DocLang, f: () => Promise<T>): Promise<T> { const prev = docLang; docLang = l; try { return await f(); } finally { docLang = prev; } }
+export async function withLang<T>(l: DocLang, f: () => Promise<T>): Promise<T> { if (l !== 'cs') await ensureDict(); const prev = docLang; docLang = l; try { return await f(); } finally { docLang = prev; } }
 
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
 const CZ = /[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]|\b(a|je|na|do|pro|se|ve|od|z)\b/;
@@ -75,7 +81,7 @@ function keepWs(orig: string, t: string) { const a = orig.match(/^\s*/)![0], b =
 export const t = tr;
 
 const ATTRS = ['aria-label', 'placeholder', 'title', 'alt'];
-const done = new WeakMap<Node, string>();
+let done = new WeakMap<Node, string>();
 function fixText(n: Text) {
   const v = n.nodeValue ?? '';
   if (done.get(n) === v) return;
@@ -105,6 +111,9 @@ export function startI18n() {
   document.documentElement.lang = l;
   if (l !== 'en' || started) return;
   started = true;
+  ensureDict().then(() => { done = new WeakMap(); begin(); });
+}
+function begin() {
   const native = { alert: window.alert.bind(window), confirm: window.confirm.bind(window), prompt: window.prompt.bind(window) };
   window.alert = (m?: unknown) => native.alert(tr(String(m ?? '')));
   window.confirm = (m?: string) => native.confirm(tr(String(m ?? '')));

@@ -218,7 +218,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
       if (!map.current) {
         map.current = L.map(el.current, { zoomControl: false, attributionControl: true }).setView([center.lat, center.lon], 13);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map.current);
-        L.control.zoom({ position: 'bottomright' }).addTo(map.current);
+        L.control.zoom({ position: 'bottomright', zoomInTitle: getLang() === 'en' ? 'Zoom in' : 'Přiblížit', zoomOutTitle: getLang() === 'en' ? 'Zoom out' : 'Oddálit' }).addTo(map.current);
         layer.current = L.layerGroup().addTo(map.current);
         setMapReady(true);
         L.marker([center.lat, center.lon], { icon: L.divIcon({ className: '', html: '<div class="me-dot"></div>', iconSize: [18, 18] }) }).addTo(map.current);
@@ -274,7 +274,7 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
         {state === 'loading' && <div className="absolute inset-x-0 bottom-3 z-[500] mx-auto w-max rounded-full bg-surface/90 dark:bg-surface-d/90 backdrop-blur px-4 py-2 text-sm shadow-card animate-fade"><PawLoader label="Hledám veteriny…" className="w-5 h-5" /></div>}
       </div>
       <p className="text-[13px] text-muted mt-3 px-1 leading-snug">Klepni na značku nebo vyber místo ze seznamu. <b>V nouzi vždy nejdřív zavolej.</b></p>
-      <details className="text-[12px] text-muted mt-1 px-1 leading-snug"><summary className="cursor-pointer min-h-[32px] flex items-center">Odkud jsou data?</summary>Z komunitní mapy <a className="underline" href="https://www.openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> (snímek říjen 2026), mohou být neúplná. „Nonstop“ ukazuje místa s otevírací dobou 24/7 včetně několika pražských klinik ověřených na jejich webu. Zverimexy (624) a výběhy (402) jsou uložené v appce, fungují i offline.</details>
+      <details className="text-[12px] text-muted mt-1 px-1 leading-snug"><summary className="cursor-pointer min-h-[44px] flex items-center">Odkud jsou data?</summary>Z komunitní mapy <a className="underline" href="https://www.openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> (snímek říjen 2026), mohou být neúplná. „Nonstop“ ukazuje místa s otevírací dobou 24/7 včetně několika pražských klinik ověřených na jejich webu. Zverimexy (624) a výběhy (402) jsou uložené v appce, fungují i offline.</details>
       <div className="mt-4 space-y-3 stagger">
         {state === 'error' && (
           <Card className="p-4 text-center"><p className="font-semibold">Nepodařilo se načíst data</p><p className="text-sm text-muted mt-1">Mapová služba OpenStreetMap (Overpass) je teď přetížená. Zkus to za pár minut.</p><Button variant="soft" className="mt-3" onClick={() => center && load(center)}>Zkusit znovu</Button></Card>
@@ -288,9 +288,9 @@ export default function VetMap({ initialNonstop = false }: { initialNonstop?: bo
           <Card key={v.id} onClick={() => focus(v)} className="p-4 flex items-center gap-3.5">
             <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shrink-0 ${v.shop ? 'bg-[#3A3D43]/12 dark:bg-[#C9D2DE]/15' : v.park ? 'bg-[#2F7D4A]/12 dark:bg-[#5FBF7F]/15' : v.nonstop ? 'bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8] text-[#0F2540] font-bold text-sm' : 'bg-primary/10'}`}>{v.shop ? <Emo e="🛍️" className="w-6 h-6" /> : v.park ? <Emo e="🌳" className="w-6 h-6" /> : v.nonstop ? '24/7' : <Emo e="🩺" className="w-6 h-6" />}</div>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold truncate flex items-center gap-1.5"><span className="truncate">{v.name}</span>{!v.park && !v.friendly && isPromoted(promo.get(v.id)) && <PromotedLabel />}</p>
+              <p className="font-semibold flex items-center gap-1.5"><span className="line-clamp-2 break-words">{v.name}</span>{!v.park && !v.friendly && isPromoted(promo.get(v.id)) && <PromotedLabel />}</p>
               {!v.park && (() => { const o = openNow(v.tags); return o == null ? null : <p data-open={o ? 'yes' : 'no'} className={`text-[12px] font-bold ${o ? 'text-[#1F7A43] dark:text-[#6FD39A]' : 'text-muted'}`}>{o ? (v.nonstop ? 'Otevřeno teď · nonstop' : 'Otevřeno teď') : 'Teď zavřeno'}</p>; })()}
-              <p className="text-[13px] text-muted truncate">{[v.dist < 1 ? `${Math.round(v.dist * 1000)} m` : `${v.dist.toFixed(1).replace('.', ',')} km`, v.friendly ? `${friendlyKind(v.tags)} · ${friendlyRule(v.tags)}` : v.park ? parkFacts(v.tags).join(', ') : address(v.tags), v.shop && data.cards.some((c) => c.store === v.tags.chain) ? '💳 máš kartu' : ''].filter(Boolean).join(' · ')}</p>
+              <p className="text-[13px] text-muted line-clamp-2">{[v.dist < 1 ? `${Math.round(v.dist * 1000)} m` : `${v.dist.toFixed(1).replace('.', ',')} km`, v.friendly ? `${friendlyKind(v.tags)} · ${friendlyRule(v.tags)}` : v.park ? parkFacts(v.tags).join(', ') : address(v.tags), v.shop && data.cards.some((c) => c.store === v.tags.chain) ? '💳 máš kartu' : ''].filter(Boolean).join(' · ')}</p>
             </div>
             {(() => { const ph = (v.tags.phone || v.tags['contact:phone'] || '').split(';')[0].replace(/\s+/g, ''); return ph && !v.park ? <a href={`tel:${ph}`} data-call onClick={(e) => e.stopPropagation()} aria-label={`Zavolat ${v.name}`} className="press shrink-0 min-h-[44px] px-3.5 rounded-full flex items-center gap-1.5 text-[13px] font-bold text-[#0F2540] bg-gradient-to-br from-[#A9CEF3] to-[#7FB3E8]"><Icon name="phone" className="w-4 h-4" />Zavolat</a> : <Icon name="chev" className="w-4 h-4 text-muted" />; })()}
           </Card>
