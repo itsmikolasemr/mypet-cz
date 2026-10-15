@@ -5,6 +5,7 @@ import { Emo, GT } from './glyphs';
 import { useEffect, useMemo, useState } from 'react';
 import { usePremium, plansNow, FREE, PRICES, founderOpen, type PlanId } from '@/lib/premium';
 import { useStore } from '@/lib/store';
+import { useCloud } from '@/lib/cloudsync';
 import { fmtDate, plural } from '@/lib/utils';
 import { Card, PageHeader, Sheet } from './ui';
 import { Avatar } from './ui';
@@ -92,8 +93,8 @@ const PROMOS: Record<string, { e: string; t: string; d: string; r: string }> = {
   pets: { e: '🩺', t: 'Aivet bez omezení', d: 'Ptej se kdykoli – zná profil, léky i alergie tvých mazlíčků.', r: 'aivet' },
 };
 export function AdSlot({ id }: { id: string }) {
-  const p = usePremium();
-  if (p.isPremium) return null;
+  const p = usePremium(); const c = useCloud();
+  if (c.premium) return null;
   const x = PROMOS[id] ?? PROMOS.home;
   return (
     <aside aria-label="Tlapka Premium" data-ad-slot={id} className="rounded-[22px] p-3.5 flex items-center gap-3 bg-gradient-to-br from-[#EAF3FC] to-[#DCEBFA] dark:from-[#1E2733] dark:to-[#22262D] ring-1 ring-[#7FB3E8]/15">
@@ -107,13 +108,13 @@ export function AdSlot({ id }: { id: string }) {
 /** Reserved 320×50 mobile banner (AdMob-ready). Rendered by the shell only on non-emergency screens for free users. */
 export const BANNER_H = 50;
 export function BannerSlot() {
-  const p = usePremium();
+  const p = usePremium(); const c = useCloud();
   useEffect(() => {
-    const on = !p.isPremium;
+    const on = !c.premium;
     document.documentElement.style.setProperty('--banner', on ? `${BANNER_H + 8}px` : '0px');
     return () => document.documentElement.style.setProperty('--banner', '0px');
-  }, [p.isPremium]);
-  if (p.isPremium) return null;
+  }, [c.premium]);
+  if (c.premium) return null;
   return (
     <div className="fixed inset-x-0 z-30 flex justify-center pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + var(--badge, 0px) + 88px)' }}>
       <aside id="ad-banner" data-ad-slot="banner-bottom" data-ad-size="320x50" aria-label="Reklama"
