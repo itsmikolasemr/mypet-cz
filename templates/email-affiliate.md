@@ -1,19 +1,19 @@
-# Šablona oslovného e-mailu — e-shopy s granulemi
+# Šablona: oslovení partnerů (affiliate)
 
-**Předmět:** Spolupráce MyPet CZ — placement v kontextu zdravotních záznamů mazlíčků
+**Předmět:** Spolupráce Tlapka. — odkaz na krmivo ve chvíli, kdy doma dochází
 
-Ahoj,
+Dobrý den,
 
-jsem z týmu MyPet CZ — české aplikace pro majitele mazlíčků, která spravuje zdravotní záznamy (odčervení, očkování, návštěvy), dokumenty a připomínky.
+jsme tým české aplikace **Tlapka.** (ABEGRIN s.r.o.) pro majitele mazlíčků: zdravotní záznamy, připomínky, mapa veterin a deník péče.
 
-Plánujeme umístit doporučené produkty (granule, přípravky na odčervení) přímo do kontextu záznamů — např. po záznamu odčervení nabídka vhodných produktů, nebo v připomínkách.
+V appce uživatel zadá krmivo a velikost balení. Když zásoba vystačí už jen na týden, nabídneme odkazy do e-shopů. Odkazy jsou vždy označené jako affiliate, bez hodnocení a bez řazení podle provize.
 
-Máme zájem o affiliate spolupráci. Vaše aktuální podmínky (Granulebardog ~7 %, SuperKotlik ~11 %, Happypet remarketing) jsou pro nás atraktivní.
+Zajímá nás partnerský program (Zoohit přes Awin / Dognet, SUPERZOO, Dobrá miska, Krmivo-Brit): podmínky provize, cookie okno, deeplinky a zda je možné `{q}` vyhledávání.
 
-Můžeme si dát krátký call a probrat placement, banner a remarketing?
+Můžeme si napsat nebo zavolat?
 
 Děkuji,
-Tým MyPet CZ
+{{jmeno}}, Tlapka. · {{kontakt_email}}
 
 ---
-**Poznámka pro marketing:** Odesílat až po schválení majitele. Upravit podle konkrétního e-shopu.
+**Poznámka (marketing):** odesílat až po schválení majitele. Žádná partnerská ID nejsou v kódu — vše v env (`NEXT_PUBLIC_AFF_*_URL`). Pojišťovny oslovovat až po právní kontrole (zák. 170/2018 Sb.).

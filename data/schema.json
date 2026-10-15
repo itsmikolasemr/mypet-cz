@@ -1,54 +1,66 @@
 {
-  "Pet": {
-    "id": "uuid",
-    "name": "string",
-    "species": "enum: pes|kočka|králík|morče|fretka|pták|plaz|ryba|kůň|jiné",
-    "breed": "string",
-    "sex": "enum: samec|samice|neznámé",
-    "birthDate": "date",
-    "heightCm": "number",
-    "weightKg": "number",
-    "color": "string",
-    "microchip": "string",
-    "notes": "string",
-    "ownerId": "uuid"
+  "_popis": "Datový model Tlapka. v1.2. Klientská data jsou v localStorage (lib/types.ts, AppData v1); cloud/komunita v Supabase tabulkách tl_* (supabase/migrations). Všechny tl_ tabulky mají RLS.",
+  "klient_localStorage": {
+    "Pet": "id,name,species(pes|kocka|kralik|morce|fretka|ptak|plaz|jine),breed,sex,birthDate,color,microchip,notes,photo?,weights[],care?,memorial?,food?(name,bagKg,dailyG,openedAt),createdAt",
+    "Reminder": "id,petId,type(ockovani|odcerveni|antiparazitika|veterina|pece|leky|jine),title,product,dueDate,intervalDays,notes,history[],completedAt?",
+    "Visit": "id,petId,date,clinic,reason,notes,cost?",
+    "DocMeta": "id,petId,name,kind(faktura|rtg|zprava|pas|jine),mime,size,date",
+    "Medication": "id,petId,name,dose,frequency,start,end,notes,reminderId?,minHours?,given[]",
+    "Allergy": "id,petId,allergen,reaction,severity(mirna|stredni|tezka)",
+    "LoyaltyCard": "id,store,name,code,format(EAN13|CODE128|QR)",
+    "v1.2 doplňky": "daily[], badges[], friends[], checkins[], flags{}, settings{theme,onboarded,notify,notifyHour,...}"
   },
-  "VetVisit": {
-    "id": "uuid",
-    "petId": "uuid",
-    "date": "date",
-    "clinic": "string",
-    "reason": "string",
-    "notes": "string",
-    "cost": "number"
+  "poznamka_zmeny_oproti_v0": "Původní model (Deworming, Vaccination, výška, ownerId, ryba/kůň) byl sloučen do Reminder.history a Pet.weights; druh 'ryba' a 'kůň' appka nenabízí.",
+  "supabase_tl_tabulky": {
+    "domácnost a sdílení": [
+      "tl_households",
+      "tl_household_members (limit 6, trigger tl_private.check_member_limit)",
+      "tl_invites",
+      "tl_pet_link_requests (párování podle čipu)",
+      "tl_share_links",
+      "tl_loyalty_cards",
+      "tl_dose_logs"
+    ],
+    "komunita Tlapkaři": [
+      "tl_profiles",
+      "tl_tlapkari",
+      "tl_friend_tokens",
+      "tl_friendships",
+      "tl_feed_events",
+      "tl_feed_reactions (paw|dot)",
+      "tl_challenges",
+      "tl_challenge_members",
+      "tl_challenge_progress",
+      "tl_daily"
+    ],
+    "růst a odměny": [
+      "tl_achievements",
+      "tl_referrals",
+      "tl_reward_ledger",
+      "tl_promo_codes (deny policy, nečitelné klientem)",
+      "tl_promo_redemptions"
+    ],
+    "útulky": [
+      "tl_shelters (12 ověřených)",
+      "tl_shelter_of_month",
+      "tl_adoptions"
+    ],
+    "příjmy v1.2": [
+      "tl_listings (promoted_until, zapisuje jen service role)",
+      "tl_purchases (zapisuje jen webhook RevenueCat)"
+    ]
   },
-  "Deworming": {
-    "id": "uuid",
-    "petId": "uuid",
-    "date": "date",
-    "product": "string",
-    "nextDue": "date"
+  "seed": {
+    "data/animals-seed.json": "druhy a plemena",
+    "data/vets-seed.json": "veterináři / nonstop",
+    "supabase/seed": "12 útulků, promo kódy",
+    "public (build)": "zverimexy 624, výběhy, pet-friendly (zatím prázdné)"
   },
-  "Vaccination": {
-    "id": "uuid",
-    "petId": "uuid",
-    "date": "date",
-    "type": "string",
-    "nextDue": "date"
-  },
-  "Document": {
-    "id": "uuid",
-    "petId": "uuid",
-    "type": "enum: faktura|pas|vyšetření|jiné",
-    "fileUrl": "string",
-    "ocrData": "json",
-    "uploadedAt": "datetime"
-  },
-  "Reminder": {
-    "id": "uuid",
-    "petId": "uuid",
-    "type": "enum: odčervení|očkování|kontrola",
-    "dueDate": "date",
-    "done": "boolean"
-  }
+  "mezery_a_poznamky": [
+    "Webhook /api/billing/revenuecat: doplnit NON_RENEWING_PURCHASE -> insert do tl_purchases.",
+    "tl_listings: chybí admin UI, zápis jen přes SQL / service role.",
+    "Pet-friendly seznam je prázdný, vyžaduje curated data.",
+    "Doplnit seed pro sample plemena (CZ top 30 psů/koček) – katalog je na main ve starší verzi.",
+    "Mazání účtu a Premium z promo/odměn vyžaduje SUPABASE_SERVICE_ROLE_KEY na serveru."
+  ]
 }

@@ -1,4 +1,4 @@
-# Tým MyPet CZ
+# Tým Tlapka.
 
 ## Role
 
@@ -6,7 +6,7 @@
 - **SEO Specialista** — klíčová slova, on-page SEO, obsahová strategie pro český trh
 - **Vedoucí vývoje** — architektura, datový model, roadmapa, code review
 - **Marketing** — strategie růstu, kanály, obsah
-- **Outbound / Sales** — oslovování e-shopů s granulemi, affiliate nabídky, kontaktování veterin (Granulebardog.cz 7%, SuperKotlik.cz 11%, Happypet.cz remarketing)
+- **Outbound / Sales** — oslovování e-shopů s granulemi, affiliate nabídky, kontaktování veterin (Zoohit, SUPERZOO, Dobrá miska, Krmivo-Brit)
 - **QA Tester** — testování funkčnosti, UX, bugy, předání majiteli
 
 ## Pravidla
