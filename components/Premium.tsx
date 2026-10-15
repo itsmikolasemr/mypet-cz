@@ -15,7 +15,7 @@ export const PERKS: { e: string; t: string; d: string; soon?: boolean }[] = [
   { e: '🚫', t: 'Bez reklam', d: 'Čistá appka bez jediné reklamy' },
   { e: '📄', t: 'Zdravotní pas v PDF + QR', d: 'Očkování, léky a alergie pro veterináře, hlídání či cestu' },
   { e: '💰', t: 'Přehled výdajů', d: 'Kolik stojí péče – po měsících a po mazlíčcích' },
-  { e: '🐾', t: 'Neomezeně mazlíčků', d: `Zdarma ${FREE.pets}, s Premium kolik chceš` },
+  { e: '🐾', t: 'Neomezený počet mazlíčků', d: `Zdarma ${FREE.pets}, s Premium kolik chceš` },
 ];
 /** Comparison table rows: [feature, free, premium, family] */
 const COMPARE: [string, string, string, string][] = [

@@ -200,7 +200,7 @@ export function PetDetail({ id, back, ask }: { id: string; back: () => void; ask
     <div>
       <div className="sticky z-30 flex items-center justify-between mb-4 -mx-1 px-1.5 py-1.5 rounded-full hdr backdrop-blur-2xl ring-1 ring-ink/5 dark:ring-white/10 shadow-card dark:shadow-card-d" style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}>
         <button onClick={back} className="press flex items-center gap-1 text-primary font-semibold pl-2 pr-3 min-h-[44px] rounded-full"><Icon name="back" /> Mazlíčci</button>
-        <button onClick={() => setEdit(true)} className="press flex items-center gap-1.5 text-primary font-semibold px-3 min-h-[44px] rounded-full"><Icon name="edit" className="w-4 h-4" /> Upravit</button>
+        <button onClick={() => setEdit(true)} className="press flex items-center gap-1.5 text-primary font-semibold px-3 min-h-[44px] min-w-[44px] justify-center rounded-full"><Icon name="edit" className="w-4 h-4" /> Upravit</button>
       </div>
       {ambient && <div aria-hidden className="fixed inset-x-0 top-0 h-[55dvh] -z-10 pointer-events-none transition-opacity duration-700" style={{ background: `radial-gradient(100% 70% at 30% 0%, ${ambient}66, transparent 70%)` }} />}
       <div className="flex items-center gap-4 mb-4">
@@ -614,7 +614,8 @@ export function Onboarding() {
         {step === 1 && <>
           <h1 className="text-[24px] leading-tight font-bold tracking-tight mb-5">Kdo je tvůj mazlíček?</h1>
           <label className="block text-sm font-semibold mb-1.5" htmlFor="ob-name">Jméno</label>
-          <input id="ob-name" name="obName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Např. Max" autoComplete="off" className="w-full rounded-2xl px-4 py-3.5 text-[16px] bg-surface dark:bg-surface-d ring-1 ring-ink/10 dark:ring-white/10 outline-none focus:ring-2 focus:ring-primary mb-5" />
+          <input id="ob-name" name="obName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Např. Max" autoComplete="off" aria-describedby="ob-name-hint" className={`w-full rounded-2xl px-4 py-3.5 text-[16px] bg-surface dark:bg-surface-d ring-1 ring-ink/10 dark:ring-white/10 outline-none focus:ring-2 focus:ring-primary ${name.trim() ? 'mb-5' : 'mb-1.5'}`} />
+          {!name.trim() && <p id="ob-name-hint" className="text-[13px] text-muted mb-5 leading-snug">Napiš jméno mazlíčka, pak můžeš pokračovat.</p>}
           <p className="text-sm font-semibold mb-1.5" id="ob-sp">Druh</p>
           <div role="radiogroup" aria-labelledby="ob-sp" className="grid grid-cols-4 gap-2 mb-5">
             {SPECIES.map((x) => <button key={x.id} role="radio" aria-checked={species === x.id} data-species={x.id} onClick={() => { setSpecies(x.id); setPicked({}); }} className={`press rounded-2xl py-2.5 flex flex-col items-center gap-1 text-[12px] font-semibold ring-2 ${species === x.id ? 'ring-primary bg-primary/15 text-[#1A4F86] dark:text-primary' : 'ring-transparent bg-surface dark:bg-surface-d'}`}><Glyph name={SPECIES_GLYPH[x.id]} className="w-7 h-7" />{x.name}</button>)}

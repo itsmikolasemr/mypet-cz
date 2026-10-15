@@ -14,7 +14,7 @@ import {
 import { renderSticker, renderStory, STICKERS, toBlob } from '@/lib/story';
 import { avatarDataUrl, avatarImage } from '@/lib/avatar';
 import { zip } from '@/lib/zip';
-import { Button, Card, Sheet } from './ui';
+import { Button, Card, Icon, Sheet } from './ui';
 import { Emo, GT } from './glyphs';
 import { ask, notice, toast } from './feedback';
 import { tr } from '@/lib/i18n';
@@ -76,13 +76,14 @@ export function CoOwnerCard({ pet }: { pet: Pet }) {
   };
   return (
     <Card className="p-4 space-y-3">
-      <H e="👨‍👩‍👧" t="Párový režim" sub={`Starejte se o ${pet.name} spolu: kdo venčil, kdo krmil, kdo dal lék.`} />
+      <H e="👨‍👩‍👧" t="Párový režim" sub={`Pečuj o ${pet.name} spolu s partnerem: kdo venčil, kdo krmil, kdo dal lék.`} />
       <Button variant="soft" className="w-full" onClick={invite}><Emo e="🔳" className="w-5 h-5" /> Pozvat partnera (QR)</Button>
       {inv && <div className="text-center" data-invite><img src={inv.img} alt="QR pozvánka" className="w-44 h-44 mx-auto rounded-xl" /><p className="text-[13px] mt-1">Kód <b className="tracking-widest">{inv.code}</b> · platí 7 dní</p></div>}
-      <details className="text-[13px]"><summary className="cursor-pointer min-h-[44px] flex items-center font-semibold">Máte stejného mazlíčka? Požádat podle čipu</summary>
+      <details className="text-[13px]"><summary className="press cursor-pointer min-h-[44px] w-full rounded-2xl px-4 flex items-center justify-center gap-2 font-semibold text-[14px] bg-primary/15 text-primary-d dark:text-primary list-none [&::-webkit-details-marker]:hidden"><Icon name="plus" className="w-4 h-4" />Požádat podle čipu</summary>
+        <p className="text-[13px] text-muted mt-2">Máš stejného mazlíčka? Zadej číslo čipu.</p>
         <div className="flex gap-2 mt-1"><input aria-label="Číslo čipu" inputMode="numeric" className={inp} value={chip} onChange={(e) => setChip(e.target.value)} placeholder="15 číslic" />
           <Button disabled={chip.replace(/\D/g, '').length !== 15} onClick={byChip}>Požádat</Button></div>
-        <p className="text-muted mt-1">Shoda čipu jen navrhne propojení. Majitel ho musí schválit, nikdo neuvidí data jen podle čipu.</p>
+        <p className="text-muted mt-1">Shoda čipu jen navrhne propojení. Majitel ho musí schválit, nikdo neuvidí tvoje data jen podle čipu.</p>
       </details>
       {reqs.length > 0 && <div className="space-y-2" data-link-requests><p className="text-[13px] font-semibold">Žádosti o propojení</p>
         {reqs.map((r) => <div key={r.id} className="flex items-center gap-2 text-[13px]"><span className="flex-1">{r.requester_name || 'Někdo'} chce spoluspravovat mazlíčka</span>
