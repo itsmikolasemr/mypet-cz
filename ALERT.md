@@ -1,16 +1,16 @@
 # ALERT — MyPet CZ
 
-**Datum a čas:** 2026-10-14 10:13 CEST
+**Datum a čas:** 2026-10-15 10:10 CEST
 
 ## Co je hotové
 
-- MVP: profily mazlíčků (CRUD), zdravotní záznamy (návštěvy, odčervení, očkování) + timeline, připomínky, základní dokumenty (metadata)
+- MVP: profily mazlíčků (CRUD s localStorage), zdravotní záznamy (návštěvy, odčervení, očkování) + timeline, připomínky (přidávání a označení hotovo), základní dokumenty (metadata: typ, název, poznámky)
 - UI komponenty: PetCard, ReminderCard, DocumentCard, HealthTimeline, PetForm, ReminderForm, HealthForm, DocumentForm, EmergencyCard, EmergencyVets
-- Seznam non-stop veterinářů s filtrem podle města + emergency karta (QR placeholder)
-- Next.js scaffold + localStorage storage, seed data, datové schéma
-- Podpůrná dokumentace, SEO sample průvodce, e-mail šablony
+- Seznam non-stop veterinářů s filtrem podle města + emergency karta (QR placeholder, klik na mazlíčka)
+- Next.js scaffold (app/, package.json, Tailwind), seed data (zvířata, veterináři), datové schéma, podpůrná dokumentace, SEO sample průvodce, e-mail šablony
+- Vizuální identita a základní funkčnost připraveny k lokálnímu testování (`npm run dev`)
 
-Projekt je ve fázi **funkční, ale ne hotový** — připraven k lokálnímu testování (`npm run dev`). Chybí reálná mapa, QR generátor, PDF export, OCR, nasazení.
+Projekt je ve fázi **funkční, ale ne hotový** — připraven k lokálnímu testování. Chybí reálná interaktivní mapa (Leaflet/Mapbox), skutečný QR generátor, PDF export profilu, OCR dokumentů, affiliate ověření a veřejné nasazení.
 
 ---
-*Automaticky vygenerováno dohledovým botem.*
+*Automaticky aktualizováno dohledovým botem.*
