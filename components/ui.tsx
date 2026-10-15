@@ -199,7 +199,7 @@ export function DateInput({ value, onChange, min, max, required, label }: { valu
     const n = { ...part, [k]: v }; if (n.d && Number(n.d) > (n.y && n.m ? new Date(Number(n.y), Number(n.m), 0).getDate() : 31)) n.d = '';
     setPart(n); if (n.y && n.m && n.d) onChange(`${n.y}-${n.m}-${n.d}`); else if (!n.y && !n.m && !n.d) onChange('');
   };
-  const sel = 'min-h-[48px] rounded-2xl px-2 bg-ink/5 dark:bg-white/10 text-[15px] font-medium appearance-none text-center';
+  const sel = 'min-w-0 w-full min-h-[48px] rounded-2xl px-2 bg-ink/5 dark:bg-white/10 text-[15px] font-medium appearance-none text-center';
   return (
     <span className="grid grid-cols-[1fr_2fr_1.4fr] gap-2" role="group" aria-label={label ?? 'Datum'} data-date-input>
       <select aria-label="Den" required={required} className={sel} value={part.d} onChange={(e) => upd('d', e.target.value)}><option value="">den</option>{Array.from({ length: dim }, (_, i) => String(i + 1).padStart(2, '0')).map((v) => <option key={v} value={v}>{Number(v)}.</option>)}</select>

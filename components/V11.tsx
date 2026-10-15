@@ -239,7 +239,7 @@ export function TravelChecklist({ pet }: { pet: Pet }) {
   return (
     <Card className="p-4 space-y-3" >
       <p className="font-semibold"><GT t="✈️ Cestovní checklist" /></p>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2">
         <Field label="Kam"><select className={inputCls} value={dest} onChange={(e) => setDest(e.target.value as Dest)}><option value="eu">EU (běžně)</option><option value="special">FI, IE, MT, NO</option><option value="uk">Velká Británie</option><option value="third">Mimo EU</option></select></Field>
         <Field label="Odjezd"><DateInput value={date} onChange={(v) => setDate(v)} /></Field>
       </div>
