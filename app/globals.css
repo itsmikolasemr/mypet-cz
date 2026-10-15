@@ -228,3 +228,4 @@ html:not(.dark) .text-primary-d { color: #24609F; }
 html.glass .text-primary-d { color: #1A4F86; }
 html.glass .leaflet-control-attribution { background: rgba(244,245,247,.9) !important; color: #2A2F36; }
 html.glass .leaflet-control-attribution a { color: #1A4F86; }
+html.dark .rar-tile .text-muted { color: #D2D6DC; }

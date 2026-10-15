@@ -132,11 +132,11 @@ export function BadgesCard({ pet }: { pet: Pet }) {
       {nb && !pet.memorial && <p className="text-[13px] mb-2 tabular-nums">{tr('Nejblíž:')} <b>{tr(nb.b.name)}</b> · {nb.p.have}/{nb.p.need}</p>}
       {!list.length ? <p className="text-[13px] text-muted">Zatím žádný. První získáš odškrtnutím úkolu v Tlapka Dni.</p> : (
         <ul className="grid grid-cols-2 gap-2">{list.map((b) => { const got = earned.has(b.id); const p = progress(b, data, pet);
-          return <li key={b.id} className={`rounded-2xl p-2.5 ${RAR_CLS[b.rarity]} ${got ? '' : 'border border-dashed border-ink/25 dark:border-white/30'}`}>
+          return <li key={b.id} className={`rar-tile rounded-2xl p-2.5 ${RAR_CLS[b.rarity]} ${got ? '' : 'border border-dashed border-ink/25 dark:border-white/30'}`}>
             <p className="text-[13px] font-bold leading-tight">{b.name}</p>
-            <p className="text-[12px] uppercase tracking-[0.06em] font-bold text-[#2C68A8] dark:text-[#A9CEF3] mt-0.5">{RARITY[b.rarity].name}</p>{!b.noReward && RARITY[b.rarity].reward && <p className="text-[12px] font-semibold text-muted dark:text-[#C9CDD3]">{RARITY[b.rarity].reward}</p>}
-            <p className="text-[12px] text-muted dark:text-[#C9CDD3] leading-snug mt-0.5">{b.desc}</p>
-            {!got && <p className="text-[12px] text-muted dark:text-[#C9CDD3] mt-0.5">{b.server ? 'ověřuje server' : `${Math.min(p.have, p.need)}/${p.need}`}</p>}
+            <p className="text-[12px] uppercase tracking-[0.06em] font-bold text-[#2C68A8] dark:text-[#A9CEF3] mt-0.5">{RARITY[b.rarity].name}</p>{!b.noReward && RARITY[b.rarity].reward && <p className="text-[12px] font-semibold text-muted">{RARITY[b.rarity].reward}</p>}
+            <p className="text-[12px] text-muted leading-snug mt-0.5">{b.desc}</p>
+            {!got && <p className="text-[12px] text-muted mt-0.5">{b.server ? 'ověřuje server' : `${Math.min(p.have, p.need)}/${p.need}`}</p>}
           </li>; })}</ul>
       )}
       <label className="flex items-center gap-2 text-[13px] mt-3 min-h-[44px]"><input type="checkbox" checked={!!pet.memorial} onChange={(e) => patch((d) => ({ ...d, pets: d.pets.map((x) => (x.id === pet.id ? { ...x, memorial: e.target.checked ? new Date().toISOString().slice(0, 10) : undefined } : x)) }))} /> Vzpomínkový profil (bez připomínek odznaků)</label>
