@@ -12,7 +12,7 @@ Očkování chrání tvého mazlíčka před závažnými nemocemi (vzteklina, p
 - Panleukopenie, rhinotracheitida, caliciviróza
 - Vzteklina doporučena
 
-## V Tlapka.
+## V Tlapce
 Zaznamenej očkování do profilu, nastav připomínku na další termín a měj vše přehledně na jednom místě.
 
 *Tento text je vzorový SEO obsah. Nejedná se o veterinární radu — vždy konzultuj s veterinářem.*

@@ -11,6 +11,7 @@
 - [x] Brand Tlapka., font Inter, EN lokalizace
 - [x] Doplňkové příjmy: PDF karta 79 Kč, affiliate krmivo, Propagováno, QR přívěsek
 - [ ] Pojištění (po právní kontrole), sponzorovaný obsah (od ~5 000 MAU)
+- [x] Report 8 + UX opravy B1–B4, testovací Premium (lokální)
 ## Před vydáním (blokery)
 - [ ] Právník (VOP, GDPR, pojištění) · [ ] RevenueCat · [ ] service role key · [ ] test na zařízeních · [ ] affiliate ID
 ## Termíny

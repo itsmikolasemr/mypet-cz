@@ -10,9 +10,9 @@ Pravidelné vážení pomáhá odhalit zdravotní problémy dřív, než se proj
 - **Dospělí mazlíčci**: každý měsíc
 - **Starší nebo nemocní**: častěji podle rady veterináře
 
-## Jak zaznamenat v Tlapka.
+## Jak zaznamenat v Tlapce
 
-V profilu mazlíčka můžete pravidelně aktualizovat váhu. Aplikace zobrazí jednoduchou křivku (plánovaná funkce) a upozorní na výrazné změny.
+V profilu mazlíčka můžeš pravidelně zapisovat váhu. Appka zobrazí jednoduchou křivku a upozorní na výrazné změny.
 
 **Tip:** Kombinujte se záznamy krmení a zdravotních návštěv pro kompletní přehled.
 

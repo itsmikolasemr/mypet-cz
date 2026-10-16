@@ -11,10 +11,10 @@
 - Spot-on (Stronghold, Advocate)
 - Pastes pro štěňata
 
-## Proč sledovat v Tlapka.?
+## Proč sledovat v Tlapce?
 Aplikace automaticky vytvoří připomínku podle posledního odčervení a doporučeného intervalu. Žádné zapomenuté termíny.
 
-**Tip:** Po záznamu odčervení můžete dostat doporučení vhodných produktů od partnerů.
+**Tip:** Po záznamu odčervení ti může appka nabídnout odkazy na partnerské obchody (označené jako affiliate).
 
 ---
 *Tento obsah je šablona pro budoucí stránku /pruvodce/odcerveni. Optimalizováno na klíčová slova: odčervení kočky, odčervení psa, jak často odčervovat.*

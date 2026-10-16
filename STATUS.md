@@ -1,6 +1,6 @@
 # Tlapka. — Status
 
-Poslední aktualizace: 15. 10. 2026 (tým MyPet CZ / Tlapka.)
+Poslední aktualizace: 16. 10. 2026 (tým MyPet CZ / Tlapka.)
 
 ## Verdikt: HOTOVO K TESTOVÁNÍ (v1.2)
 Funkčně i vizuálně je v1.2 hotová pro vnitřní testování a testovací distribuci. **Není hotová k veřejnému vydání** – viz „Blokováno“. Nic není veřejně nasazeno.
@@ -15,6 +15,12 @@ Funkčně i vizuálně je v1.2 hotová pro vnitřní testování a testovací di
 - Komunita Tlapkaři bez sbírek; **Dar z Tlapky** 5 % příjmů z Premium; 12 ověřených útulků.
 - Firma ABEGRIN s.r.o. (IČO 29262585). Kontakt dočasně `emr@itsmedesign.cz`. Apple Wallet odložen.
 - Hosting: Cloudflare registrace byla odmítnuta (ochrana proti robotům) → pro testování dočasný tunel (`cloudflared`); Netlify nasazení možné od **23. 10.** Supabase `owveqkchmcutoqlsjlyb` – migrace v1.1 a v1.2 nasazeny.
+
+## Změny 16. 10.
+- Report 8 (nezávislý audit): bez nálezů; UX opravy B1–B4 hotové (`e2fbfda`), viz QA.md.
+- Testovací Premium: příznak `NEXT_PUBLIC_TEST_PREMIUM` (lokální entitlement bez AI), výchozí vypnuto (`d01e27e`).
+- Sjednoceno tykání v průvodcích `content/`.
+- Stav GitHubu: PR #1 otevřený, issue #2–#10 otevřená (nic nevyřešeno).
 
 ## Hotovo
 Párový režim, odznaky (31), Story/Wrapped, avatar, nálepky, Tlapkaři (kamarádi QR, feed, výzvy, pozvánky/promo), útulky, check-in ve výběhu, cestovní pas PDF CS/EN/DE, checklist, EN lokalizace (1 262 klíčů), 3 motivy, Tlapka Den widget (návrh). Příjmy: PDF karta, affiliate krmivo při docházející zásobě, štítek Propagováno, QR přívěsek (placeholder), sponzorovaný slot a pojištění (vypnuté). QA 5–7 viz `QA.md`. Mockupy 34 obrazovek × 3 motivy + EN (mimo repo).

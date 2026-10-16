@@ -31,3 +31,18 @@ Podrobné zprávy: `report5.md` (v1.1 gate), `report6.md` (v1.2 růst), `report7
 - [ ] `PREMIUM_DEV_MODE` vypnuto, žádné klíče v repu
 - [ ] Zapnout Leaked password protection v Supabase Auth
 - [ ] Všechny texty v češtině bez tvrdých oranžových/emoji (automatický audit)
+
+## Report 8 (15. 10., nezávislý test + UX review)
+Audit 390 px × CS/EN × 3 motivy × ~25 obrazovek + čistý profil: **bez nálezů**, 0 JS chyb. Neověřeno: účty a/b/c, WebKit, 360/430 px, Android, AI a mazání účtu.
+Návrhy a jejich stav (commit `e2fbfda`):
+| # | Návrh | Stav |
+|---|---|---|
+| B1 | Onboarding: „Další“ bez jména bez vysvětlení | opraveno – nápověda u jména |
+| B2 | Mapa: „Odkud jsou data?“ nevypadá jako odkaz | opraveno – rozbalovací odkaz |
+| B3 | Sdílet: „Požádat podle čipu“ bez podoby tlačítka a vykání | opraveno – tlačítko, tykání |
+| B4 | Premium: „Neomezeně mazlíčků“ | opraveno – „Neomezený počet mazlíčků“ |
+| A1 | Mapa: názvy z OSM dat bez diakritiky | opraveno u veterin (diakritika vets); zbytek je z dat |
+Dál: audit Premium obrazovek (checklist, plány) doplnit do audit8; výkon (LCP 4,2 s) až po vydání.
+
+## Testovací Premium (commit `d01e27e`)
+`NEXT_PUBLIC_TEST_PREMIUM=1` při buildu zapne jen lokální testovací entitlement (bez serveru, bez AI). **Výchozí je vypnuto**, v repu není žádný `.env` ani `netlify.toml` s tímto příznakem. Nenastavovat pro store/produkční build.
