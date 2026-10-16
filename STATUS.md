@@ -1,6 +1,6 @@
 # MyPet CZ — Status
 
-Poslední aktualizace: 2026-10-14 10:20
+Poslední aktualizace: 2026-10-16 10:15
 
 ## Hotovo
 - Repo vytvořeno (itsmikolasemr/mypet-cz)
@@ -15,7 +15,7 @@ Poslední aktualizace: 2026-10-14 10:20
 - **EmergencyVets** (filtr podle města, call tlačítka)
 - **EmergencyCard** (pohotovostní karta mazlíčka — QR placeholder vylepšen)
 - SEO.md (rozšířeno), QA.md
-- Sample SEO obsah: content/pruvodce-odcerveni.md + content/pruvodce-ockovani.md + content/pruvodce-vaha.md + **content/pruvodce-pohotovost.md**
+- Sample SEO obsah: content/pruvodce-odcerveni.md + content/pruvodce-ockovani.md + content/pruvodce-vaha.md + content/pruvodce-pohotovost.md + **content/pruvodce-dokumenty.md**
 - Next.js scaffold + plný CRUD profily mazlíčků s localStorage
 - CRUD zdravotních záznamů (návštěvy, odčervení, očkování) + timeline
 - Plné UI připomínek (přidávání, označení hotovo)
@@ -24,9 +24,9 @@ Poslední aktualizace: 2026-10-14 10:20
 - UI emergency karta (klik na mazlíčka)
 
 ## Běží
-- SEO obsahové stránky (sample průvodce + nový pohotovostní)
+- SEO obsahové stránky (sample průvodce + nový pohotovostní + dokumenty)
 - Reálná mapa (Leaflet/Mapbox) + aktuální data klinik — issue navrženo
-- Skutečný QR generátor — issue navrženo
+- Skutečný QR generátor — **issue #11 vytvořeno**
 - Export PDF profilu — issue navrženo
 - OCR dokumentů
 - Affiliate ověření
@@ -40,7 +40,7 @@ Poslední aktualizace: 2026-10-14 10:20
 ## HOTOVO K TESTOVÁNÍ
 MVP (profily, zdravotní záznamy, připomínky, základní dokumenty) + seznam non-stop veterin a emergency karta je vizuálně a funkčně připravené k lokálnímu testování. 
 
-**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm run dev`). Nic není nasazeno veřejně. Klikni na mazlíčka pro emergency kartu, dole je seznam pohotovostních klinik. Nově rozšířen katalog plemen a přidán průvodce pohotovostních veterinářů.
+**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm run dev`). Nic není nasazeno veřejně. Klikni na mazlíčka pro emergency kartu, dole je seznam pohotovostních klinik. Nově přidán průvodce správou dokumentů a otevřeno issue #11 na reálné generování QR kódu.
 
 ## Další krok
-Reálná interaktivní mapa, generování QR kódu, PDF export. Issues navrženy (formuláře k potvrzení).
+Implementace reálného QR generátoru (issue #11), reálná interaktivní mapa, PDF export.
