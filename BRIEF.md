@@ -1,13 +1,13 @@
-# MyPet CZ — Projektový brief
+# Tlapka. — Projektový brief (dříve MyPet CZ)
 
 ## Vize
-Česká aplikace pro majitele mazlíčků. Zdravotní záznamy, dokumenty, mapa non-stop veterin v ČR, integrace se zvířecím pasem a CEP (Centrální evidence psů, spuštěna 1. 7. 2026). Monetizace přes affiliate a reklamy od e-shopů s granulemi.
+Česká aplikace pro majitele mazlíčků. Zdravotní záznamy, dokumenty, mapa non-stop veterin v ČR, integrace se zvířecím pasem a CEP (Centrální evidence psů, spuštěna 1. 7. 2026). Monetizace: Premium (99 Kč/měs, 699 Kč/rok, Rodina 999 Kč/rok), jednorázová PDF karta 79 Kč, affiliate na krmivo, propagované výpisy, později pojištění (po právní kontrole). Firma ABEGRIN s.r.o. Aktuální stav viz STATUS.md, značka BRAND.md.
 
 ## Tým (role v repu)
-- **Brand manager** — vizuální identita: paleta, typografie, logo, OG karty, favicony, tón komunikace. Styl: čistý, přátelský, ne cartoonový, ne neonový. Žádná fialová.
+- **Brand manager** — vizuální identita: paleta, typografie, logo, OG karty, favicony, tón komunikace. Značka Tlapka., Inter, baby blue, žádná oranžová/fialová/emoji.
 - **SEO specialista** — klíčová slova (odčervení kočky, veterinární pas, non-stop veterinář Praha/Brno), struktura obsahu, meta tagy.
 - **Vedoucí vývoje** — architektura, datový model, roadmapa, code review.
-- **Marketing** — oslovování e-shopů s granulemi (Granulebardog.cz 7 % affiliate, SuperKotlik.cz 11 %, Happypet.cz remarketing), obsah pro sociální sítě.
+- **Marketing** — oslovování e-shopů s granulemi (aktuálně Zoohit/Awin, SUPERZOO, Dobrá miska, Krmivo-Brit), obsah pro sociální sítě.
 - **QA / tester** — testuje každou fázi před předáním majiteli.
 
 ## Funkční rozsah (MVP)

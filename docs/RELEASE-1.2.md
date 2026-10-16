@@ -48,3 +48,7 @@ Stav k 15. 10. 2026, větev `v1.2` (lokální commity, nic není pushnuté ani n
 
 ## 6. Kde testovat mimo Netlify
 Viz sekce „Hosting“ v `/workspace/tlapka-qa/report7.md` – doporučení: **Cloudflare Pages/Workers** (připravené `deploy/cloudflare/`, lokálně ověřeno přes `wrangler dev`), pro okamžité sdílení **cloudflared quick tunnel**, pro nativní test **TestFlight / Play internal testing**.
+
+## 7. Testovací Premium bez backendu (jen testovací build)
+- `NEXT_PUBLIC_TEST_PREMIUM=1` při `next build` zapne **čistě lokální** testovací entitlement (365 dní, token `local-test`) bez serveru – paywall tlačítko „Vyzkoušet 14 dní zdarma“ ho aktivuje. Nefunguje AI (Aivet, Druhý názor, AI sken – server token odmítne), serverové limity ani zápis Premium do DB. **Nikdy nenastavovat pro produkční/store build** (výchozí je vypnuto).
+- Alternativa na přihlášených účtech: promo kód **TLAPKATEST** (Nastavení → Pozvi / Promo kód; 31 dní, max 1 kód na účet, platí do 14. 11. 2026) – Premium z DB; reklamy/promo karty se teď skrývají i při tomto cloud Premium.

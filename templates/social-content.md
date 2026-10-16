@@ -1,10 +1,18 @@
-# Sociální obsah — MyPet CZ
+# Sociální obsah — Tlapka.
 
-## Post 1 (Instagram/Facebook)
-"Odčervení už nezapomeneš. MyPet CZ ti připomene vše důležité pro tvého mazlíčka — odčervení, očkování i návštěvy u veteriny."
+Tón: česky, tykání, klidně, bez emoji a srdíček. Hashtagy max. 4.
+
+## Post 1
+„Odčervení už nezapomeneš. Tlapka. ti připomene odčervení, očkování i kontroly u veterináře.“
 
 ## Post 2
-"Zvířecí pas a faktury na jednom místě. Nahraj dokumenty a měj přehled kdykoliv."
+„Pas, doklady a faktury tvého mazlíčka na jednom místě. A QR kód, který ukážeš na hranicích.“
+
+## Post 3 (Wrapped)
+„Tvůj rok s mazlíčkem v číslech. Zkus Tlapka Wrapped a pošli ho kamarádům.“
+
+## Post 4 (Dar z Tlapky)
+„5 % z předplatného jde každý měsíc jednomu útulku. Tento měsíc: {{utulek}}.“
 
 ## Hashtagy
-#MyPetCZ #Mazlíček #Veterina #Odčervení #Pes #Kočka
+#Tlapka #Mazlíček #Veterina #Pes

@@ -36,7 +36,7 @@ export function FoodStockCard({ pet }: { pet: Pet }) {
   return (
     <Card className="p-4 space-y-2" >
       <div data-food className="flex items-start gap-2"><div className="flex-1"><H e="🍽️" t="Zásoba krmiva" sub={f ? `${f.name} · ${f.bagKg} kg · ${f.dailyG} g denně` : 'Zadej balení a denní dávku, Tlapka pohlídá, kdy dochází.'} /></div>
-        <button className="text-[13px] font-semibold text-primary min-h-[44px] px-2 -mr-2" onClick={() => setEdit(true)}>{f ? 'Upravit' : 'Nastavit'}</button></div>
+        <button className="text-[13px] font-semibold text-primary min-h-[44px] min-w-[44px] px-2 -mr-2" onClick={() => setEdit(true)}>{f ? 'Upravit' : 'Nastavit'}</button></div>
       {left != null && <p data-food-left className={`text-[14px] font-semibold ${low ? 'text-[#B3261E] dark:text-[#F2B8B5]' : ''}`}>{left === 0 ? 'Krmivo už mělo dojít' : `Vystačí ještě ${left} ${left === 1 ? 'den' : left < 5 ? 'dny' : 'dní'}`}</p>}
       {low && shops.length > 0 && <div data-food-shops className="space-y-1.5 pt-1">
         <p className="text-[13px] text-muted">Doobjednat:</p>

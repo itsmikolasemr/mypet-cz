@@ -10,3 +10,8 @@
 - Affiliate: Granulebardog 7%, SuperKotlik 11%, Happypet remarketing 20%+ tržeb
 - Non-stop veterin: Medicanima Praha 252 252 111, Zvíře+ Brno 778 011 112, Erika Praha 284 821 784
 - Otevřené: finální název, paleta, tech stack (Next.js?), hosting (Netlify?), doména
+
+## 2026-10-15
+- Přejmenováno na Tlapka. (ABEGRIN s.r.o.); font Inter; Cloudflare registrace odmítnuta → dočasný tunel, Netlify od 23. 10.
+- `main` má jinou historii než `v1.2` — sloučení čeká na rozhodnutí majitele.
+- Otevřené: právník (170/2018 Sb.), affiliate ID, RevenueCat, service role key, test na iPhonu.

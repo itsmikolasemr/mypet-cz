@@ -39,10 +39,13 @@ export interface PurchaseProvider {
 export async function authHeader(): Promise<Record<string, string>> {
   try { const { auth } = await import('./cloud'); const s = await auth.session(); return s ? { Authorization: `Bearer ${s.access_token}` } : {}; } catch { return {}; }
 }
+/** Build-time switch for the public TEST build (NEXT_PUBLIC_TEST_PREMIUM=1): a purely local test entitlement, no server, no AI. Off by default; never set it for store/production builds. */
+export const TEST_PREMIUM_LOCAL = process.env.NEXT_PUBLIC_TEST_PREMIUM === '1';
 export const MockProvider: PurchaseProvider = {
   name: 'test',
-  available: async () => { try { const r = await fetch(`${API_BASE}/api/entitlement`); return !!(await r.json()).devMode; } catch { return false; } },
+  available: async () => { if (TEST_PREMIUM_LOCAL) return true; try { const r = await fetch(`${API_BASE}/api/entitlement`); return !!(await r.json()).devMode; } catch { return false; } },
   async purchase(plan, deviceId) {
+    if (TEST_PREMIUM_LOCAL) return { plan, exp: Date.now() + 365 * 864e5, token: 'local-test', test: true, source: 'test' };
     const r = await fetch(`${API_BASE}/api/entitlement`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(await authHeader()) }, body: JSON.stringify({ deviceId, plan, test: true }) });
     const j = await r.json();
     if (!r.ok || !j.token) throw new Error(j.error === 'test_mode_off' ? 'Testovací režim je vypnutý.' : 'Aktivace selhala.');
