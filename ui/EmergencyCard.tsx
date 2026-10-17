@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Pet } from '../lib/types';
 
 interface Props {
@@ -10,8 +11,14 @@ interface Props {
 }
 
 export function EmergencyCard({ pet, ownerName = 'Majitel', ownerPhone = '+420 XXX XXX XXX' }: Props) {
-  // TODO: Nahradit placeholder reálným QR (issue: generování QR). Data: jméno, čip, kontakt, odkaz.
-  const qrData = `${pet.name}|${pet.microchip || 'bez čipu'}|${ownerPhone}`;
+  const qrValue = JSON.stringify({
+    name: pet.name,
+    species: pet.species,
+    breed: pet.breed || '',
+    microchip: pet.microchip || '',
+    contact: ownerPhone,
+    owner: ownerName,
+  });
 
   return (
     <div className="rounded-2xl bg-gradient-to-br from-[#2E7D6F] to-[#1a5c52] text-white p-5 shadow-lg max-w-sm mx-auto">
@@ -51,12 +58,10 @@ export function EmergencyCard({ pet, ownerName = 'Majitel', ownerPhone = '+420 X
         </div>
       </div>
       <div className="mt-4 text-center">
-        <div className="w-28 h-28 mx-auto bg-white rounded-lg flex flex-col items-center justify-center text-[#2E7D6F] text-xs font-mono border-2 border-dashed border-[#2E7D6F]/30">
-          <span>QR kód</span>
-          <span className="text-[10px] mt-1 opacity-60">brzy</span>
-          <span className="text-[9px] mt-1 px-1 break-all">{qrData.slice(0, 20)}...</span>
+        <div className="w-32 h-32 mx-auto bg-white rounded-lg flex items-center justify-center p-2">
+          <QRCodeSVG value={qrValue} size={112} level="M" />
         </div>
-        <p className="text-xs opacity-75 mt-2">Pro pečovatele — naskenujte pro rychlý přístup k profilu</p>
+        <p className="text-xs opacity-75 mt-2">Naskenujte pro rychlý přístup k údajům mazlíčka</p>
       </div>
     </div>
   );
