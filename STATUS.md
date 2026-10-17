@@ -1,6 +1,6 @@
 # MyPet CZ — Status
 
-Poslední aktualizace: 2026-10-16 10:15
+Poslední aktualizace: 2026-10-17 10:15
 
 ## Hotovo
 - Repo vytvořeno (itsmikolasemr/mypet-cz)
@@ -13,21 +13,20 @@ Poslední aktualizace: 2026-10-16 10:15
 - Sociální obsah (templates/social-content.md)
 - UI komponenty: PetCard, ReminderCard, DocumentCard, HealthTimeline, PetForm, ReminderForm, HealthForm, DocumentForm
 - **EmergencyVets** (filtr podle města, call tlačítka)
-- **EmergencyCard** (pohotovostní karta mazlíčka — QR placeholder vylepšen)
+- **EmergencyCard** (pohotovostní karta mazlíčka — **reálné QR generování hotové**)
 - SEO.md (rozšířeno), QA.md
-- Sample SEO obsah: content/pruvodce-odcerveni.md + content/pruvodce-ockovani.md + content/pruvodce-vaha.md + content/pruvodce-pohotovost.md + **content/pruvodce-dokumenty.md**
+- Sample SEO obsah: content/pruvodce-odcerveni.md + content/pruvodce-ockovani.md + content/pruvodce-vaha.md + content/pruvodce-pohotovost.md + **content/pruvodce-dokumenty.md** + **content/pruvodce-qr-karta.md**
 - Next.js scaffold + plný CRUD profily mazlíčků s localStorage
 - CRUD zdravotních záznamů (návštěvy, odčervení, očkování) + timeline
 - Plné UI připomínek (přidávání, označení hotovo)
 - **Základní nahrávání dokumentů (metadata: typ, název, poznámky) — bez reálného souboru a OCR**
 - UI mapa non-stop veterin (seznam s filtrem)
-- UI emergency karta (klik na mazlíčka)
+- UI emergency karta (klik na mazlíčka) + reálný QR
 
 ## Běží
-- SEO obsahové stránky (sample průvodce + nový pohotovostní + dokumenty)
-- Reálná mapa (Leaflet/Mapbox) + aktuální data klinik — issue navrženo
-- Skutečný QR generátor — **issue #11 vytvořeno**
-- Export PDF profilu — issue navrženo
+- SEO obsahové stránky (sample průvodce + nový QR průvodce)
+- Reálná mapa (Leaflet/Mapbox) + aktuální data klinik — issue k vytvoření
+- Export PDF profilu — issue otevřeno
 - OCR dokumentů
 - Affiliate ověření
 
@@ -38,9 +37,9 @@ Poslední aktualizace: 2026-10-16 10:15
 - Tech stack potvrzení (Next.js + Netlify doporučeno)
 
 ## HOTOVO K TESTOVÁNÍ
-MVP (profily, zdravotní záznamy, připomínky, základní dokumenty) + seznam non-stop veterin a emergency karta je vizuálně a funkčně připravené k lokálnímu testování. 
+MVP (profily, zdravotní záznamy, připomínky, základní dokumenty) + seznam non-stop veterin a emergency karta s reálným QR je vizuálně a funkčně připravené k lokálnímu testování. 
 
-**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm run dev`). Nic není nasazeno veřejně. Klikni na mazlíčka pro emergency kartu, dole je seznam pohotovostních klinik. Nově přidán průvodce správou dokumentů a otevřeno issue #11 na reálné generování QR kódu.
+**Majiteli:** Prosím o kontrolu a testování na lokálním Next.js (`npm install && npm run dev`). Nic není nasazeno veřejně. Klikni na mazlíčka pro emergency kartu s funkčním QR kódem. Nově přidán průvodce QR kartou.
 
 ## Další krok
-Implementace reálného QR generátoru (issue #11), reálná interaktivní mapa, PDF export.
+Implementace interaktivní mapy (Leaflet), PDF export, rozšíření SEO obsahu.
