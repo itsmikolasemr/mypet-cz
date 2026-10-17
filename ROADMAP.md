@@ -17,14 +17,14 @@
 - [x] Timeline zdravotní historie
 - [x] Základní dokumenty (metadata)
 - [ ] Export/sdílení profilu (PDF) — issue otevřeno
-- [x] QR emergency karta pro mazlíčka (UI placeholder hotový, generování QR zbývá — **issue #11**)
+- [x] QR emergency karta pro mazlíčka (reálné generování QR hotové)
 
 ## Fáze 2 — Mapa a komunita
 - [x] Seznam non-stop veterin v ČR (seed data + UI filtr)
-- [ ] Interaktivní mapa (Leaflet/Mapbox) — issue navrženo
+- [ ] Interaktivní mapa (Leaflet/Mapbox) — issue k vytvoření
 - [ ] Aktuální pohotovostní čísla (reálná data)
 - [ ] Affiliate: Granulebardog, SuperKotlik, Happypet
-- [x] SEO obsah: průvodci (sample odčervení + očkování + váha + pohotovost + **dokumenty** hotové)
+- [x] SEO obsah: průvodci (sample odčervení + očkování + váha + pohotovost + dokumenty + **QR karta** hotové)
 
 ## Fáze 3 — Integrace
 - [ ] CEP (Centrální evidence psů) integrace
