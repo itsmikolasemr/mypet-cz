@@ -1,6 +1,6 @@
 # ALERT — MyPet CZ
 
-**Datum a čas:** 2026-10-18 10:10 CEST
+**Datum a čas:** 2026-10-19 10:10 CEST
 
 ## Co je hotové
 
