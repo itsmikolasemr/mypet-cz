@@ -9,6 +9,8 @@ interface Vet {
   name: string;
   phone: string;
   address: string;
+  lat?: number;
+  lng?: number;
   note?: string;
 }
 
@@ -43,18 +45,30 @@ export function EmergencyVets() {
                 <p className="text-sm text-gray-500">{vet.city} · {vet.address}</p>
                 {vet.note && <p className="text-xs text-amber-600 mt-1">{vet.note}</p>}
               </div>
-              <a
-                href={`tel:${vet.phone.replace(/\s/g, '')}`}
-                className="bg-[#2E7D6F] text-white text-sm px-3 py-1.5 rounded-lg font-medium whitespace-nowrap"
-              >
-                {vet.phone}
-              </a>
+              <div className="flex flex-col items-end gap-2">
+                <a
+                  href={`tel:${vet.phone.replace(/\s/g, '')}`}
+                  className="bg-[#2E7D6F] text-white text-sm px-3 py-1.5 rounded-lg font-medium whitespace-nowrap"
+                >
+                  {vet.phone}
+                </a>
+                {vet.lat && vet.lng && (
+                  <a
+                    href={`https://www.google.com/maps?q=${vet.lat},${vet.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-[#2E7D6F] underline"
+                  >
+                    Mapa
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         ))}
         {filtered.length === 0 && <p className="text-sm text-gray-400">Žádné kliniky pro tento filtr</p>}
       </div>
-      <p className="text-xs text-gray-400">Data jsou ilustrativní. V produkci nahradit reálnými zdroji (kliniky, firem.cz).</p>
+      <p className="text-xs text-gray-400">Data jsou ilustrativní. V produkci nahradit reálnými zdroji (kliniky, firem.cz). Interaktivní Leaflet mapa připravena v dalším kroku.</p>
     </div>
   );
 }
