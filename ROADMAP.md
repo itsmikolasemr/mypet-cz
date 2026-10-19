@@ -20,11 +20,11 @@
 - [x] QR emergency karta pro mazlíčka (reálné generování QR hotové)
 
 ## Fáze 2 — Mapa a komunita
-- [x] Seznam non-stop veterin v ČR (seed data + UI filtr)
-- [ ] Interaktivní mapa (Leaflet/Mapbox) — issue k vytvoření
+- [x] Seznam non-stop veterin v ČR (seed data + UI filtr + mapové odkazy)
+- [ ] Interaktivní mapa (Leaflet/Mapbox) — issue k vytvoření / potvrzení
 - [ ] Aktuální pohotovostní čísla (reálná data)
 - [ ] Affiliate: Granulebardog, SuperKotlik, Happypet
-- [x] SEO obsah: průvodci (sample odčervení + očkování + váha + pohotovost + dokumenty + **QR karta** hotové)
+- [x] SEO obsah: průvodci (sample odčervení + očkování + váha + pohotovost + dokumenty + QR karta + **CEP** hotové)
 
 ## Fáze 3 — Integrace
 - [ ] CEP (Centrální evidence psů) integrace
