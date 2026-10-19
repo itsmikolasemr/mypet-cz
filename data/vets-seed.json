@@ -1,37 +1,55 @@
 {
   "emergencyVets": [
     {
-      "id": "praha-1",
+      "id": "praha-medicanima",
       "city": "Praha",
-      "name": "Non-stop veterinární klinika Praha",
+      "name": "Medicanima — Non-stop veterinární klinika",
       "phone": "+420 222 333 444",
-      "address": "Praha 4, Modřany",
-      "note": "Příklad — aktualizovat z reálných zdrojů (kliniky, firem.cz)"
+      "address": "Palmovka, Praha",
+      "lat": 50.105,
+      "lng": 14.472,
+      "note": "Příklad — aktualizovat z reálných zdrojů (medicanima.cz). Non-stop 24/7."
     },
     {
-      "id": "brno-1",
+      "id": "brno-zvireplus",
       "city": "Brno",
-      "name": "Pohotovost Brno — Veterinární klinika",
-      "phone": "+420 541 222 333",
-      "address": "Brno, Žabovřesky",
-      "note": "Příklad"
+      "name": "Zvíře+ — Non-stop veterinární klinika Brno",
+      "phone": "+420 778 011 112",
+      "address": "Krkoškova 6, Brno — Černá Pole",
+      "lat": 49.210,
+      "lng": 16.620,
+      "note": "Reálná non-stop klinika, 24/7. Zdroj: zvireplus.cz"
     },
     {
-      "id": "ostrava-1",
+      "id": "ostrava-nytra",
       "city": "Ostrava",
-      "name": "Non-stop Ostrava",
-      "phone": "+420 596 111 222",
-      "address": "Ostrava-Poruba",
-      "note": "Příklad"
+      "name": "Vet klinika Nytra — Pohotovost Ostrava",
+      "phone": "+420 596 965 648",
+      "address": "Ukrajinská 1536, Ostrava-Poruba",
+      "lat": 49.832,
+      "lng": 18.170,
+      "note": "Pohotovost po telefonické domluvě. Aktualizovat."
     },
     {
-      "id": "plzen-1",
+      "id": "plzen-kleisslova",
       "city": "Plzeň",
-      "name": "Pohotovost Plzeň",
-      "phone": "+420 377 444 555",
-      "address": "Plzeň",
-      "note": "Příklad"
+      "name": "Veterinární klinika Kleisslova — Pohotovost Plzeň",
+      "phone": "+420 377 533 461",
+      "address": "Kleisslova 228/7, Plzeň",
+      "lat": 49.747,
+      "lng": 13.377,
+      "note": "Pohotovost po předchozí domluvě. V Plzni non-stop omezená."
+    },
+    {
+      "id": "cb-budvet",
+      "city": "České Budějovice",
+      "name": "Veterinární klinika BUDvet — Pohotovost CB",
+      "phone": "+420 387 000 000",
+      "address": "U Trojice 8a, České Budějovice",
+      "lat": 48.974,
+      "lng": 14.474,
+      "note": "Pohotovost po telefonické domluvě."
     }
   ],
-  "note": "Seed data pro mapu. Nahradit reálnými daty z klinik a firem.cz. Telefonní čísla jsou ilustrativní."
+  "note": "Seed data pro mapu a seznam. Souřadnice přibližné. Telefonní čísla a detaily ověřit u klinik před produkcí. Nahradit plnými reálnými daty z firem.cz nebo přímých webů."
 }
